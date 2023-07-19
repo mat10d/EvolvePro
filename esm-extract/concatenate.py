@@ -3,10 +3,10 @@ import torch
 import pandas as pd
 
 # Specify the parent directory containing the study subfolders
-parent_directory = '/om/group/abugoot/Projects/Matteo/esm-extract/results_means/'
+parent_directory = '/directed_evolution/esm-extract/results_means/'
 
 # Specify the output directory
-output_directory = '/om/group/abugoot/Projects/Matteo/esm-extract/results_means/csvs/'
+output_directory = '/directed_evolution/esm-extract/results_means/csvs/'
 
 # Iterate over each study subfolder in the parent directory
 for study_folder_name in os.listdir(parent_directory):

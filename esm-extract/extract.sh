@@ -18,8 +18,8 @@ conda activate embeddings
 study_names=("brenan")
 
 model_names=("esm1b_t33_650M_UR50S" "esm2_t33_650M_UR50D")
-fasta_path="/om/group/abugoot/Projects/Matteo/esm-extract/fasta/"
-results_path="/om/group/abugoot/Projects/Matteo/esm-extract/results_means/"
+fasta_path="/directed_evolution/data_processing/output/"
+results_path="/directed_evolution/data_processing/esm-extract/results_means/"
 
 repr_layers=33
 toks_per_batch=3000
