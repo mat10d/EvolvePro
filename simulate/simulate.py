@@ -161,8 +161,6 @@ def active_learner(iter_train, iter_test, embeddings_pd, labels_pd, measured_var
     # fit
     if regression_type == 'ridge':
         model = linear_model.RidgeCV()
-    elif regression_type == 'bayesianridge':
-        model = linear_model.BayesianRidge()
     elif regression_type == 'lasso':
         model = linear_model.LassoCV(max_iter=100000,tol=1e-3)
     elif regression_type == 'elasticnet':
@@ -190,11 +188,9 @@ def active_learner(iter_train, iter_test, embeddings_pd, labels_pd, measured_var
     # make predictions on test data
     y_pred_train = model.predict(X_train)
     y_std_train = np.zeros(len(y_pred_train))
-    if regression_type != 'bayesianridge':
-        y_pred_test = model.predict(X_test)
-        y_std_test = np.zeros(len(y_pred_test))
-    elif regression_type == 'bayesianridge':
-        y_pred_test, y_std_test = model.predict(X_test, return_std=True)
+    # make predictions on test data--this is where we could add more involved active learning strategies
+    y_pred_test = model.predict(X_test)
+    y_std_test = np.zeros(len(y_pred_test))
 
     # calculate metrics
     train_error = mean_squared_error(y_train, y_pred_train)
@@ -273,9 +269,6 @@ def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mut
 
             if learning_strategy == 'dist':
                 iteration_new_ids = df_test_new.sort_values(by='dist_metric', ascending=False).head(num_mutants_per_round).variant
-            elif learning_strategy == 'dist_std':
-                iteration_new_ids = df_test_new.sort_values(by='dist_metric', ascending=False).head(int(num_mutants_per_round/2)).variant
-                iteration_new_ids.append(df_test_new.sort_values(by='std_predictions', ascending=False).head(int(num_mutants_per_round/2)).variant)
             elif learning_strategy == 'random':
                 iteration_new_ids = random.sample(list(df_test_new.variant), num_mutants_per_round)
             elif learning_strategy == 'top5bottom5':
