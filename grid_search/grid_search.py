@@ -87,7 +87,7 @@ def scale_embeddings(embeddings_df):
     return scaled_embeddings_df
 
 # Perform PCA on the embeddings
-def perform_pca(embeddings_df, labels_df, dataset_name, n_components=8):
+def pca_embeddings(embeddings_df, labels_df, dataset_name, n_components=8):
     # Perform PCA on the embeddings
     pca = PCA(n_components=50)
     embeddings_pca = pca.fit_transform(embeddings_df)
@@ -128,7 +128,7 @@ def perform_pca(embeddings_df, labels_df, dataset_name, n_components=8):
     return embeddings_pca_df
 
 # Active learning function for one iteration
-def active_learner(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, regression_type='ridge', top_n=None, final_round=10):
+def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, regression_type='ridge', top_n=None, final_round=10):
     # reset the indices of embeddings_pd and labels_pd
     embeddings_pd = embeddings_pd.reset_index(drop=True)
     labels_pd = labels_pd.reset_index(drop=True)
@@ -223,8 +223,8 @@ def active_learner(iter_train, iter_test, embeddings_pd, labels_pd, measured_var
 
     return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test
 
-# Function to run simulations for a given set of parameters
-def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mutants_per_round=10, measured_var = 'fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round = 10):
+# Function to run n simulations of directed evolution
+def directed_evolution_simulation(labels, embeddings, num_simulations, num_iterations, num_mutants_per_round=10, measured_var = 'fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round = 10):
     output_list = []
 
     for i in range(num_simulations):
@@ -253,7 +253,7 @@ def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mut
         for j in range(2, num_iterations + 1):
             iteration_old = iteration_new
 
-            train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test_new = active_learner(
+            train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test_new = top_layer(
                 iter_train=iteration_old['iteration'].unique().tolist(), iter_test=1001,
                 embeddings_pd=embeddings, labels_pd=labels_new,
                 measured_var=measured_var, regression_type=regression_type, top_n=top_n, final_round=final_round)
@@ -294,7 +294,7 @@ def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mut
 
 
 # Function to calculate the mean and standard deviation of each metric across simulations for each learning strategy
-def calculate_average_metrics(output_lists):
+def average_simulations(output_lists):
     # Concatenate all dataframes from different output lists
     combined_df = pd.concat(output_lists)
     
@@ -305,7 +305,7 @@ def calculate_average_metrics(output_lists):
     return mean_metrics, std_metrics
 
 # Function to run the experiment with different combinations of parameters
-def run_experiment(dataset_name, base_path, num_simulations, num_iterations, measured_var, learning_strategies,
+def grid_search(dataset_name, base_path, num_simulations, num_iterations, measured_var, learning_strategies,
                    num_mutants_per_round, embedding_types, regression_types):
     # read in dataset
     embeddings, labels = read_data(dataset_name, base_path)
@@ -314,7 +314,7 @@ def run_experiment(dataset_name, base_path, num_simulations, num_iterations, mea
     embeddings_norm = scale_embeddings(embeddings)
 
     # generate embeddings_pca
-    embeddings_pca = perform_pca(embeddings, labels, dataset_name, n_components=8)
+    embeddings_pca = pca_embeddings(embeddings, labels, dataset_name, n_components=8)
 
     # save the embeddings in a list    
     embeddings_list = {
@@ -369,7 +369,7 @@ def run_experiment(dataset_name, base_path, num_simulations, num_iterations, mea
                             )
 
                             # run simulations for current combination of parameters
-                            output_list = run_simulations(
+                            output_list = directed_evolution_simulation(
                                 labels=labels,
                                 embeddings=embeddings_list[embedding_type],
                                 num_simulations=num_simulations,
@@ -380,7 +380,7 @@ def run_experiment(dataset_name, base_path, num_simulations, num_iterations, mea
                                 learning_strategy=strategy,
                                 final_round=mutants_per_round,
                             )
-                            mean_metrics, std_metrics = calculate_average_metrics(output_list)
+                            mean_metrics, std_metrics = average_simulations(output_list)
                             output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type] = (mean_metrics, std_metrics)
 
     end_time = time.time()
@@ -440,7 +440,7 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
 
-    run_experiment(
+    grid_search(
         args.dataset_name, args.base_path, args.num_simulations, args.num_iterations,
         args.measured_var, args.learning_strategies, args.num_mutants_per_round,
         args.embedding_types, args.regression_types

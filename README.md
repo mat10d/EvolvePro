@@ -18,9 +18,9 @@ To make the data more workable for downstream tasks, `concatenate.sh` calls on `
 
 This output is not here due to size constraints, but can be found at: https://www.dropbox.com/scl/fo/kkizj4qt6s00n6zbq9zbs/h?rlkey=dehfdmy7dhbhauqqp0y3fjmnh&dl=0
 
-### simulate
+### grid_search
 
-`simulate.py` is the general script for simulating some specified number of ML assisted targeted evolution approaches across a number of parameters akin to a grid search including embedding scaling, fitness metric, number of rounds, number of mutants per rounds, top layer type, and esm version:
+`grid_search.py` is the general script for doing ML assisted targeted evolution approaches across a number of parameters in a full grid search including embedding scaling, fitness metric, number of rounds, number of mutants per rounds, top layer type, and esm version:
 
 * dataset_name: Name of the esm embeddings csv file of the dataset you want to use for the simulations.
 * base_path: Base path of the dataset, which should contain the necessary ESM embeddings and labels CSV files.
