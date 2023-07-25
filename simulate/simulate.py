@@ -1,4 +1,3 @@
-# %%
 import pandas as pd
 import numpy as np
 from sklearn import linear_model, preprocessing
@@ -18,26 +17,39 @@ import warnings
 import random
 import time
 import os
-import json
 import sys
+import argparse
 
 # Ignore FutureWarnings and SettingWithCopyWarnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=ConvergenceWarning, module="sklearn.neural_network")
-
 pd.options.mode.chained_assignment = None  # default='warn'
 
-# %%
-# set the dataset name
-dataset_name = sys.argv[1]  # Assumes that the dataset_name is passed as the first command-line argument
+# Create the parser for the command line arguments
+def create_parser():
+    parser = argparse.ArgumentParser(description="Run experiments with different combinations of grid search variables.")
+    parser.add_argument("--dataset_name", type=str, help="Name of the esm embeddings csv file of the dataset dataset")
+    parser.add_argument("--base_path", type=str, help="Base path of the dataset, which should contain the esm embeddings and labels csv files")
+    parser.add_argument("--num_simulations", type=int, help="Number of simulations for each parameter combination. Example: 3, 10")
+    parser.add_argument("--num_iterations", type=int, nargs="+", help="List of number of iterations. Example: 3 5 10 (must be greater than 1)")
+    parser.add_argument("--measured_var", type=str, nargs="+", help="Fitness type to train on. Options: fitness fitness_scaled")
+    parser.add_argument("--learning_strategies", type=str, nargs="+", help="Type of learning strategy. Options: random top5bottom5 top10 dist")
+    parser.add_argument("--num_mutants_per_round", type=int, nargs="+", help="Number of mutants per round. Example: 8 10 16 32 128")
+    parser.add_argument("--embedding_types", type=str, nargs="+", help="Types of embeddings to train on. Options: embeddings embeddings_norm embeddings_pca")
+    parser.add_argument("--regression_types", type=str, nargs="+", help="Regression types. Options: ridge lasso elasticnet linear neuralnet randomforest gradientboosting")
+    return parser
 
-# %%
-def read_data(dataset_name):
+# Function to read in the data
+def read_data(dataset_name, base_path):
+    # Construct the file paths
+    embeddings_file = os.path.join(base_path, 'csvs', dataset_name + '.csv')
+    labels_file = os.path.join(base_path, 'csvs', dataset_name.split('_')[0] + '_labels.csv')
+
     # Read in mean embeddings across all rounds
-    embeddings = pd.read_csv('csvs/' + dataset_name + '.csv', index_col=0)
+    embeddings = pd.read_csv(embeddings_file, index_col=0)
 
     # Read in labels
-    labels = pd.read_csv('csvs/' + dataset_name.split('_')[0] + '_labels.csv')
+    labels = pd.read_csv(labels_file)
 
     # Filter out rows where fitness is NaN
     labels = labels[labels['fitness'].notna()]
@@ -64,20 +76,18 @@ def read_data(dataset_name):
 
     return embeddings, labels
 
-# %%
+# Function to scale the embeddings in the dataframe
 def scale_embeddings(embeddings_df):
-    # Scale the embeddings
     
     scaler = StandardScaler()
     scaled_embeddings = scaler.fit_transform(embeddings_df)
 
-    # Create a dataframe with the scaled embeddings
     scaled_embeddings_df = pd.DataFrame(scaled_embeddings)
 
     return scaled_embeddings_df
 
-# %%
-def perform_pca(embeddings_df, labels_df, n_components=8):
+# Perform PCA on the embeddings
+def perform_pca(embeddings_df, labels_df, dataset_name, n_components=8):
     # Perform PCA on the embeddings
     pca = PCA(n_components=50)
     embeddings_pca = pca.fit_transform(embeddings_df)
@@ -107,7 +117,6 @@ def perform_pca(embeddings_df, labels_df, n_components=8):
     axes[1].grid(True)
 
     plt.tight_layout()
-    plt.show()
     # save the plot
     fig.savefig('plots/' + dataset_name + '_pca.png')
 
@@ -118,8 +127,7 @@ def perform_pca(embeddings_df, labels_df, n_components=8):
 
     return embeddings_pca_df
 
-# %%
-
+# Active learning function for one iteration
 def active_learner(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, regression_type='ridge', top_n=None, final_round=10):
     # reset the indices of embeddings_pd and labels_pd
     embeddings_pd = embeddings_pd.reset_index(drop=True)
@@ -214,17 +222,16 @@ def active_learner(iter_train, iter_test, embeddings_pd, labels_pd, measured_var
 
     # Calculate additional metrics
     median_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].median()
+    top_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].max()
     fitness_binary_percentage = df_sorted_all.loc[:final_round, 'y_actual_binary'].mean()
 
-    return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, fitness_binary_percentage, df_test
+    return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test
 
-
-# %%
+# Function to run simulations for a given set of parameters
 def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mutants_per_round=10, measured_var = 'fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round = 10):
     output_list = []
 
     for i in range(num_simulations):
-        # print('Simulation number:', i + 1)
 
         random.seed(i)
         random_mutants = random.sample(list(labels.variant[labels.variant != 'WT']), num_mutants_per_round)
@@ -241,6 +248,7 @@ def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mut
         test_r_squared_list = []
         alpha_list = []
         median_fitness_scaled_list = []
+        top_fitness_scaled_list = []
         fitness_binary_percentage_list = []
 
         labels_new = labels_one
@@ -249,7 +257,7 @@ def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mut
         for j in range(2, num_iterations + 1):
             iteration_old = iteration_new
 
-            train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, fitness_binary_percentage, df_test_new = active_learner(
+            train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test_new = active_learner(
                 iter_train=iteration_old['iteration'].unique().tolist(), iter_test=1001,
                 embeddings_pd=embeddings, labels_pd=labels_new,
                 measured_var=measured_var, regression_type=regression_type, top_n=top_n, final_round=final_round)
@@ -260,6 +268,7 @@ def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mut
             test_r_squared_list.append(test_r_squared)
             alpha_list.append(alpha)
             median_fitness_scaled_list.append(median_fitness_scaled)
+            top_fitness_scaled_list.append(top_fitness_scaled)
             fitness_binary_percentage_list.append(fitness_binary_percentage)
 
             if learning_strategy == 'dist':
@@ -283,6 +292,7 @@ def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mut
         df_metrics = pd.DataFrame({'test_error': test_error_list, 'train_error': train_error_list,
                                    'train_r_squared': train_r_squared_list, 'test_r_squared': test_r_squared_list,
                                    'alpha': alpha_list, 'median_fitness_scaled': median_fitness_scaled_list,
+                                   'top_fitness_scaled': top_fitness_scaled_list,
                                    'fitness_binary_percentage': fitness_binary_percentage_list})
 
         output_list.append(df_metrics)
@@ -290,7 +300,7 @@ def run_simulations(labels, embeddings, num_simulations, num_iterations, num_mut
     return output_list
 
 
-# %%
+# Function to calculate the mean and standard deviation of each metric across simulations for each learning strategy
 def calculate_average_metrics(output_lists):
     # Concatenate all dataframes from different output lists
     combined_df = pd.concat(output_lists)
@@ -301,132 +311,147 @@ def calculate_average_metrics(output_lists):
     
     return mean_metrics, std_metrics
 
-# %%
-# read in dataset
-embeddings, labels = read_data(dataset_name)
+# Function to run the experiment with different combinations of parameters
+def run_experiment(dataset_name, base_path, num_simulations, num_iterations, measured_var, learning_strategies,
+                   num_mutants_per_round, embedding_types, regression_types):
+    # read in dataset
+    embeddings, labels = read_data(dataset_name, base_path)
 
-# %%
-# scale embeddings
-embeddings_norm = scale_embeddings(embeddings)
+    # scale embeddings
+    embeddings_norm = scale_embeddings(embeddings)
 
-# %%
-# generate embeddings_pca
-embeddings_pca = perform_pca(embeddings, labels, n_components=8)
+    # generate embeddings_pca
+    embeddings_pca = perform_pca(embeddings, labels, dataset_name, n_components=8)
 
-# %%
-num_simulations = 3
-num_iterations = [3, 5, 10]
-measured_var = ['fitness', 'fitness_scaled']
-learning_strategies = ['random', 'top5bottom5', 'top10', 'dist']
-num_mutants_per_round = [8, 10, 16, 32, 128]
-embedding_types = ['embeddings', 'embeddings_norm', 'embeddings_pca']
-regression_types = ['ridge', 'lasso', 'elasticnet', 'linear', 'neuralnet', 'randomforest', 'gradientboosting']
+    # save the embeddings in a list    
+    embeddings_list = {
+        'embeddings': embeddings,
+        'embeddings_norm': embeddings_norm,
+        'embeddings_pca': embeddings_pca
+    }
 
-output_results = {}
+    # save the labels in a list
+    output_results = {}
 
-total_combinations = 0  # Initialize the total combinations count
+    # Initialize the total combinations count
+    total_combinations = 0 
 
-for strategy in learning_strategies:
-    for var in measured_var:
-        for iterations in num_iterations:
-            for mutants_per_round in num_mutants_per_round:
-                if mutants_per_round == 128 and iterations != 3:
-                    continue  # Skip other iterations when mutants_per_round is 128
-                for embedding_type in embedding_types:
-                    for regression_type in regression_types:
-                        total_combinations += 1
+    # Print the total number of combinations
+    for strategy in learning_strategies:
+        for var in measured_var:
+            for iterations in num_iterations:
+                for mutants_per_round in num_mutants_per_round:
+                    if mutants_per_round == 128 and iterations != 3:
+                        continue  # Skip other iterations when mutants_per_round is 128
+                    for embedding_type in embedding_types:
+                        for regression_type in regression_types:
+                            total_combinations += 1
 
-# Print the corrected total_combinations count
-print(f"Total combinations: {total_combinations}")
+    # Print the corrected total_combinations count
+    print(f"Total combinations: {total_combinations}")
 
-combination_count = 0
+    # Initialize the combination count
+    combination_count = 0
 
-start_time = time.time()
+    start_time = time.time()
 
-for strategy in learning_strategies:
-    output_results[strategy] = {}
-    for var in measured_var:
-        output_results[strategy][var] = {}
-        for iterations in num_iterations:
-            output_results[strategy][var][iterations] = {}
-            for mutants_per_round in num_mutants_per_round:
-                output_results[strategy][var][iterations][mutants_per_round] = {}
-                for embedding_type in embedding_types:
-                    output_results[strategy][var][iterations][mutants_per_round][embedding_type] = {}
-                    for regression_type in regression_types:
-                        if mutants_per_round == 128 and iterations != 3:
-                            continue  # Skip other iterations when mutants_per_round is 128
-                        combination_count += 1
-                        # print overall progress
-                        print(
-                            f"Progress: {combination_count}/{total_combinations} "
-                            f"({(combination_count/total_combinations)*100:.2f}%)"
-                        )
-                        # print combination being run
-                        print( )
-                        output_list = run_simulations(
-                            labels=labels,
-                            embeddings=globals()[embedding_type],
-                            num_simulations=num_simulations,
-                            num_iterations=iterations,
-                            num_mutants_per_round=mutants_per_round,
-                            measured_var=var,
-                            regression_type=regression_type,
-                            learning_strategy=strategy,
-                            final_round=mutants_per_round,
-                        )
-                        mean_metrics, std_metrics = calculate_average_metrics(output_list)
-                        output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type] = (mean_metrics, std_metrics)
+    for strategy in learning_strategies:
+        output_results[strategy] = {}
+        for var in measured_var:
+            output_results[strategy][var] = {}
+            for iterations in num_iterations:
+                output_results[strategy][var][iterations] = {}
+                for mutants_per_round in num_mutants_per_round:
+                    output_results[strategy][var][iterations][mutants_per_round] = {}
+                    for embedding_type in embedding_types:
+                        output_results[strategy][var][iterations][mutants_per_round][embedding_type] = {}
+                        for regression_type in regression_types:
+                            if mutants_per_round == 128 and iterations != 3:
+                                continue  # Skip other iterations when mutants_per_round is 128
+                            combination_count += 1
+                            # print overall progress
+                            print(
+                                f"Progress: {combination_count}/{total_combinations} "
+                                f"({(combination_count/total_combinations)*100:.2f}%)"
+                            )
 
-end_time = time.time()
-execution_time = end_time - start_time
+                            # run simulations for current combination of parameters
+                            output_list = run_simulations(
+                                labels=labels,
+                                embeddings=embeddings_list[embedding_type],
+                                num_simulations=num_simulations,
+                                num_iterations=iterations,
+                                num_mutants_per_round=mutants_per_round,
+                                measured_var=var,
+                                regression_type=regression_type,
+                                learning_strategy=strategy,
+                                final_round=mutants_per_round,
+                            )
+                            mean_metrics, std_metrics = calculate_average_metrics(output_list)
+                            output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type] = (mean_metrics, std_metrics)
 
-print(f"Total execution time: {execution_time:.2f} seconds")
+    end_time = time.time()
+    execution_time = end_time - start_time
 
+    print(f"Total execution time: {execution_time:.2f} seconds")
 
-# %%
-# Initialize an empty dataframe
-df_results = pd.DataFrame(columns=['num_iterations', 'measured_var', 'learning_strategy', 'num_mutants_per_round', 'embedding_type', 'regression_type', 
-                                   'first_median_fitness_scaled', 'first_fitness_binary_percentage', 
-                                   'last_median_fitness_scaled', 'last_fitness_binary_percentage'])
+    # Save the mean output across simulations for each combination of parameters
+    rows = []
+    # Iterate over the output_results dictionary and extract the desired information
+    for strategy in learning_strategies:
+        for var in measured_var:
+            for iterations in num_iterations:
+                for mutants_per_round in num_mutants_per_round:
+                    if mutants_per_round == 128 and iterations != 3:
+                        continue  # Skip other iterations when mutants_per_round is 128
+                    for embedding_type in embedding_types:
+                        for regression_type in regression_types:
+                            # get the first and last values of the metrics
+                            first_median_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['median_fitness_scaled'].iloc[0]
+                            first_top_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['top_fitness_scaled'].iloc[0]
+                            first_fitness_binary_percentage = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['fitness_binary_percentage'].iloc[0]                        
+                            last_median_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['median_fitness_scaled'].iloc[-1]
+                            last_top_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['top_fitness_scaled'].iloc[-1]                        
+                            last_fitness_binary_percentage = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['fitness_binary_percentage'].iloc[-1]
 
-# Iterate over the output_results dictionary and extract the desired information
-for strategy in learning_strategies:
-    for var in measured_var:
-        for iterations in num_iterations:
-            for mutants_per_round in num_mutants_per_round:
-                if mutants_per_round == 128 and iterations != 3:
-                    continue  # Skip other iterations when mutants_per_round is 128
-                for embedding_type in embedding_types:
-                    for regression_type in regression_types:
-                        # get the first and last values of the metrics
-                        first_median_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['median_fitness_scaled'].iloc[0]
-                        first_fitness_binary_percentage = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['fitness_binary_percentage'].iloc[0]
-                        last_median_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['median_fitness_scaled'].iloc[-1]
-                        last_fitness_binary_percentage = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][0]['fitness_binary_percentage'].iloc[-1]
+                            # Create a new row with the experimental setup and the metric
+                            new_row = {
+                                'num_iterations': iterations,
+                                'measured_var': var,
+                                'learning_strategy': strategy,
+                                'num_mutants_per_round': mutants_per_round,
+                                'embedding_type': embedding_type,
+                                'regression_type': regression_type,
+                                'first_median_fitness_scaled': first_median_fitness_scaled,
+                                'first_top_fitness_scaled': first_top_fitness_scaled,
+                                'first_fitness_binary_percentage': first_fitness_binary_percentage,
+                                'last_top_fitness_scaled': last_top_fitness_scaled,
+                                'last_median_fitness_scaled': last_median_fitness_scaled,
+                                'last_fitness_binary_percentage': last_fitness_binary_percentage,
+                            }
+                            # Append the new row to the list of rows
+                            rows.append(new_row)
 
-                        # Create a new row with the experimental setup and the metric
-                        new_row = {
-                            'num_iterations': iterations,
-                            'measured_var': var,
-                            'learning_strategy': strategy,
-                            'num_mutants_per_round': mutants_per_round,
-                            'embedding_type': embedding_type,
-                            'regression_type': regression_type,
-                            'first_median_fitness_scaled': first_median_fitness_scaled,
-                            'first_fitness_binary_percentage': first_fitness_binary_percentage,
-                            'last_median_fitness_scaled': last_median_fitness_scaled,
-                            'last_fitness_binary_percentage': last_fitness_binary_percentage,
-                        }
-                        
-                        # Append the new row to the dataframe
-                        df_results = df_results.append(new_row, ignore_index=True)
+    # create a dataframe from the list of rows
+    df_results = pd.DataFrame(rows)
 
-# calculate the change in the metrics
-df_results['change_median_fitness_scaled'] = df_results['last_median_fitness_scaled'] - df_results['first_median_fitness_scaled']
-df_results['change_fitness_binary_percentage'] = df_results['last_fitness_binary_percentage'] - df_results['first_fitness_binary_percentage']
+    # calculate the change in the metrics
+    df_results['change_median_fitness_scaled'] = df_results['last_median_fitness_scaled'] - df_results['first_median_fitness_scaled']
+    df_results['change_top_fitness_scaled'] = df_results['last_top_fitness_scaled'] - df_results['first_top_fitness_scaled']
+    df_results['change_fitness_binary_percentage'] = df_results['last_fitness_binary_percentage'] - df_results['first_fitness_binary_percentage']
 
-# save the dataframe to a csv file using the dataset_name
-df_results.to_csv(f"results/{dataset_name}_results.csv", index=False)
+    # save the dataframe to a csv file using the dataset_name
+    df_results.to_csv(f"results/{dataset_name}_results.csv", index=False)
 
+def main():
+    parser = create_parser()
+    args = parser.parse_args()
 
+    run_experiment(
+        args.dataset_name, args.base_path, args.num_simulations, args.num_iterations,
+        args.measured_var, args.learning_strategies, args.num_mutants_per_round,
+        args.embedding_types, args.regression_types
+    )
+
+if __name__ == "__main__":
+    main()
