@@ -185,10 +185,11 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
 
     model.fit(X_train, y_train)
 
-    # make predictions on test data
+    # make predictions on train data
     y_pred_train = model.predict(X_train)
     y_std_train = np.zeros(len(y_pred_train))
-    # make predictions on test data--this is where we could add more involved active learning strategies
+    # make predictions on test data
+    # NOTE: can work on alternate 2-n round strategies here
     y_pred_test = model.predict(X_test)
     y_std_test = np.zeros(len(y_pred_test))
 
@@ -223,20 +224,50 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
 
     return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test
 
+# Function for selecting mutants in the first round
+def first_round(labels, num_mutants_per_round, first_round_strategy = 'random', random_seed=None):
+
+    # Set random seed
+    if random_seed is not None:
+        random.seed(random_seed)
+
+    # Filter out 'WT' variant from labels
+    variants_without_WT = labels.variant[labels.variant != 'WT']
+    
+    if first_round_strategy == 'random':
+        random_mutants = random.sample(list(variants_without_WT), num_mutants_per_round)
+    else:
+        print('First round strategy not implemented')
+        # NOTE: work on alternate first round strategies here
+    
+    # Create DataFrame for the first round
+    iteration_one_ids = random_mutants
+    iteration_one = pd.DataFrame({'variant': iteration_one_ids, 'iteration': 1})
+    WT = pd.DataFrame({'variant': 'WT', 'iteration': 0}, index=[0])
+    iteration_one = iteration_one.append(WT)
+    
+    # Merge with labels DataFrame and fill null values with 1001
+    labels_one = pd.merge(labels, iteration_one, on='variant', how='left')
+    labels_one.iteration[labels_one.iteration.isnull()] = 1001
+
+    return labels_one, iteration_one
+
 # Function to run n simulations of directed evolution
 def directed_evolution_simulation(labels, embeddings, num_simulations, num_iterations, num_mutants_per_round=10, measured_var = 'fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round = 10):
     output_list = []
 
     for i in range(num_simulations):
 
-        random.seed(i)
-        random_mutants = random.sample(list(labels.variant[labels.variant != 'WT']), num_mutants_per_round)
-        iteration_one_ids = random_mutants
-        iteration_one = pd.DataFrame({'variant': iteration_one_ids, 'iteration': 1})
-        WT = pd.DataFrame({'variant': 'WT', 'iteration': 0}, index=[0])
-        iteration_one = iteration_one.append(WT)
-        labels_one = pd.merge(labels, iteration_one, on='variant', how='left')
-        labels_one.iteration[labels_one.iteration.isnull()] = 1001
+        labels_one, iteration_one = first_round(labels, num_mutants_per_round)
+
+        # random.seed(i)
+        # random_mutants = random.sample(list(labels.variant[labels.variant != 'WT']), num_mutants_per_round)
+        # iteration_one_ids = random_mutants
+        # iteration_one = pd.DataFrame({'variant': iteration_one_ids, 'iteration': 1})
+        # WT = pd.DataFrame({'variant': 'WT', 'iteration': 0}, index=[0])
+        # iteration_one = iteration_one.append(WT)
+        # labels_one = pd.merge(labels, iteration_one, on='variant', how='left')
+        # labels_one.iteration[labels_one.iteration.isnull()] = 1001
 
         test_error_list = []
         train_error_list = []
@@ -267,6 +298,7 @@ def directed_evolution_simulation(labels, embeddings, num_simulations, num_itera
             top_fitness_scaled_list.append(top_fitness_scaled)
             fitness_binary_percentage_list.append(fitness_binary_percentage)
 
+            # NOTE: work on alternate 2-n round strategies here
             if learning_strategy == 'dist':
                 iteration_new_ids = df_test_new.sort_values(by='dist_metric', ascending=False).head(num_mutants_per_round).variant
             elif learning_strategy == 'random':

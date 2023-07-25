@@ -41,7 +41,7 @@ python3 grid_search.py \
     --dataset_name brenan_esm2_t33_650M_UR50D \
     --base_path ../esm-extract/results_means \
     --num_simulations 10 \
-    --num_iterations 2 3 4 \
+    --num_iterations 2 3 4 5 6 7 8 9 10 11 \
     --measured_var fitness \
     --learning_strategies top10 \
     --num_mutants_per_round 16 \
