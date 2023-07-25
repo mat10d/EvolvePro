@@ -37,3 +37,7 @@ The `brenan_[].sh` files are simple OpenMind/command line compatible bash files 
 ### top-layer-metrics
 
 This directory contains notebooks that assist with visualizations of simulation outputs. Still rough/needs to be improved.
+
+### top-layer-metrics
+
+A yml file that temporarily contains all packages required to work with this repo is also provided.
