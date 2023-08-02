@@ -19,6 +19,7 @@ import time
 import os
 import sys
 import argparse
+import torch
 
 # Ignore FutureWarnings and SettingWithCopyWarnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -28,8 +29,8 @@ pd.options.mode.chained_assignment = None  # default='warn'
 # Create the parser for the command line arguments
 def create_parser():
     parser = argparse.ArgumentParser(description="Run experiments with different combinations of grid search variables.")
-    parser.add_argument("--dataset_name", type=str, help="Name of the esm embeddings csv file of the dataset dataset")
-    parser.add_argument("--base_path", type=str, help="Base path of the dataset, which should contain the esm embeddings and labels csv files")
+    parser.add_argument("dataset_name", type=str, help="Name of the esm embeddings csv file of the dataset dataset")
+    parser.add_argument("--base_path", type=str, help="Base path of the dataset")
     parser.add_argument("--num_simulations", type=int, help="Number of simulations for each parameter combination. Example: 3, 10")
     parser.add_argument("--num_iterations", type=int, nargs="+", help="List of number of iterations. Example: 3 5 10 (must be greater than 1)")
     parser.add_argument("--measured_var", type=str, nargs="+", help="Fitness type to train on. Options: fitness fitness_scaled")
@@ -37,16 +38,39 @@ def create_parser():
     parser.add_argument("--num_mutants_per_round", type=int, nargs="+", help="Number of mutants per round. Example: 8 10 16 32 128")
     parser.add_argument("--embedding_types", type=str, nargs="+", help="Types of embeddings to train on. Options: embeddings embeddings_norm embeddings_pca")
     parser.add_argument("--regression_types", type=str, nargs="+", help="Regression types. Options: ridge lasso elasticnet linear neuralnet randomforest gradientboosting")
+    parser.add_argument("--file_type", type=str, help="Type of file to read. Options: csvs pts")
+    parser.add_argument("--embeddings_type_pt", type=str, help="Type of pytorch embeddings to read. Options: average mutated both")
     return parser
 
 # Function to read in the data
-def read_data(dataset_name, base_path):
+def read_data(dataset_name, base_path, file_type, embeddings_type='both'):
     # Construct the file paths
-    embeddings_file = os.path.join(base_path, 'csvs', dataset_name + '.csv')
-    labels_file = os.path.join(base_path, 'csvs', dataset_name.split('_')[0] + '_labels.csv')
+    if file_type == "csvs":
+        labels_file = os.path.join(base_path, 'labels', dataset_name.split('_')[0] + '_labels.csv')
+        embeddings_file = os.path.join(base_path, 'csvs', dataset_name + '.csv')
+        # Read in mean embeddings across all rounds
+        embeddings = pd.read_csv(embeddings_file, index_col=0)
+    elif file_type == "pts":
+        labels_file = os.path.join(base_path, 'labels', dataset_name.split('_')[-1] + '_labels.csv')
+        embeddings_file = os.path.join(base_path, 'pts', dataset_name + '.pt')
+        # Read in pytorch tensor of embeddings
+        embeddings = torch.load(embeddings_file)
+        # Convert embeddings to a dataframe
+        if embeddings_type == 'average':
+            embeddings = {key: value['average'].numpy() for key, value in embeddings.items()}
+        elif embeddings_type == 'mutated':
+            embeddings = {key: value['mutated'].numpy() for key, value in embeddings.items()}
+        elif embeddings_type == 'both':
+            embeddings = {key: torch.cat((value['average'], value['mutated'])).numpy() for key, value in embeddings.items()}
+        else:
+            print("Invalid embeddings_type. Please choose 'average', 'mutated', or 'both'")
+            return None, None
 
-    # Read in mean embeddings across all rounds
-    embeddings = pd.read_csv(embeddings_file, index_col=0)
+        # Convert embeddings dictionary to a dataframe
+        embeddings = pd.DataFrame.from_dict(embeddings, orient='index')
+    else:
+        print("Invalid file type. Please choose either 'csvs' or 'pts'")
+        return None, None
 
     # Read in labels
     labels = pd.read_csv(labels_file)
@@ -73,8 +97,6 @@ def read_data(dataset_name, base_path):
     # Check if embedding row names and label variants are identical
     if label_variants == embedding_variants:
         print('Embeddings and labels are aligned')
-
-    return embeddings, labels
 
 # Function to scale the embeddings in the dataframe
 def scale_embeddings(embeddings_df):

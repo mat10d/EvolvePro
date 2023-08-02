@@ -1,2 +1,4 @@
 esm-extract/results_means/
 top-layer-metrics/across_rounds/*.csv
+grid_search/grid_search.ipynb
+*.DS_Store
