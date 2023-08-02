@@ -29,7 +29,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 # Create the parser for the command line arguments
 def create_parser():
     parser = argparse.ArgumentParser(description="Run experiments with different combinations of grid search variables.")
-    parser.add_argument("dataset_name", type=str, help="Name of the esm embeddings csv file of the dataset dataset")
+    parser.add_argument("--dataset_name", type=str, help="Name of the esm embeddings csv file of the dataset dataset")
     parser.add_argument("--base_path", type=str, help="Base path of the dataset")
     parser.add_argument("--num_simulations", type=int, help="Number of simulations for each parameter combination. Example: 3, 10")
     parser.add_argument("--num_iterations", type=int, nargs="+", help="List of number of iterations. Example: 3 5 10 (must be greater than 1)")
@@ -97,6 +97,9 @@ def read_data(dataset_name, base_path, file_type, embeddings_type='both'):
     # Check if embedding row names and label variants are identical
     if label_variants == embedding_variants:
         print('Embeddings and labels are aligned')
+
+    # return embeddings and labels
+    return embeddings, labels
 
 # Function to scale the embeddings in the dataframe
 def scale_embeddings(embeddings_df):
@@ -282,6 +285,7 @@ def directed_evolution_simulation(labels, embeddings, num_simulations, num_itera
 
         labels_one, iteration_one = first_round(labels, num_mutants_per_round)
 
+        # Old code for first round
         # random.seed(i)
         # random_mutants = random.sample(list(labels.variant[labels.variant != 'WT']), num_mutants_per_round)
         # iteration_one_ids = random_mutants
@@ -360,9 +364,11 @@ def average_simulations(output_lists):
 
 # Function to run the experiment with different combinations of parameters
 def grid_search(dataset_name, base_path, num_simulations, num_iterations, measured_var, learning_strategies,
-                   num_mutants_per_round, embedding_types, regression_types):
+                   num_mutants_per_round, embedding_types, regression_types, file_type, embeddings_type_pt=None):
+    
+
     # read in dataset
-    embeddings, labels = read_data(dataset_name, base_path)
+    embeddings, labels = read_data(dataset_name, base_path, file_type, embeddings_type_pt)
 
     # scale embeddings
     embeddings_norm = scale_embeddings(embeddings)
@@ -488,7 +494,10 @@ def grid_search(dataset_name, base_path, num_simulations, num_iterations, measur
     df_results['change_fitness_binary_percentage'] = df_results['last_fitness_binary_percentage'] - df_results['first_fitness_binary_percentage']
 
     # save the dataframe to a csv file using the dataset_name
-    df_results.to_csv(f"results/{dataset_name}_results.csv", index=False)
+    if embeddings_type_pt == None:
+        df_results.to_csv(f"results/{dataset_name}_results.csv", index=False)
+    else:
+        df_results.to_csv(f"results/{dataset_name}_{embeddings_type_pt}_results.csv", index=False)
 
 def main():
     parser = create_parser()
@@ -497,8 +506,8 @@ def main():
     grid_search(
         args.dataset_name, args.base_path, args.num_simulations, args.num_iterations,
         args.measured_var, args.learning_strategies, args.num_mutants_per_round,
-        args.embedding_types, args.regression_types
+        args.embedding_types, args.regression_types, args.file_type, args.embeddings_type_pt
     )
-
+ 
 if __name__ == "__main__":
     main()

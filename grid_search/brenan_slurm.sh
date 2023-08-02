@@ -30,10 +30,10 @@ python3 -u grid_search.py \
     >> out/brenan_esm1b-hc.out
 echo "Done running Brenan dataset:" >> out/brenan_esm1b-hc.out
 
-# 2) Run full grid search on esm2 mean embeddings
-echo "Running Brenan dataset:" > out/brenan_esm2-hc.out
+# 2) Run full grid search on esm2 650M mean embeddings
+echo "Running Brenan dataset:" > out/brenan_esm2_650M-hc.out
 python3 -u grid_search.py \
-    --dataset_name brenan_esm2_t33_650M_UR50D \
+    --dataset_name esm2_15B_brenan \
     --base_path ../esm-extract/results_means \
     --num_simulations 3 \
     --num_iterations 3 5 10 \
@@ -42,9 +42,43 @@ python3 -u grid_search.py \
     --num_mutants_per_round 8 10 16 32 128 \
     --embedding_types embeddings embeddings_norm embeddings_pca \
     --regression_types ridge lasso elasticnet linear neuralnet randomforest gradientboosting \
-    >> out/brenan_esm2-hc.out
-echo "Done running Brenan dataset:" >> out/brenan_esm2-hc.out
+    --file_type pts \
+    --embeddings_type_pt average
+    >> out/brenan_esm2_650M-hc.out
+echo "Done running Brenan dataset:" >> out/brenan_esm2_650M-hc.out
 
+# 2) Run full grid search on esm2 3B mean embeddings
+echo "Running Brenan dataset:" > out/brenan_esm2_3B-hc.out
+python3 -u grid_search.py \
+    --dataset_name esm2_3B_brenan \
+    --base_path ../esm-extract/results_means \
+    --num_simulations 3 \
+    --num_iterations 3 5 10 \
+    --measured_var fitness fitness_scaled \
+    --learning_strategies random top5bottom5 top10 dist \
+    --num_mutants_per_round 8 10 16 32 128 \
+    --embedding_types embeddings embeddings_norm embeddings_pca \
+    --regression_types ridge lasso elasticnet linear neuralnet randomforest gradientboosting \
+    --file_type pts \
+    --embeddings_type_pt average
+    >> out/brenan_esm2_3B-hc.out
+
+# 2) Run full grid search on esm2 15B mean embeddings
+echo "Running Brenan dataset:" > out/brenan_esm2_15B-hc.out
+python3 -u grid_search.py \
+    --dataset_name esm2_15B_brenan \
+    --base_path ../esm-extract/results_means \
+    --num_simulations 3 \
+    --num_iterations 3 5 10 \
+    --measured_var fitness fitness_scaled \
+    --learning_strategies random top5bottom5 top10 dist \
+    --num_mutants_per_round 8 10 16 32 128 \
+    --embedding_types embeddings embeddings_norm embeddings_pca \
+    --regression_types ridge lasso elasticnet linear neuralnet randomforest gradientboosting \
+    --file_type pts \
+    --embeddings_type_pt average
+    >> out/brenan_esm2_15B-hc.out
+    
 # 3) Run small grid search on esm1b mean embeddings to see how performance changes over rounds
 echo "Running Brenan dataset:" > out/brenan_esm1b-hc_small.out
 python3 -u grid_search.py \
@@ -60,10 +94,10 @@ python3 -u grid_search.py \
     >> out/brenan_esm1b-hc_small.out
 echo "Done running Brenan dataset:" >> out/brenan_esm1b-hc_small.out
 
-# 4) Run small grid search on esm2 mean embeddings to see how performance changes over rounds
-echo "Running Brenan dataset:" > out/brenan_esm2-hc_small.out
+# 4) Run small grid search on esm2 650M mean embeddings to see how performance changes over rounds
+echo "Running Brenan dataset:" > out/brenan_esm2_650M-hc_small.out
 python3 -u grid_search.py \
-    --dataset_name brenan_esm2_t33_650M_UR50D \
+    --dataset_name esm2_15B_brenan \
     --base_path ../esm-extract/results_means \
     --num_simulations 10 \
     --num_iterations 2 3 4 5 6 7 8 9 10 11 \
@@ -72,5 +106,39 @@ python3 -u grid_search.py \
     --num_mutants_per_round 16 \
     --embedding_types embeddings \
     --regression_types randomforest \
-    >> out/brenan_esm2-hc_small.out
-echo "Done running Brenan dataset:" >> out/brenan_esm2-hc_small.out
+    --file_type pts \
+    --embeddings_type_pt average
+    >> out/brenan_esm2_650M-hc_small.out
+
+# 4) Run small grid search on esm2 3B mean embeddings to see how performance changes over rounds
+echo "Running Brenan dataset:" > out/brenan_esm2_3B-hc_small.out
+python3 -u grid_search.py \
+    --dataset_name esm2_3B_brenan \
+    --base_path ../esm-extract/results_means \
+    --num_simulations 10 \
+    --num_iterations 2 3 4 5 6 7 8 9 10 11 \
+    --measured_var fitness \
+    --learning_strategies top10 \
+    --num_mutants_per_round 16 \
+    --embedding_types embeddings \
+    --regression_types randomforest \
+    --file_type pts \
+    --embeddings_type_pt average
+    >> out/brenan_esm2_3B-hc_small.out
+
+# 4) Run small grid search on esm2 15B mean embeddings to see how performance changes over rounds
+echo "Running Brenan dataset:" > out/brenan_esm2_15B-hc_small.out
+python3 -u grid_search.py \
+    --dataset_name esm2_15B_brenan \
+    --base_path ../esm-extract/results_means \
+    --num_simulations 10 \
+    --num_iterations 2 3 4 5 6 7 8 9 10 11 \
+    --measured_var fitness \
+    --learning_strategies top10 \
+    --num_mutants_per_round 16 \
+    --embedding_types embeddings \
+    --regression_types randomforest \
+    --file_type pts \
+    --embeddings_type_pt average
+    >> out/brenan_esm2_15B-hc_small.out
+    
