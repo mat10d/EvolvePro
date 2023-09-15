@@ -2,3 +2,10 @@ esm-extract/results_means/
 top-layer-metrics/across_rounds/*.csv
 grid_search/grid_search.ipynb
 *.DS_Store
+notebooks/results_means
+top-layer-metrics/across_rounds/first_round
+top-layer-metrics/across_rounds/results
+data_processing/dms
+data_processing/hie_temp
+data_processing/output
+notebooks/t7/pts
