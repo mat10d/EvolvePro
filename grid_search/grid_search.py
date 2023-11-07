@@ -192,6 +192,15 @@ def first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round
 
 # Active learning function for one iteration
 def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, regression_type='ridge', top_n=None, final_round=10):
+
+    # Get the variants in labels and embeddings, convert to list
+    label_variants = labels_pd['variant'].tolist()
+    embedding_variants = embeddings_pd.index.tolist()
+
+    # Check if embedding row names and label variants are identical
+    if label_variants == embedding_variants:
+        print('Embeddings and labels are aligned')
+
     # reset the indices of embeddings_pd and labels_pd
     embeddings_pd = embeddings_pd.reset_index(drop=True)
     labels_pd = labels_pd.reset_index(drop=True)
