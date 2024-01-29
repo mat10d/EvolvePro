@@ -46,7 +46,7 @@ def create_parser():
     return parser
 
 # Function to read in the data
-def read_data(dataset_name, base_path, file_type, embeddings_type='both'):
+def read_data(dataset_name, base_path, file_type, first_round_strategies, embeddings_type='both'):
     # Construct the file paths
     if file_type == "csvs":
         labels_file = os.path.join(base_path, 'labels', dataset_name.split('_')[0] + '_labels.csv')
@@ -80,8 +80,11 @@ def read_data(dataset_name, base_path, file_type, embeddings_type='both'):
     # Read in labels
     labels = pd.read_csv(labels_file)
 
-    # Read in hierarchy
-    hie_data = pd.read_csv(hie_file)
+    # Read in hie
+    if first_round_strategies == "representative_hie":
+        hie_data = pd.read_csv(hie_file)
+    else:
+        hie_data = pd.DataFrame()
 
     # Filter out rows where fitness is NaN
     labels = labels[labels['fitness'].notna()]
@@ -192,15 +195,6 @@ def first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round
 
 # Active learning function for one iteration
 def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, regression_type='ridge', top_n=None, final_round=10):
-
-    # Get the variants in labels and embeddings, convert to list
-    label_variants = labels_pd['variant'].tolist()
-    embedding_variants = embeddings_pd.index.tolist()
-
-    # Check if embedding row names and label variants are identical
-    if label_variants == embedding_variants:
-        print('Embeddings and labels are aligned')
-
     # reset the indices of embeddings_pd and labels_pd
     embeddings_pd = embeddings_pd.reset_index(drop=True)
     labels_pd = labels_pd.reset_index(drop=True)

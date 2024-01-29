@@ -13,4 +13,8 @@ efficient-evolution
 notebooks/ca/csvs
 notebooks/fanzor/csvs
 notebooks/bxb1/csvs
+notebooks/t7/csvs
+notebooks/mmfnuc/csvs
+notebooks/r2/csvs
+data_processing/wet_lab/*.fasta
 data_processing/dataframes_VEP/brenan_WT.fasta
