@@ -10,7 +10,7 @@
 #SBATCH --cpus-per-task=1  
 ##SBATCH --constraint=high-capacity    
 #SBATCH --mem=4gb  
-#SBATCH --output /om/group/abugoot/Projects/Matteo/simulate/out/all_slurm_small_mutated-%j.out 
+#SBATCH --output /om/group/abugoot/Projects/Matteo/Github/directed_evolution/grid_search/out/all_slurm_small_mutated-%j.out 
 
 source ~/.bashrc
 conda activate embeddings

@@ -3,17 +3,26 @@ import torch
 import pandas as pd
 
 # Specify the parent directory containing the study subfolders
-parent_directory = '/directed_evolution/esm-extract/results_means/'
+parent_directory = '/om/group/abugoot/Projects/Matteo/Github/directed_evolution/esm-extract/results_means/'
 
 # Specify the output directory
-output_directory = '/directed_evolution/esm-extract/results_means/csvs/'
+output_directory = '/om/group/abugoot/Projects/Matteo/Github/directed_evolution/esm-extract/results_means/csvs/'
+
+# Specify subfolders we want to concatenate
+# concatenate_folders = ['t7_pol', 'r2', 'fanzor', 'mlv']
+# concatenate_folders = ['fanzor']
+# concatenate_folders = ["r2"]
+# concatenate_folders = ['zikv_E', 'cov2_S', 'cas12f']
+# concatenate_folders = ['t7_pol_2nd', 't7_pol_3rd', 't7_pol_4th']
+concatenate_folders = ['mlv']
 
 # Iterate over each study subfolder in the parent directory
 for study_folder_name in os.listdir(parent_directory):
-    if study_folder_name == 'brenan':  # Filter for the 'sarkisyan' dataset
+    if study_folder_name in concatenate_folders:
         study_folder_path = os.path.join(parent_directory, study_folder_name)
 
         # Skip non-directory items
+        print(study_folder_path)
         if not os.path.isdir(study_folder_path):
             continue
 
@@ -25,8 +34,8 @@ for study_folder_name in os.listdir(parent_directory):
             if not os.path.isdir(model_folder_path):
                 continue
 
-            # Create an empty dataframe
-            dataframe = pd.DataFrame()
+            # Create a list to store DataFrames
+            dataframes = []
 
             # List all .pt files in the model subfolder
             files = []
@@ -46,12 +55,16 @@ for study_folder_name in os.listdir(parent_directory):
 
                 row_name = label  # Unique row name with label and model name
                 row_data = tensor.tolist()  # Convert the tensor to a list
-                new_row = pd.DataFrame([row_data], index=[row_name])
+                new_df = pd.DataFrame([row_data], index=[row_name])
 
-                # Append the new row to the dataframe
-                dataframe = dataframe.append(new_row)
+                # Append the new DataFrame to the list
+                dataframes.append(new_df)
 
-            # Save the dataframe as a CSV file with the study and model names
-            output_filename = f"{study_folder_name}_{model_folder_name}.csv"
-            output_path = os.path.join(output_directory, output_filename)
-            dataframe.to_csv(output_path)
+            # Concatenate all DataFrames in the list
+            if dataframes:
+                concatenated_df = pd.concat(dataframes)
+
+                # Save the concatenated DataFrame as a CSV file with the study and model names
+                output_filename = f"{study_folder_name}_{model_folder_name}.csv"
+                output_path = os.path.join(output_directory, output_filename)
+                concatenated_df.to_csv(output_path)

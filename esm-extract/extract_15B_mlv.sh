@@ -6,10 +6,10 @@
 #SBATCH --job-name=means
 #SBATCH -n 1 
 #SBATCH -N 1   
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:a100:1
 #SBATCH --cpus-per-task=1  
 #SBATCH --constraint=high-capacity    
-#SBATCH --mem=10gb  
+#SBATCH --mem=200gb  
 #SBATCH --output /om/group/abugoot/Projects/Matteo/Github/directed_evolution/esm-extract/out/means-%j.out 
 
 source ~/.bashrc
@@ -17,18 +17,20 @@ conda activate embeddings
 
 cd  /om/group/abugoot/Projects/Matteo/Github
 
-study_names=("t7_pol" "r2" "fanzor" "mlv")
+study_names=("mlv")
 
-model_names=("esm1b_t33_650M_UR50S" "esm2_t33_650M_UR50D")
+model_names=("/om/group/abugoot/Projects/Matteo/Github/directed_evolution/.cache/torch/hub/checkpoints/esm2_t48_15B_UR50D.pt")
 fasta_path="directed_evolution/data_processing/output/"
 results_path="directed_evolution/esm-extract/results_means/"
 
-repr_layers=33
-toks_per_batch=3000
+repr_layers=48
+toks_per_batch=512
 
 for model_name in "${model_names[@]}"; do
+  # Extracting the model name from the full path
+  model_name_shortened=$(basename "$model_name" .pt)
   for study in "${study_names[@]}"; do
-    command="python3 directed_evolution/esm-extract/extract.py ${model_name} ${fasta_path}${study}.fasta ${results_path}${study}/${model_name} --repr_layers ${repr_layers} --toks_per_batch ${toks_per_batch} --include mean"
+    command="python3 directed_evolution/esm-extract/extract.py ${model_name} ${fasta_path}${study}.fasta ${results_path}${study}/${model_name_shortened} --toks_per_batch ${toks_per_batch} --include mean"
     echo "Running command: ${command}"
     eval "${command}"
   done

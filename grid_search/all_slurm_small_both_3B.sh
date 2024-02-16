@@ -15,7 +15,7 @@
 source ~/.bashrc
 conda activate embeddings
 
-datasets=("esm2_650M_brenan" "esm2_3B_brenan" "esm2_15B_brenan" "esm2_650M_stiffler" "esm2_3B_stiffler" "esm2_15B_stiffler" "esm2_650M_doud" "esm2_3B_doud" "esm2_15B_doud" "esm2_650M_haddox" "esm2_3B_haddox" "esm2_15B_haddox" "esm2_650M_giacomelli" "esm2_3B_giacomelli" "esm2_15B_giacomelli" "esm2_650M_jones" "esm2_3B_jones" "esm2_15B_jones" "esm2_650M_kelsic" "esm2_3B_kelsic" "esm2_15B_kelsic" "esm2_650M_lee" "esm2_3B_lee" "esm2_15B_lee" "esm2_650M_markin" "esm2_3B_markin" "esm2_15B_markin")
+datasets=("esm2_3B_brenan" "esm2_3B_stiffler" "esm2_3B_doud" "esm2_3B_haddox" "esm2_3B_giacomelli" "esm2_3B_jones" "esm2_3B_kelsic" "esm2_3B_lee" "esm2_3B_markin")
 num_simulations=10
 num_iterations=(2 3 4 5 6 7 8 9 10 11)
 measured_var="fitness"
