@@ -15,10 +15,11 @@
 source ~/.bashrc
 conda activate embeddings
 
-datasets=("esm2_15B_brenan" "esm2_15B_stiffler" "esm2_15B_doud" "esm2_15B_haddox" "esm2_15B_giacomelli" "esm2_15B_jones" "esm2_15B_kelsic" "esm2_15B_lee" "esm2_15B_markin" "zikv-E_esm2_t48_15B_UR50D" "cas12f_esm2_t48_15B_UR50D" "cov2-S_esm2_t48_15B_UR50D")
+datasets=("esm2_15B_brenan" "esm2_15B_stiffler")
+    #"esm2_15B_doud" "esm2_15B_haddox" "esm2_15B_giacomelli" "esm2_15B_jones" "esm2_15B_kelsic" "esm2_15B_lee" "esm2_15B_markin" "zikv-E_esm2_t48_15B_UR50D" "cas12f_esm2_t48_15B_UR50D" "cov2-S_esm2_t48_15B_UR50D")
 experiment_name="one_shot"
 num_simulations=5
-num_iterations=(1 2)
+num_iterations=3
 measured_var="fitness"
 learning_strategies="top10"
 num_mutants_per_round=(16 80)
@@ -35,12 +36,12 @@ function run_grid_search() {
     dataset_name=$1
 
     echo "Running ${dataset_name} dataset:" > out/${dataset_name}-${embedding_type_pt}-one_shot.out
-    python3 -u grid_search_v1.2_jl.py \
+    python3 -u grid_search.py \
         --dataset_name ${dataset_name} \
         --experiment_name ${experiment_name} \
         --base_path ../esm-extract/results_means \
         --num_simulations ${num_simulations} \
-        --num_iterations ${num_iterations[*]} \
+        --num_iterations ${num_iterations} \
         --measured_var ${measured_var} \
         --learning_strategies ${learning_strategies} \
         --num_mutants_per_round ${num_mutants_per_round[*]} \

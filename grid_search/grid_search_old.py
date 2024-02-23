@@ -32,14 +32,12 @@ pd.options.mode.chained_assignment = None  # default='warn'
 def create_parser():
     parser = argparse.ArgumentParser(description="Run experiments with different combinations of grid search variables.")
     parser.add_argument("--dataset_name", type=str, help="Name of the esm embeddings csv file of the dataset dataset")
-    parser.add_argument("--experiment_name", type=str, help="Name of the experiment")
     parser.add_argument("--base_path", type=str, help="Base path of the dataset")
     parser.add_argument("--num_simulations", type=int, help="Number of simulations for each parameter combination. Example: 3, 10")
     parser.add_argument("--num_iterations", type=int, nargs="+", help="List of number of iterations. Example: 3 5 10 (must be greater than 1)")
     parser.add_argument("--measured_var", type=str, nargs="+", help="Fitness type to train on. Options: fitness fitness_scaled")
     parser.add_argument("--learning_strategies", type=str, nargs="+", help="Type of learning strategy. Options: random top5bottom5 top10 dist")
     parser.add_argument("--num_mutants_per_round", type=int, nargs="+", help="Number of mutants per round. Example: 8 10 16 32 128")
-    parser.add_argument("--num_final_round_mutants", type=int, help="Number of mutants in final round. Example: 16")
     parser.add_argument("--first_round_strategies", type=str, nargs="+", help="Type of first round strategy. Options: random diverse_medoids representative_hie")
     parser.add_argument("--embedding_types", type=str, nargs="+", help="Types of embeddings to train on. Options: embeddings embeddings_norm embeddings_pca")
     parser.add_argument("--regression_types", type=str, nargs="+", help="Regression types. Options: ridge lasso elasticnet linear neuralnet randomforest gradientboosting")
@@ -243,7 +241,7 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
                              beta_2=0.999, epsilon=1e-08)
     elif regression_type == 'randomforest':
         model = RandomForestRegressor(n_estimators=100, criterion='friedman_mse', max_depth=None, min_samples_split=2,
-                                      min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=1,
+                                      min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features='auto',
                                       max_leaf_nodes=None, min_impurity_decrease=0.0, bootstrap=True, oob_score=False,
                                       n_jobs=None, random_state=1, verbose=0, warm_start=False, ccp_alpha=0.0,
                                       max_samples=None)
@@ -288,35 +286,18 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
     # Calculate additional metrics
     median_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].median()
     top_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].max()
-    top_variant = df_sorted_all.loc[df_sorted_all['y_actual_scaled'] == top_fitness_scaled, 'variant'].values[0]
-
-    #get spearman's rank correlation to actual data
-    spearman_corr = df_sorted_all.loc[:final_round, ['y_pred', 'y_actual']].corr(method='spearman').iloc[0,1]
-
     fitness_binary_percentage = df_sorted_all.loc[:final_round, 'y_actual_binary'].mean()
 
-    return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled,top_variant, fitness_binary_percentage,spearman_corr, df_test
+    return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test
 
 # Function to run n simulations of directed evolution
 def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations, num_iterations, num_mutants_per_round=10, measured_var = 'fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round = 10, first_round_strategy = 'random'):
     output_list = []
 
     if first_round_strategy == 'random' or first_round_strategy == 'diverse_medoids':
-        for i in range(1,num_simulations+1):
+        for i in range(num_simulations):
             labels_one, iteration_one = first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round_strategy=first_round_strategy, random_seed=i)
-            
-            first_round_labels = labels_one[labels_one['iteration'] == 1]["variant"]
-            first_round_top_fitness_scaled = labels_one[labels_one['iteration'] == 1]["fitness_scaled"].max()
-            first_round_top_variant = labels_one.loc[(labels_one['iteration'] == 1) & (labels_one["fitness_scaled"] == first_round_top_fitness_scaled), "variant"].values[0]
-            first_round_fitness_binary_percentage = labels_one[labels_one['iteration'] == 1]["fitness_binary"].mean()
-            first_round_median_fitness_scaled = labels_one[labels_one['iteration'] == 1]["fitness_scaled"].median()
 
-            num_mutants_per_round_list = []
-            first_round_strategy_list = []
-            learning_strategy_list = []
-            regression_type_list = []
-            simulation_list =[]
-            round_list = []
             test_error_list = []
             train_error_list = []
             train_r_squared_list = []
@@ -325,27 +306,6 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
             median_fitness_scaled_list = []
             top_fitness_scaled_list = []
             fitness_binary_percentage_list = []
-            labels_list = []
-            top_variant_list = []
-            spearman_corr_list = []
-            
-            num_mutants_per_round_list.append(num_mutants_per_round)
-            first_round_strategy_list.append(first_round_strategy)
-            learning_strategy_list.append(learning_strategy)
-            regression_type_list.append(regression_type)
-            simulation_list.append(i)
-            round_list.append(1)
-            test_error_list.append("None")
-            train_error_list.append("None")
-            train_r_squared_list.append("None")
-            test_r_squared_list.append("None")
-            alpha_list.append("None")
-            spearman_corr_list.append("None")
-            median_fitness_scaled_list.append(first_round_median_fitness_scaled)
-            top_fitness_scaled_list.append(first_round_top_fitness_scaled)
-            top_variant_list.append(first_round_top_variant)
-            fitness_binary_percentage_list.append(first_round_fitness_binary_percentage)
-            labels_list.append(",".join(first_round_labels))
 
             labels_new = labels_one
             iteration_new = iteration_one
@@ -353,17 +313,11 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
             for j in range(2, num_iterations + 1):
                 iteration_old = iteration_new
 
-                train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, fitness_binary_percentage, spearman_corr, df_test_new = top_layer(
+                train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test_new = top_layer(
                     iter_train=iteration_old['iteration'].unique().tolist(), iter_test=1001,
                     embeddings_pd=embeddings, labels_pd=labels_new,
                     measured_var=measured_var, regression_type=regression_type, top_n=top_n, final_round=final_round)
-            
-                num_mutants_per_round_list.append(num_mutants_per_round)
-                first_round_strategy_list.append(first_round_strategy)
-                learning_strategy_list.append(learning_strategy)
-                regression_type_list.append(regression_type)
-                simulation_list.append(i)
-                round_list.append(j)
+
                 test_error_list.append(test_error)
                 train_error_list.append(train_error)
                 train_r_squared_list.append(train_r_squared)
@@ -371,9 +325,7 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
                 alpha_list.append(alpha)
                 median_fitness_scaled_list.append(median_fitness_scaled)
                 top_fitness_scaled_list.append(top_fitness_scaled)
-                top_variant_list.append(top_variant)
                 fitness_binary_percentage_list.append(fitness_binary_percentage)
-                spearman_corr_list.append(spearman_corr)
 
                 # NOTE: work on alternate 2-n round strategies here
                 if learning_strategy == 'dist':
@@ -385,29 +337,93 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
                     iteration_new_ids.append(df_test_new.sort_values(by='y_pred', ascending=False).tail(int(num_mutants_per_round/2)).variant)
                 elif learning_strategy == 'top10':
                     iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(num_mutants_per_round).variant
-                
-                labels_list.append(",".join(iteration_new_ids))
 
                 iteration_new = pd.DataFrame({'variant': iteration_new_ids, 'iteration': j})
                 iteration_new = iteration_new.append(iteration_old)
                 labels_new = pd.merge(labels, iteration_new, on='variant', how='left')
                 labels_new.iteration[labels_new.iteration.isnull()] = 1001
 
-            df_metrics = pd.DataFrame({'simulation_num':simulation_list,'round_num': round_list, 'num_mutants_per_round': num_mutants_per_round_list, 'first_round_strategy': first_round_strategy_list, 'learning_strategy': learning_strategy_list, 'regression_type': regression_type_list,
-                                    'test_error': test_error_list, 'train_error': train_error_list,
+            df_metrics = pd.DataFrame({'test_error': test_error_list, 'train_error': train_error_list,
                                     'train_r_squared': train_r_squared_list, 'test_r_squared': test_r_squared_list,
                                     'alpha': alpha_list, 'median_fitness_scaled': median_fitness_scaled_list,
                                     'top_fitness_scaled': top_fitness_scaled_list,
-                                    'fitness_binary_percentage': fitness_binary_percentage_list, 'labels': labels_list, "top_variant": top_variant_list, "spearman_corr": spearman_corr_list})
-            
-            output_list.append(df_metrics)        
+                                    'fitness_binary_percentage': fitness_binary_percentage_list})
+
+            output_list.append(df_metrics)
+        
+    else:
+        labels_one, iteration_one = first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round_strategy=first_round_strategy)
+
+        test_error_list = []
+        train_error_list = []
+        train_r_squared_list = []
+        test_r_squared_list = []
+        alpha_list = []
+        median_fitness_scaled_list = []
+        top_fitness_scaled_list = []
+        fitness_binary_percentage_list = []
+
+        labels_new = labels_one
+        iteration_new = iteration_one
+
+        for j in range(2, num_iterations + 1):
+            iteration_old = iteration_new
+
+            train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, fitness_binary_percentage, df_test_new = top_layer(
+                iter_train=iteration_old['iteration'].unique().tolist(), iter_test=1001,
+                embeddings_pd=embeddings, labels_pd=labels_new,
+                measured_var=measured_var, regression_type=regression_type, top_n=top_n, final_round=final_round)
+
+            test_error_list.append(test_error)
+            train_error_list.append(train_error)
+            train_r_squared_list.append(train_r_squared)
+            test_r_squared_list.append(test_r_squared)
+            alpha_list.append(alpha)
+            median_fitness_scaled_list.append(median_fitness_scaled)
+            top_fitness_scaled_list.append(top_fitness_scaled)
+            fitness_binary_percentage_list.append(fitness_binary_percentage)
+
+            # NOTE: work on alternate 2-n round strategies here
+            if learning_strategy == 'dist':
+                iteration_new_ids = df_test_new.sort_values(by='dist_metric', ascending=False).head(num_mutants_per_round).variant
+            elif learning_strategy == 'random':
+                iteration_new_ids = random.sample(list(df_test_new.variant), num_mutants_per_round)
+            elif learning_strategy == 'top5bottom5':
+                iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(int(num_mutants_per_round/2)).variant
+                iteration_new_ids.append(df_test_new.sort_values(by='y_pred', ascending=False).tail(int(num_mutants_per_round/2)).variant)
+            elif learning_strategy == 'top10':
+                iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(num_mutants_per_round).variant
+
+            iteration_new = pd.DataFrame({'variant': iteration_new_ids, 'iteration': j})
+            iteration_new = iteration_new.append(iteration_old)
+            labels_new = pd.merge(labels, iteration_new, on='variant', how='left')
+            labels_new.iteration[labels_new.iteration.isnull()] = 1001
+
+        df_metrics = pd.DataFrame({'test_error': test_error_list, 'train_error': train_error_list,
+                                'train_r_squared': train_r_squared_list, 'test_r_squared': test_r_squared_list,
+                                'alpha': alpha_list, 'median_fitness_scaled': median_fitness_scaled_list,
+                                'top_fitness_scaled': top_fitness_scaled_list,
+                                'fitness_binary_percentage': fitness_binary_percentage_list})
+
+        output_list.append(df_metrics)
+ 
+    return output_list
+
+
+# Function to calculate the mean and standard deviation of each metric across simulations for each learning strategy
+def average_simulations(output_lists):
+    # Concatenate all dataframes from different output lists
+    combined_df = pd.concat(output_lists)
     
-    output_table = pd.concat(output_list)
-    return output_table
+    # Calculate the mean and standard deviation of each metric across simulations for each learning strategy
+    mean_metrics = combined_df.groupby(combined_df.index).mean()
+    std_metrics = combined_df.groupby(combined_df.index).std()
+    
+    return mean_metrics, std_metrics
 
 # Function to run the experiment with different combinations of parameters
-def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_iterations, measured_var, learning_strategies,
-                   num_mutants_per_round, num_final_round_mutants, first_round_strategies, embedding_types, regression_types, file_type, embeddings_type_pt=None):
+def grid_search(dataset_name, base_path, num_simulations, num_iterations, measured_var, learning_strategies,
+                   num_mutants_per_round, first_round_strategies, embedding_types, regression_types, file_type, embeddings_type_pt=None):
     
     # read in dataset
     embeddings, labels, hie_data = read_data(dataset_name, base_path, file_type, embeddings_type_pt)
@@ -447,7 +463,6 @@ def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_i
     print(f"Total combinations: {total_combinations}")
 
     # Initialize the combination count
-    output_list = []
     combination_count = 0
 
     start_time = time.time()
@@ -476,7 +491,7 @@ def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_i
                                 )
 
                                 # run simulations for current combination of parameters
-                                output_table = directed_evolution_simulation(
+                                output_list = directed_evolution_simulation(
                                     labels=labels,
                                     embeddings=embeddings_list[embedding_type],
                                     num_simulations=num_simulations,
@@ -486,34 +501,78 @@ def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_i
                                     measured_var=var,
                                     regression_type=regression_type,
                                     learning_strategy=strategy,
-                                    final_round=num_final_round_mutants,
+                                    final_round=mutants_per_round,
                                     first_round_strategy=first_round_strategy  
                                 )
-                                output_list.append(output_table)
-
+                                mean_metrics, std_metrics = average_simulations(output_list)
+                                output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][first_round_strategy] = (mean_metrics, std_metrics)
 
     end_time = time.time()
     execution_time = end_time - start_time
 
     print(f"Total execution time: {execution_time:.2f} seconds")
 
-    #concat the outputlist into a dataframe
-    df_results = pd.concat(output_list)
+    # Save the mean output across simulations for each combination of parameters
+    rows = []
+    # Iterate over the output_results dictionary and extract the desired information
+    for strategy in learning_strategies:
+        for var in measured_var:
+            for iterations in num_iterations:
+                for mutants_per_round in num_mutants_per_round:
+                    if mutants_per_round == 128 and iterations != 3:
+                        continue  # Skip other iterations when mutants_per_round is 128
+                    for embedding_type in embedding_types:
+                        for regression_type in regression_types:
+                            for first_round_strategy in first_round_strategies:  # Iterate over first_round_strategies
+                                # get the first and last values of the metrics
+                                first_median_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][first_round_strategy][0]['median_fitness_scaled'].iloc[0]
+                                first_top_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][first_round_strategy][0]['top_fitness_scaled'].iloc[0]
+                                first_fitness_binary_percentage = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][first_round_strategy][0]['fitness_binary_percentage'].iloc[0]                        
+                                last_median_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][first_round_strategy][0]['median_fitness_scaled'].iloc[-1]
+                                last_top_fitness_scaled = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][first_round_strategy][0]['top_fitness_scaled'].iloc[-1]                        
+                                last_fitness_binary_percentage = output_results[strategy][var][iterations][mutants_per_round][embedding_type][regression_type][first_round_strategy][0]['fitness_binary_percentage'].iloc[-1]
+
+                                # Create a new row with the experimental setup and the metric
+                                new_row = {
+                                    'num_iterations': iterations,
+                                    'measured_var': var,
+                                    'learning_strategy': strategy,
+                                    'num_mutants_per_round': mutants_per_round,
+                                    'embedding_type': embedding_type,
+                                    'regression_type': regression_type,
+                                    'first_round_strategy': first_round_strategy,  # Add first_round_strategy
+                                    'first_median_fitness_scaled': first_median_fitness_scaled,
+                                    'first_top_fitness_scaled': first_top_fitness_scaled,
+                                    'first_fitness_binary_percentage': first_fitness_binary_percentage,
+                                    'last_top_fitness_scaled': last_top_fitness_scaled,
+                                    'last_median_fitness_scaled': last_median_fitness_scaled,
+                                    'last_fitness_binary_percentage': last_fitness_binary_percentage,
+                                }
+                                # Append the new row to the list of rows
+                                rows.append(new_row)
+
+    # create a dataframe from the list of rows
+    df_results = pd.DataFrame(rows)
+
+
+    # calculate the change in the metrics
+    df_results['change_median_fitness_scaled'] = df_results['last_median_fitness_scaled'] - df_results['first_median_fitness_scaled']
+    df_results['change_top_fitness_scaled'] = df_results['last_top_fitness_scaled'] - df_results['first_top_fitness_scaled']
+    df_results['change_fitness_binary_percentage'] = df_results['last_fitness_binary_percentage'] - df_results['first_fitness_binary_percentage']
 
     # save the dataframe to a csv file using the dataset_name
     if embeddings_type_pt == None:
-        df_results.to_csv(f"results/{dataset_name}_{experiment_name}_results.csv", index=False)
+        df_results.to_csv(f"results/{dataset_name}_results.csv", index=False)
     else:
-        df_results.to_csv(f"results/{dataset_name}_{experiment_name}_{embeddings_type_pt}_results.csv", index=False)
+        df_results.to_csv(f"results/{dataset_name}_{embeddings_type_pt}_results.csv", index=False)
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
     grid_search(
-        args.dataset_name, args.experiment_name, args.base_path, args.num_simulations, args.num_iterations,
-        args.measured_var, args.learning_strategies, args.num_mutants_per_round, args.num_final_round_mutants, 
-        args.first_round_strategies, args.embedding_types, args.regression_types, args.file_type, 
-        args.embeddings_type_pt
+        args.dataset_name, args.base_path, args.num_simulations, args.num_iterations,
+        args.measured_var, args.learning_strategies, args.num_mutants_per_round, args.first_round_strategies,
+        args.embedding_types, args.regression_types, args.file_type, args.embeddings_type_pt
     )
  
 if __name__ == "__main__":
