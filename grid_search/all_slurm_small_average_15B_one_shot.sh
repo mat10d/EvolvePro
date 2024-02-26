@@ -15,15 +15,13 @@
 source ~/.bashrc
 conda activate embeddings
 
-datasets=("esm2_15B_brenan" "esm2_15B_stiffler")
-    #"esm2_15B_doud" "esm2_15B_haddox" "esm2_15B_giacomelli" "esm2_15B_jones" "esm2_15B_kelsic" "esm2_15B_lee" "esm2_15B_markin" "zikv-E_esm2_t48_15B_UR50D" "cas12f_esm2_t48_15B_UR50D" "cov2-S_esm2_t48_15B_UR50D")
+datasets=("esm2_15B_brenan" "esm2_15B_stiffler" "esm2_15B_doud" "esm2_15B_haddox" "esm2_15B_giacomelli" "esm2_15B_jones" "esm2_15B_kelsic" "esm2_15B_lee" "esm2_15B_markin" "zikv-E_esm2_t48_15B_UR50D" "cas12f_esm2_t48_15B_UR50D" "cov2-S_esm2_t48_15B_UR50D")
 experiment_name="one_shot"
-num_simulations=5
-num_iterations=3
+num_simulations=10
+num_iterations=1
 measured_var="fitness"
 learning_strategies="top10"
-num_mutants_per_round=(16 80)
-    #160 500 1000)
+num_mutants_per_round=(16 80 160 500 1000)
 num_final_round_mutants=16
 first_round_strategies="random"
 embedding_types="embeddings"

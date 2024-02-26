@@ -148,7 +148,7 @@ def first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round
         if random_seed is not None:
             np.random.seed(random_seed)  # Use NumPy's random seed for consistent randomization
         random_mutants = np.random.choice(variants_without_WT, size=num_mutants_per_round, replace=False)
-        iteration_one_ids = random_mutants
+        iteration_zero_ids = random_mutants
 
     elif first_round_strategy == 'diverse_medoids':
         # Set random seed
@@ -175,25 +175,26 @@ def first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round
                 selected_medoid = cluster_variants[cluster_medoids[cluster_idx]]
                 selected_mutants.append(selected_medoid)
 
-        iteration_one_ids = selected_mutants
+        iteration_zero_ids = selected_mutants
 
     elif first_round_strategy == 'representative_hie':
-        # iteration_one_ids should be the 0th column of the hie_data DataFrame
-        iteration_one_ids = hie_data.iloc[:, 0].tolist()
+        # iteration_zero_ids should be the 0th column of the hie_data DataFrame
+        iteration_zero_ids = hie_data.iloc[:, 0].tolist()
     else:
         print("Invalid first round search strategy.")
         return None, None
 
     # Create DataFrame for the first round
-    iteration_one = pd.DataFrame({'variant': iteration_one_ids, 'iteration': 1})
+    iteration_zero = pd.DataFrame({'variant': iteration_zero_ids, 'iteration': 0})
     WT = pd.DataFrame({'variant': 'WT', 'iteration': 0}, index=[0])
-    iteration_one = iteration_one.append(WT)
+    iteration_zero = iteration_zero.append(WT)
+    this_round_variants = iteration_zero.variant
 
     # Merge with labels DataFrame and fill null values with 1001
-    labels_one = pd.merge(labels, iteration_one, on='variant', how='left')
+    labels_zero = pd.merge(labels, iteration_zero, on='variant', how='left')
     # labels_one.iteration[labels_one.iteration.isnull()] = 1001
 
-    return labels_one, iteration_one
+    return labels_zero, iteration_zero, this_round_variants
 
 # Active learning function for one iteration
 def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, regression_type='ridge', top_n=None, final_round=10):
@@ -293,85 +294,98 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
 
     df_sorted_all = df_all.sort_values('y_pred', ascending=False).reset_index(drop=True)
 
+    # Get this round variants
+    this_round_variants = df_train.variant
+
     # Calculate additional metrics
     median_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].median()
     top_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].max()
     top_variant = df_sorted_all.loc[df_sorted_all['y_actual_scaled'] == top_fitness_scaled, 'variant'].values[0]
-
-    #get spearman's rank correlation to actual data
+    top_final_round_variants = ",".join(df_sorted_all.loc[:final_round, 'variant'].tolist())
     spearman_corr = df_sorted_all.loc[:final_round, ['y_pred', 'y_actual']].corr(method='spearman').iloc[0,1]
-
     fitness_binary_percentage = df_sorted_all.loc[:final_round, 'y_actual_binary'].mean()
 
-    return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled,top_variant, fitness_binary_percentage,spearman_corr, df_test
+    return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, top_final_round_variants, fitness_binary_percentage, spearman_corr, df_test, this_round_variants
 
 # Function to run n simulations of directed evolution
-def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations, num_iterations, num_mutants_per_round=10, measured_var = 'fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round = 10, first_round_strategy = 'random'):
+def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations, num_iterations, num_mutants_per_round=10, measured_var='fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round=10, first_round_strategy='random'):
     output_list = []
 
-    if first_round_strategy == 'random' or first_round_strategy == 'diverse_medoids':
-        for i in range(1,num_simulations+1):
-            labels_one, iteration_one = first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round_strategy=first_round_strategy, random_seed=i)
-            
-            first_round_labels = labels_one[labels_one['iteration'] == 1]["variant"]
-            first_round_top_fitness_scaled = labels_one[labels_one['iteration'] == 1]["fitness_scaled"].max()
-            first_round_top_variant = labels_one.loc[(labels_one['iteration'] == 1) & (labels_one["fitness_scaled"] == first_round_top_fitness_scaled), "variant"].values[0]
-            first_round_fitness_binary_percentage = labels_one[labels_one['iteration'] == 1]["fitness_binary"].mean()
-            first_round_median_fitness_scaled = labels_one[labels_one['iteration'] == 1]["fitness_scaled"].median()
+    for i in range(1, num_simulations+1):
+        iteration_old = None
 
-            num_mutants_per_round_list = []
-            first_round_strategy_list = []
-            learning_strategy_list = []
-            regression_type_list = []
-            simulation_list =[]
-            round_list = []
-            test_error_list = []
-            train_error_list = []
-            train_r_squared_list = []
-            test_r_squared_list = []
-            alpha_list = []
-            median_fitness_scaled_list = []
-            top_fitness_scaled_list = []
-            fitness_binary_percentage_list = []
-            labels_list = []
-            top_variant_list = []
-            spearman_corr_list = []
-            next_round_variants_list = []
-            next_round_top_predicted_fitness_list = []
-            next_round_top_predicted_fitness_label_list = []
-            
-            num_mutants_per_round_list.append(num_mutants_per_round)
-            first_round_strategy_list.append(first_round_strategy)
-            learning_strategy_list.append(learning_strategy)
-            regression_type_list.append(regression_type)
-            simulation_list.append(i)
-            round_list.append(1)
-            test_error_list.append("None")
-            train_error_list.append("None")
-            train_r_squared_list.append("None")
-            test_r_squared_list.append("None")
-            alpha_list.append("None")
-            spearman_corr_list.append("None")
-            median_fitness_scaled_list.append(first_round_median_fitness_scaled)
-            top_fitness_scaled_list.append(first_round_top_fitness_scaled)
-            top_variant_list.append(first_round_top_variant)
-            fitness_binary_percentage_list.append(first_round_fitness_binary_percentage)
-            labels_list.append(",".join(first_round_labels))
-            next_round_variants_list.append("None")
-            next_round_top_predicted_fitness_list.append("None")
-            next_round_top_predicted_fitness_label_list.append("None")
+        num_mutants_per_round_list = []
+        first_round_strategy_list = []
+        learning_strategy_list = []
+        regression_type_list = []
+        simulation_list =[]
+        round_list = []
+        test_error_list = []
+        train_error_list = []
+        train_r_squared_list = []
+        test_r_squared_list = []
+        alpha_list = []
+        median_fitness_scaled_list = []
+        top_variant_list = []
+        top_final_round_variants_list = []
+        top_fitness_scaled_list = []
+        spearman_corr_list = []
+        fitness_binary_percentage_list = []
+        
+        this_round_variants_list = []
+        next_round_variants_list = []
 
-            labels_new = labels_one
-            iteration_new = iteration_one
+        j = 0    
+        while j <= num_iterations:
+            # Perform mutant selection for the current round
+            if j == 0:
+                labels_new, iteration_new, this_round_variants = first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round_strategy=first_round_strategy, random_seed=i)
+                num_mutants_per_round_list.append(num_mutants_per_round)
+                first_round_strategy_list.append(first_round_strategy)
+                learning_strategy_list.append(learning_strategy)
+                regression_type_list.append(regression_type)
+                simulation_list.append(i)
+                round_list.append(j)
+                test_error_list.append("None")
+                train_error_list.append("None")
+                train_r_squared_list.append("None")
+                test_r_squared_list.append("None")
+                alpha_list.append("None")
+                median_fitness_scaled_list.append("None")
+                top_fitness_scaled_list.append("None")
+                top_variant_list.append("None")
+                top_final_round_variants_list.append("None")
+                fitness_binary_percentage_list.append("None")
+                spearman_corr_list.append("None")
 
-            for j in range(2, num_iterations + 1):
+                this_round_variants_list.append("None")
+                next_round_variants_list.append(",".join(this_round_variants))
+
+                j += 1
+
+            else:
                 iteration_old = iteration_new
+                print("iterations considered", iteration_old)
 
-                train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, fitness_binary_percentage, spearman_corr, df_test_new = top_layer(
+                train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, top_final_round_variants, fitness_binary_percentage, spearman_corr, df_test_new, this_round_variants = top_layer(
                     iter_train=iteration_old['iteration'].unique().tolist(), iter_test=None,
                     embeddings_pd=embeddings, labels_pd=labels_new,
                     measured_var=measured_var, regression_type=regression_type, top_n=top_n, final_round=final_round)
-            
+                # Perform mutant selection for the next round based on the results of the current round
+                if learning_strategy == 'dist':
+                    iteration_new_ids = df_test_new.sort_values(by='dist_metric', ascending=False).head(num_mutants_per_round).variant
+                elif learning_strategy == 'random':
+                    iteration_new_ids = random.sample(list(df_test_new.variant), num_mutants_per_round)
+                elif learning_strategy == 'top5bottom5':
+                    iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(int(num_mutants_per_round / 2)).variant
+                    iteration_new_ids.append(df_test_new.sort_values(by='y_pred', ascending=False).tail(int(num_mutants_per_round / 2)).variant)
+                elif learning_strategy == 'top10':
+                    iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(num_mutants_per_round).variant
+
+                iteration_new = pd.DataFrame({'variant': iteration_new_ids, 'iteration': j})
+                iteration_new = iteration_new.append(iteration_old)
+                labels_new = pd.merge(labels, iteration_new, on='variant', how='left')
+
                 num_mutants_per_round_list.append(num_mutants_per_round)
                 first_round_strategy_list.append(first_round_strategy)
                 learning_strategy_list.append(learning_strategy)
@@ -386,45 +400,25 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
                 median_fitness_scaled_list.append(median_fitness_scaled)
                 top_fitness_scaled_list.append(top_fitness_scaled)
                 top_variant_list.append(top_variant)
+                top_final_round_variants_list.append(top_final_round_variants)
                 fitness_binary_percentage_list.append(fitness_binary_percentage)
                 spearman_corr_list.append(spearman_corr)
 
-                # NOTE: work on alternate 2-n round strategies here
-                if learning_strategy == 'dist':
-                    iteration_new_ids = df_test_new.sort_values(by='dist_metric', ascending=False).head(num_mutants_per_round).variant
-                elif learning_strategy == 'random':
-                    iteration_new_ids = random.sample(list(df_test_new.variant), num_mutants_per_round)
-                elif learning_strategy == 'top5bottom5':
-                    iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(int(num_mutants_per_round/2)).variant
-                    iteration_new_ids.append(df_test_new.sort_values(by='y_pred', ascending=False).tail(int(num_mutants_per_round/2)).variant)
-                elif learning_strategy == 'top10':
-                    iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(num_mutants_per_round).variant
-                
-                iteration_new = pd.DataFrame({'variant': iteration_new_ids, 'iteration': j})
-                iteration_new = iteration_new.append(iteration_old)
-                labels_new = pd.merge(labels, iteration_new, on='variant', how='left')
-                # labels_new.iteration[labels_new.iteration.isnull()] = 1001
-
-                #save labels from this round
-                labels_list.append(",".join(labels_new[labels_new['iteration'] == j]["variant"]))
-                #save labels for next round
+                this_round_variants_list.append(",".join(iteration_old.variant))
                 next_round_variants_list.append(",".join(iteration_new_ids))
-                #save label of top predicted variant of next round?
-                next_round_top_predicted_fitness_label_list.append("".join(df_test_new.sort_values(by='y_pred', ascending=False).head(1).variant))
-                #save fitness of top predicted variant for next round?
-                next_round_top_predicted_fitness_list.append(max(df_test_new.sort_values(by='y_pred', ascending=False).head(num_mutants_per_round).y_pred))
 
-            df_metrics = pd.DataFrame({'simulation_num':simulation_list,'round_num': round_list, 'num_mutants_per_round': num_mutants_per_round_list, 'first_round_strategy': first_round_strategy_list, 'learning_strategy': learning_strategy_list, 'regression_type': regression_type_list,
-                                    'test_error': test_error_list, 'train_error': train_error_list,
-                                    'train_r_squared': train_r_squared_list, 'test_r_squared': test_r_squared_list,
-                                    'alpha': alpha_list, 'median_fitness_scaled': median_fitness_scaled_list,
-                                    'top_fitness_scaled': top_fitness_scaled_list,
-                                    'fitness_binary_percentage': fitness_binary_percentage_list, 'labels': labels_list, "top_variant": top_variant_list, "spearman_corr": spearman_corr_list,
-                                    "next_round_variants": next_round_variants_list, 
-                                    "next_round_top_predicted_variant": next_round_top_predicted_fitness_label_list,
-                                    "next_round_top_predicted_fitness": next_round_top_predicted_fitness_list})
-            output_list.append(df_metrics)         
-    
+                j += 1
+
+            df_metrics = pd.DataFrame({'simulation_num': simulation_list, 'round_num': round_list, 'num_mutants_per_round': num_mutants_per_round_list, 'first_round_strategy': first_round_strategy_list, 'learning_strategy': learning_strategy_list, 'regression_type': regression_type_list,
+                                        'test_error': test_error_list, 'train_error': train_error_list,
+                                        'train_r_squared': train_r_squared_list, 'test_r_squared': test_r_squared_list,
+                                        'alpha': alpha_list, "spearman_corr": spearman_corr_list,
+                                        'median_fitness_scaled': median_fitness_scaled_list, 'top_fitness_scaled': top_fitness_scaled_list, 'fitness_binary_percentage': fitness_binary_percentage_list, 
+                                        "top_variant": top_variant_list, "top_final_round_variants": top_final_round_variants_list, 
+                                        "this_round_variants": this_round_variants_list, "next_round_variants": next_round_variants_list})
+        output_list.append(df_metrics)
+
+
     output_table = pd.concat(output_list)
     return output_table
 
