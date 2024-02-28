@@ -15,7 +15,8 @@
 source ~/.bashrc
 conda activate embeddings
 
-datasets=("esm2_15B_brenan" "esm2_15B_stiffler" "esm2_15B_doud" "esm2_15B_haddox" "esm2_15B_giacomelli" "esm2_15B_jones" "esm2_15B_kelsic" "esm2_15B_lee" "esm2_15B_markin" "zikv-E_esm2_t48_15B_UR50D" "cas12f_esm2_t48_15B_UR50D" "cov2-S_esm2_t48_15B_UR50D")
+#datasets=("esm2_15B_brenan" "esm2_15B_stiffler" "esm2_15B_doud" "esm2_15B_haddox" "esm2_15B_giacomelli" "esm2_15B_jones" "esm2_15B_kelsic" "esm2_15B_lee" "esm2_15B_markin")
+datasets=("esm2_15B_lee" "esm2_15B_markin")
 experiment_name="one_shot"
 num_simulations=10
 num_iterations=1
