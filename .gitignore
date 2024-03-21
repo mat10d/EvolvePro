@@ -1,15 +1,16 @@
 *.DS_Store
-esm-extract/results_means
-esm-extract/out
+extract/esm/results_means
+extract/esm/out
+extract/one-hot/results
+extract/one-hot/out
 
 top-layer-metrics/across_rounds/*.csv
 
 grid_search/results
 grid_search/out
-grid_search/plots
+grid_search/old
 
-top-layer-metrics/across_rounds/first_round
-top-layer-metrics/across_rounds/results
+top-layer-metrics/across_rounds/old
 
 efficient-evolution
 

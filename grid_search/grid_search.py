@@ -51,8 +51,13 @@ def create_parser():
 def read_data(dataset_name, base_path, file_type, first_round_strategies, embeddings_type='both'):
     # Construct the file paths
     if file_type == "csvs":
-        labels_file = os.path.join(base_path, 'labels', dataset_name.split('_')[0] + '_labels.csv')
-        hie_file = os.path.join(base_path, 'hie_temp', dataset_name.split('_')[0] + '.csv')
+        split_name = dataset_name.split('_')
+        if len(split_name[1]) == 1:
+            dataset_name_label = split_name[0] + '_' + split_name[1]
+        else:
+            dataset_name_label = split_name[0]
+        labels_file = os.path.join(base_path, 'labels', dataset_name_label + '_labels.csv')
+        hie_file = os.path.join(base_path, 'hie_temp', dataset_name_label + '.csv')
         embeddings_file = os.path.join(base_path, 'csvs', dataset_name + '.csv')
         # Read in mean embeddings across all rounds
         embeddings = pd.read_csv(embeddings_file, index_col=0)
