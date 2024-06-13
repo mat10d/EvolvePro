@@ -10,12 +10,12 @@
 #SBATCH --cpus-per-task=1  
 #SBATCH --constraint=high-capacity    
 #SBATCH --mem=200gb  
-#SBATCH --output /om/group/abugoot/Projects/Matteo/Github/directed_evolution/extract/esm/out/means-%j.out 
+#SBATCH --output /orcd/archive/abugoot/001/Projects/Matteo/Github/directed_evolution/extract/esm/out/means-%j.out 
 
 source ~/.bashrc
 conda activate embeddings
 
-cd  /om/group/abugoot/Projects/Matteo/Github
+cd  /orcd/archive/abugoot/001/Projects/Matteo/Github
 
 study_names=("t7_pol")
 

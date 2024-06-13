@@ -10,9 +10,14 @@ grid_search/results/
 grid_search/out/
 grid_search/old/
 
-top-layer-metrics/across_rounds/old/
+extract/efficient-evolution/
+extract/ankh/
+extract/protein_bert/
+extract/prottrans/
+extract/unirep/
 
-efficient-evolution/
+
+top-layer-metrics/across_rounds/old/
 
 notebooks/results_means/
 notebooks/t7/pts/
@@ -23,6 +28,7 @@ notebooks/t7/csvs/
 notebooks/mmfnuc/csvs/
 notebooks/r2/csvs/
 notebooks/mlv/csvs/
+notebooks/psacas12f/csvs/
 
 data_processing/wet_lab/
 data_processing/dataframes_VEP/

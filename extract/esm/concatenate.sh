@@ -10,7 +10,7 @@
 #SBATCH --cpus-per-task=1  
 ##SBATCH --constraint=high-capacity    
 #SBATCH --mem=10gb  
-#SBATCH --output /om/group/abugoot/Projects/Matteo/Github/directed_evolution/extract/esm/out/concatenate-%j.out 
+#SBATCH --output /orcd/archive/abugoot/001/Projects/Matteo/Github/directed_evolution/extract/esm/out/concatenate-%j.out 
 
 source ~/.bashrc
 conda activate embeddings

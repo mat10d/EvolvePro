@@ -121,31 +121,42 @@ def read_data(dataset_name, base_path, file_type, first_round_strategies, embedd
 
 # Function to scale the embeddings in the dataframe
 def scale_embeddings(embeddings_df):
+    # Store the row indices
+    indices = embeddings_df.index
     
     scaler = StandardScaler()
     scaled_embeddings = scaler.fit_transform(embeddings_df)
-
-    scaled_embeddings_df = pd.DataFrame(scaled_embeddings)
-
+    
+    # Reattach the row indices to the scaled embeddings
+    scaled_embeddings_df = pd.DataFrame(scaled_embeddings, index=indices)
+    
     return scaled_embeddings_df
 
 # Perform PCA on the embeddings
-def pca_embeddings(embeddings_df, labels_df, dataset_name, n_components=8):
+def pca_embeddings(embeddings_df, n_components=10):
+    # Store the row indices
+    indices = embeddings_df.index
+    
     # Perform PCA on the embeddings
-    pca = PCA(n_components=50)
+    pca = PCA(n_components=n_components)
     embeddings_pca = pca.fit_transform(embeddings_df)
     # Get the embeddings for the top n_components
     embeddings_pca = embeddings_pca[:, :n_components]
-    # Convert embeddings to a dataframe
-    embeddings_pca_df = pd.DataFrame(embeddings_pca, columns=[f'PCA {i}' for i in range(1, n_components + 1)])
-
+    
+    # Convert embeddings to a dataframe and reattach the row indices
+    embeddings_pca_df = pd.DataFrame(embeddings_pca, index=indices, columns=[f'PCA {i}' for i in range(1, n_components + 1)])
+    
     return embeddings_pca_df
 
 # Function for selecting mutants in the first round
-def first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round_strategy='random', random_seed=None):
+def first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round_strategy='random', embedding_type = None,random_seed=None):
 
     # Filter out 'WT' variant from labels
+    print("Starting labels length:", len(labels))
+
     variants_without_WT = labels.variant[labels.variant != 'WT']
+
+    print("Starting non-wt length:", len(variants_without_WT))
 
     # Perform random first round search strategy
     if first_round_strategy == 'random':
@@ -160,28 +171,31 @@ def first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round
         if random_seed is not None:
             np.random.seed(random_seed)  # Use NumPy's random seed for consistent randomization
         num_clusters = num_mutants_per_round
-        
-        # Perform PCA with 100 dimensions
-        pca = PCA(n_components=100)
-        pca_embeddings = pca.fit_transform(embeddings)
-        pca_embeddings_reduced = pca_embeddings[:, :2]
-        
-        # Perform K-medoids clustering on PCA embeddings
+
+        # Remove 'WT' variant from embeddings
+        print("embeddings:", len(embeddings))
+        if 'WT' in embeddings.index:
+            embeddings_without_WT = embeddings.drop('WT')
+        else:
+            embeddings_without_WT = embeddings.copy()
+
+        print("embeddings without wildtype:", len(embeddings_without_WT))
+
+        # Perform PCA with 10 dimensions
+        if embedding_type != 'embeddings_pca':
+            print("Performing PCA on embeddings")
+            pca = PCA(n_components=10)
+            pca_embeddings = pca.fit_transform(embeddings_without_WT)
+            pca_embeddings_reduced = pca_embeddings[:, :10]
+        else:
+            pca_embeddings_reduced = embeddings_without_WT
+      
+        # Perform K-medoids clustering on PCA embeddings, select medoids as the first round
         clusters = KMedoids(n_clusters=num_clusters, metric='euclidean', random_state=random_seed).fit(pca_embeddings_reduced)
         cluster_medoids = clusters.medoid_indices_
-        cluster_labels = clusters.labels_
-
-        # Select one medoid per cluster
-        selected_mutants = []
-        for cluster_idx in range(num_clusters):
-            cluster_variants = variants_without_WT[cluster_labels == cluster_idx]
-            if len(cluster_variants) > 0:
-                # Select the medoid variant from the cluster
-                selected_medoid = cluster_variants[cluster_medoids[cluster_idx]]
-                selected_mutants.append(selected_medoid)
-
+        selected_mutants = embeddings_without_WT.index[cluster_medoids].tolist()
         iteration_zero_ids = selected_mutants
-
+        
     elif first_round_strategy == 'representative_hie':
         # iteration_zero_ids should be the 0th column of the hie_data DataFrame
         iteration_zero_ids = hie_data.iloc[:, 0].tolist()
@@ -313,7 +327,7 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
     return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, top_final_round_variants, fitness_binary_percentage, spearman_corr, df_test, this_round_variants
 
 # Function to run n simulations of directed evolution
-def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations, num_iterations, num_mutants_per_round=10, measured_var='fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round=10, first_round_strategy='random'):
+def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations, num_iterations, num_mutants_per_round=10, measured_var='fitness', regression_type='ridge', learning_strategy='top10', top_n=None, final_round=10, first_round_strategy='random', embedding_type=None):
     output_list = []
 
     for i in range(1, num_simulations+1):
@@ -321,8 +335,10 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
 
         num_mutants_per_round_list = []
         first_round_strategy_list = []
+        measured_var_list = []
         learning_strategy_list = []
         regression_type_list = []
+        embedding_type_list = []
         simulation_list =[]
         round_list = []
         test_error_list = []
@@ -344,11 +360,13 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
         while j <= num_iterations:
             # Perform mutant selection for the current round
             if j == 0:
-                labels_new, iteration_new, this_round_variants = first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round_strategy=first_round_strategy, random_seed=i)
+                labels_new, iteration_new, this_round_variants = first_round(labels, embeddings, hie_data, num_mutants_per_round, first_round_strategy=first_round_strategy, embedding_type=embedding_type, random_seed=i)
                 num_mutants_per_round_list.append(num_mutants_per_round)
                 first_round_strategy_list.append(first_round_strategy)
+                measured_var_list.append(measured_var)
                 learning_strategy_list.append(learning_strategy)
                 regression_type_list.append(regression_type)
+                embedding_type_list.append(embedding_type)                
                 simulation_list.append(i)
                 round_list.append(j)
                 test_error_list.append("None")
@@ -393,8 +411,10 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
 
                 num_mutants_per_round_list.append(num_mutants_per_round)
                 first_round_strategy_list.append(first_round_strategy)
+                measured_var_list.append(measured_var)
                 learning_strategy_list.append(learning_strategy)
                 regression_type_list.append(regression_type)
+                embedding_type_list.append(embedding_type)
                 simulation_list.append(i)
                 round_list.append(j)
                 test_error_list.append(test_error)
@@ -414,13 +434,30 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
 
                 j += 1
 
-            df_metrics = pd.DataFrame({'simulation_num': simulation_list, 'round_num': round_list, 'num_mutants_per_round': num_mutants_per_round_list, 'first_round_strategy': first_round_strategy_list, 'learning_strategy': learning_strategy_list, 'regression_type': regression_type_list,
-                                        'test_error': test_error_list, 'train_error': train_error_list,
-                                        'train_r_squared': train_r_squared_list, 'test_r_squared': test_r_squared_list,
-                                        'alpha': alpha_list, "spearman_corr": spearman_corr_list,
-                                        'median_fitness_scaled': median_fitness_scaled_list, 'top_fitness_scaled': top_fitness_scaled_list, 'fitness_binary_percentage': fitness_binary_percentage_list, 
-                                        "top_variant": top_variant_list, "top_final_round_variants": top_final_round_variants_list, 
-                                        "this_round_variants": this_round_variants_list, "next_round_variants": next_round_variants_list})
+            df_metrics = pd.DataFrame({
+                'simulation_num': simulation_list, 
+                'round_num': round_list, 
+                'num_mutants_per_round': num_mutants_per_round_list, 
+                'first_round_strategy': first_round_strategy_list, 
+                'measured_var': measured_var_list, 
+                'learning_strategy': learning_strategy_list, 
+                'regression_type': regression_type_list,
+                'embedding_type': embedding_type_list,
+                'test_error': test_error_list, 
+                'train_error': train_error_list,
+                'train_r_squared': train_r_squared_list, 
+                'test_r_squared': test_r_squared_list,
+                'alpha': alpha_list, 
+                "spearman_corr": spearman_corr_list,
+                'median_fitness_scaled': median_fitness_scaled_list, 
+                'top_fitness_scaled': top_fitness_scaled_list, 
+                'fitness_binary_percentage': fitness_binary_percentage_list, 
+                "top_variant": top_variant_list, 
+                "top_final_round_variants": top_final_round_variants_list, 
+                "this_round_variants": this_round_variants_list, 
+                "next_round_variants": next_round_variants_list
+            })
+
         output_list.append(df_metrics)
 
 
@@ -438,7 +475,7 @@ def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_i
     embeddings_norm = scale_embeddings(embeddings)
 
     # generate embeddings_pca
-    embeddings_pca = pca_embeddings(embeddings, labels, dataset_name, n_components=8)
+    embeddings_pca = pca_embeddings(embeddings, n_components=10)
 
     # save the embeddings in a list    
     embeddings_list = {
@@ -501,7 +538,8 @@ def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_i
                                     regression_type=regression_type,
                                     learning_strategy=strategy,
                                     final_round=num_final_round_mutants,
-                                    first_round_strategy=first_round_strategy  
+                                    first_round_strategy=first_round_strategy,
+                                    embedding_type=embedding_type
                                 )
                                 print(
                                     f"Progress: {combination_count}/{total_combinations} "

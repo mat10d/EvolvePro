@@ -3,74 +3,63 @@
 # One leading hash ahead of the word SBATCH is not a comment, but two are.
 #SBATCH --time=48:00:00 
 ##SBATCH -x node[110]
-#SBATCH --job-name=rounds_esm1b
+#SBATCH --job-name=full_grid_search_15B_average
 #SBATCH -n 1 
 #SBATCH -N 1   
 ##SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=1  
 ##SBATCH --constraint=high-capacity    
-#SBATCH --mem=4gb  
-#SBATCH --output /om/group/abugoot/Projects/Matteo/simulate/out/brenan-%j.out 
+#SBATCH --mem=20gb  
+#SBATCH --output /om/group/abugoot/Projects/Matteo/Github/directed_evolution/grid_search/out/full_grid_search_15B_average-%j.out 
 
 source ~/.bashrc
 conda activate embeddings
 
-# 1) Run full grid search on esm1b mean embeddings
-echo "Running Brenan dataset:" > out/brenan_esm1b-hc.out
-python3 -u grid_search.py \
-    --dataset_name brenan_esm1b_t33_650M_UR50S \
-    --base_path ../esm-extract/results_means \
-    --num_simulations 3 \
-    --num_iterations 3 5 10 \
-    --measured_var fitness fitness_scaled \
-    --learning_strategies random top5bottom5 top10 dist \
-    --num_mutants_per_round 8 10 16 32 128 \
-    --embedding_types embeddings embeddings_norm embeddings_pca \
-    --regression_types ridge lasso elasticnet linear neuralnet randomforest gradientboosting \
-    >> out/brenan_esm1b-hc.out
-echo "Done running Brenan dataset:" >> out/brenan_esm1b-hc.out
+names=("brenan" "stiffler" "doud" "haddox" "giacomelli" "jones" "kelsic" "lee" "markin" "zikv_E" "cas12f" "cov2_S")
+datasets=()
 
-# 2) Run full grid search on esm2 mean embeddings
-echo "Running Brenan dataset:" > out/brenan_esm2-hc.out
-python3 -u grid_search.py \
-    --dataset_name brenan_esm2_t33_650M_UR50D \
-    --base_path ../esm-extract/results_means \
-    --num_simulations 3 \
-    --num_iterations 3 5 10 \
-    --measured_var fitness fitness_scaled \
-    --learning_strategies random top5bottom5 top10 dist \
-    --num_mutants_per_round 8 10 16 32 128 \
-    --embedding_types embeddings embeddings_norm embeddings_pca \
-    --regression_types ridge lasso elasticnet linear neuralnet randomforest gradientboosting \
-    >> out/brenan_esm2-hc.out
-echo "Done running Brenan dataset:" >> out/brenan_esm2-hc.out
+for name in "${names[@]}"; do
+    datasets+=("${name}_esm2_t48_15B_UR50D")
+done
 
-# 3) Run small grid search on esm1b mean embeddings to see how performance changes over rounds
-echo "Running Brenan dataset:" > out/brenan_esm1b-hc_small.out
-python3 -u grid_search.py \
-    --dataset_name brenan_esm1b_t33_650M_UR50S \
-    --base_path ../esm-extract/results_means \
-    --num_simulations 10 \
-    --num_iterations 2 3 4 5 6 7 8 9 10 11 \
-    --measured_var fitness \
-    --learning_strategies top10 \
-    --num_mutants_per_round 16 \
-    --embedding_types embeddings \
-    --regression_types randomforest \
-    >> out/brenan_esm1b-hc_small.out
-echo "Done running Brenan dataset:" >> out/brenan_esm1b-hc_small.out
+experiment_name="full_grid_search_15B_average"
+num_simulations=10
+num_iterations=10
+measured_var=("fitness" "fitness_scaled")
+learning_strategies=("random" "top5bottom5" "top10" "dist")
+num_mutants_per_round=16
+num_final_round_mutants=16
+first_round_strategies=("random" "diverse_medoids")
+embedding_types=("embeddings" "embeddings_norm" "embeddings_pca")
+regression_types=("ridge" "lasso" "elasticnet" "linear" "neuralnet" "randomforest" "gradientboosting")
+file_type="csvs"
+embedding_type_pt="average"
 
-# 4) Run small grid search on esm2 mean embeddings to see how performance changes over rounds
-echo "Running Brenan dataset:" > out/brenan_esm2-hc_small.out
-python3 -u grid_search.py \
-    --dataset_name brenan_esm2_t33_650M_UR50D \
-    --base_path ../esm-extract/results_means \
-    --num_simulations 10 \
-    --num_iterations 2 3 4 5 6 7 8 9 10 11 \
-    --measured_var fitness \
-    --learning_strategies top10 \
-    --num_mutants_per_round 16 \
-    --embedding_types embeddings \
-    --regression_types randomforest \
-    >> out/brenan_esm2-hc_small.out
-echo "Done running Brenan dataset:" >> out/brenan_esm2-hc_small.out
+# Function to run grid search for a given dataset
+function run_grid_search() {
+    dataset_name=$1
+
+    echo "Running ${dataset_name} dataset:" > out/${dataset_name}-${embedding_type_pt}-esm2_15B_10_rounds.out
+    python3 -u grid_search.py \
+        --dataset_name ${dataset_name} \
+        --experiment_name ${experiment_name} \
+        --base_path ../extract/esm/results_means \
+        --num_simulations ${num_simulations} \
+        --num_iterations ${num_iterations} \
+        --measured_var ${measured_var} \
+        --learning_strategies ${learning_strategies} \
+        --num_mutants_per_round ${num_mutants_per_round[*]} \
+        --num_final_round_mutants ${num_final_round_mutants} \
+        --first_round_strategies ${first_round_strategies} \
+        --embedding_types ${embedding_types} \
+        --regression_types ${regression_types} \
+        --file_type ${file_type} \
+        --embeddings_type_pt ${embedding_type_pt} \
+        >> out/${dataset_name}-${embedding_type_pt}-esm2_15B_10_rounds.out
+    echo "Done running ${dataset_name} dataset:" >> out/${dataset_name}-${embedding_type_pt}-esm2_15B_10_rounds.out
+}
+
+# Loop over datasets
+for dataset in "${datasets[@]}"; do
+    run_grid_search ${dataset}
+done

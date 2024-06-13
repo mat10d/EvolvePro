@@ -83,21 +83,36 @@ num_mutants_per_round,round_num,median_fitness_scaled_mean,median_fitness_scaled
 160.0,1.0,0.1072650929873201,0.029944786291398778,0.5530933528594185,0.20174541223148773,0.5529411764705883,0.14462030521243746,lee,pre-training: 160 mutants
 500.0,1.0,0.24196298689338974,0.04439136667956339,0.682208808722222,0.18893635706587,0.9058823529411765,0.09685560027630166,lee,pre-training: 500 mutants
 1000.0,1.0,0.3391344831622665,0.0635916412042194,0.7189786161698363,0.21360752841353092,0.9882352941176471,0.024802177726810884,lee,pre-training: 1000 mutants
-,,,,,,0.22,,jones,efficient-evolution
-,,,,,,0.4,,stiffler,efficient-evolution
-,,,,,,0.23,,haddox,efficient-evolution
-,,,,,,0.16,,doud,efficient-evolution
-,,,,,,0.31,,lee,efficient-evolution
-,,,,,,0.5,,kelsic,efficient-evolution
-,,,,,,0.077,,brenan,efficient-evolution
-,,,,,,0.12,,giacomelli,efficient-evolution
-,,,,,,0.2,,markin,efficient-evolution
-,,,,,,0.12,,jones,background
-,,,,,,0.079,,stiffler,background
-,,,,,,0.058,,haddox,background
-,,,,,,0.06,,doud,background
-,,,,,,0.066,,lee,background
-,,,,,,0.22,,kelsic,background
-,,,,,,0.011,,brenan,background
-,,,,,,0.12,,giacomelli,background
-,,,,,,0.034,,markin,background
+,,,,,,0.2444444444444444,,jones,efficient-evolution expanded
+,,,,,,0.2098765432098765,,stiffler,efficient-evolution expanded
+,,,,,,0.0114942528735632,,brenan,efficient-evolution expanded
+,,,,,,0.3928571428571428,,kelsic,efficient-evolution expanded
+,,,,,,0.1359223300970873,,haddox,efficient-evolution expanded
+,,,,,,0.088235294117647,,doud,efficient-evolution expanded
+,,,,,,0.2105263157894736,,lee,efficient-evolution expanded
+,,,,,,0.074074074074074,,giacomelli,efficient-evolution expanded
+,,,,,,0.1428571428571428,,markin,efficient-evolution expanded
+,,,,,,0.2846153846153846,,cas12f,efficient-evolution expanded
+,,,,,,0.1162790697674418,,zikv_E,efficient-evolution expanded
+,,,,,,0.0,,cov2_S,efficient-evolution expanded
+,,,,,,0.2222222222222222,,jones,efficient-evolution default
+,,,,,,0.4,,stiffler,efficient-evolution default
+,,,,,,0.2258064516129032,,haddox,efficient-evolution default
+,,,,,,0.15625,,doud,efficient-evolution default
+,,,,,,0.3529411764705882,,lee,efficient-evolution default
+,,,,,,0.5,,kelsic,efficient-evolution default
+,,,,,,0.0769230769230769,,brenan,efficient-evolution default
+,,,,,,0.1176470588235294,,giacomelli,efficient-evolution default
+,,,,,,0.2,,markin,efficient-evolution default
+,,,,,,0.1171794871794871,,jones,background
+,,,,,,0.0789473684210526,,stiffler,background
+,,,,,,0.058151286636088,,haddox,background
+,,,,,,0.0601903695408734,,doud,background
+,,,,,,0.0663938999442068,,lee,background
+,,,,,,0.222953216374269,,kelsic,background
+,,,,,,0.0113069016152716,,brenan,background
+,,,,,,0.1215091299677765,,giacomelli,background
+,,,,,,0.0336215177713736,,markin,background
+,,,,,,0.1808108788718207,,cas12f,background
+,,,,,,0.0366503080296543,,zikv_E,background
+,,,,,,0.1184277692700357,,cov2_S,background

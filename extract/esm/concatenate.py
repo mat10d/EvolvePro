@@ -3,13 +3,15 @@ import torch
 import pandas as pd
 
 # Specify the parent directory containing the study subfolders
-parent_directory = '/om/group/abugoot/Projects/Matteo/Github/directed_evolution/extract/esm/results_means/'
+parent_directory = '/orcd/archive/abugoot/001/Projects/Matteo/Github/directed_evolution/extract/esm/results_means/'
 
 # Specify the output directory
-output_directory = '/om/group/abugoot/Projects/Matteo/Github/directed_evolution/extract/esm/results_means/csvs/'
+output_directory = '/orcd/archive/abugoot/001/Projects/Matteo/Github/directed_evolution/extract/esm/results_means/csvs/'
 
 # Specify subfolders we want to concatenate
-concatenate_folders = ["brenan", "jones", "stiffler", "haddox", "doud", "giacomelli", "kelsic", "lee", "markin", "cas12f", "cov2_S", "zikv_E"]
+# concatenate_folders = ["brenan", "jones", "stiffler", "haddox", "doud", "giacomelli", "kelsic", "lee", "markin", "cas12f", "cov2_S", "zikv_E"]
+concatenate_folders = ["mlv_2nd_2", "mlv_3rd_2", "mlv_4th_2", "mlv_5th_2"]
+
 
 # Iterate over each study subfolder in the parent directory
 for study_folder_name in os.listdir(parent_directory):
