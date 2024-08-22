@@ -10,7 +10,7 @@
 #SBATCH --cpus-per-task=1  
 ##SBATCH --constraint=high-capacity    
 #SBATCH --mem=20gb  
-#SBATCH --output /om/group/abugoot/Projects/Matteo/Github/directed_evolution/grid_search/out/esm2_15B_10_rounds-%j.out 
+#SBATCH --output /orcd/archive/abugoot/001/Projects/Matteo/Github/directed_evolution/grid_search/out/esm2_15B_10_rounds-%j.out 
 
 source ~/.bashrc
 conda activate embeddings

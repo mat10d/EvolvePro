@@ -321,7 +321,7 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
     top_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].max()
     top_variant = df_sorted_all.loc[df_sorted_all['y_actual_scaled'] == top_fitness_scaled, 'variant'].values[0]
     top_final_round_variants = ",".join(df_sorted_all.loc[:final_round, 'variant'].tolist())
-    spearman_corr = df_sorted_all.loc[:final_round, ['y_pred', 'y_actual']].corr(method='spearman').iloc[0,1]
+    spearman_corr = df_sorted_all[['y_pred', 'y_actual']].corr(method='spearman').iloc[0, 1]
     fitness_binary_percentage = df_sorted_all.loc[:final_round, 'y_actual_binary'].mean()
 
     return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, top_final_round_variants, fitness_binary_percentage, spearman_corr, df_test, this_round_variants
