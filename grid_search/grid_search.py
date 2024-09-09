@@ -41,7 +41,7 @@ def create_parser():
     parser.add_argument("--num_mutants_per_round", type=int, nargs="+", help="Number of mutants per round. Example: 8 10 16 32 128")
     parser.add_argument("--num_final_round_mutants", type=int, help="Number of mutants in final round. Example: 16")
     parser.add_argument("--first_round_strategies", type=str, nargs="+", help="Type of first round strategy. Options: random diverse_medoids representative_hie")
-    parser.add_argument("--embedding_types", type=str, nargs="+", help="Types of embeddings to train on. Options: embeddings embeddings_norm embeddings_pca")
+    parser.add_argument("--embedding_types", type=str, nargs="+", help="Types of embeddings to train on. Options: embeddings embeddings_pca")
     parser.add_argument("--regression_types", type=str, nargs="+", help="Regression types. Options: ridge lasso elasticnet linear neuralnet randomforest gradientboosting")
     parser.add_argument("--file_type", type=str, help="Type of file to read. Options: csvs pts")
     parser.add_argument("--embeddings_type_pt", type=str, help="Type of pytorch embeddings to read. Options: average mutated both")
@@ -118,19 +118,6 @@ def read_data(dataset_name, base_path, file_type, first_round_strategies, embedd
 
     # return embeddings and labels
     return embeddings, labels, hie_data
-
-# Function to scale the embeddings in the dataframe
-def scale_embeddings(embeddings_df):
-    # Store the row indices
-    indices = embeddings_df.index
-    
-    scaler = StandardScaler()
-    scaled_embeddings = scaler.fit_transform(embeddings_df)
-    
-    # Reattach the row indices to the scaled embeddings
-    scaled_embeddings_df = pd.DataFrame(scaled_embeddings, index=indices)
-    
-    return scaled_embeddings_df
 
 # Perform PCA on the embeddings
 def pca_embeddings(embeddings_df, n_components=10):
@@ -471,16 +458,18 @@ def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_i
     # read in dataset
     embeddings, labels, hie_data = read_data(dataset_name, base_path, file_type, embeddings_type_pt)
 
-    # scale embeddings
-    embeddings_norm = scale_embeddings(embeddings)
-
     # generate embeddings_pca
     embeddings_pca = pca_embeddings(embeddings, n_components=10)
+
+    # generate embeddings_pca for a variety of n_components
+    embeddings_pca_2 = pca_embeddings(embeddings, n_components=2)
+    embeddings_pca_3 = pca_embeddings(embeddings, n_components=3)
+    embeddings_pca_4 = pca_embeddings(embeddings, n_components=4)
+
 
     # save the embeddings in a list    
     embeddings_list = {
         'embeddings': embeddings,
-        'embeddings_norm': embeddings_norm,
         'embeddings_pca': embeddings_pca
     }
 
