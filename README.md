@@ -29,7 +29,7 @@ This output is not here due to size constraints, but can be found at: https://ww
 * measured_var: List of strings indicating the fitness type to train on. Choose from: fitness, fitness_scaled.
 * learning_strategies: List of strings representing the type of learning strategy to use. Choose from: random, top5bottom5, top10, dist.
 * num_mutants_per_round: List of integers representing the number of mutants per round. Must be a positive integer.
-* embedding_types: List of strings representing the types of embeddings to train on. Choose from: embeddings, embeddings_norm, embeddings_pca.
+* embedding_types: List of strings representing the types of embeddings to train on. Choose from: embeddings, embeddings_pca.
 * regression_types: List of strings representing the regression types for the ML models. Choose from: ridge, lasso, elasticnet, linear, neuralnet, randomforest, gradientboosting.
 
 The `brenan_[].sh` files are simple OpenMind/command line compatible bash files for running the above simulations, with examples for a large scale grid search (1,2), and surveying improvement across rounds (3,4).

@@ -461,12 +461,6 @@ def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_i
     # generate embeddings_pca
     embeddings_pca = pca_embeddings(embeddings, n_components=10)
 
-    # generate embeddings_pca for a variety of n_components
-    embeddings_pca_2 = pca_embeddings(embeddings, n_components=2)
-    embeddings_pca_3 = pca_embeddings(embeddings, n_components=3)
-    embeddings_pca_4 = pca_embeddings(embeddings, n_components=4)
-
-
     # save the embeddings in a list    
     embeddings_list = {
         'embeddings': embeddings,

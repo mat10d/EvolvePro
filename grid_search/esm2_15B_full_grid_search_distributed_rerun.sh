@@ -37,7 +37,7 @@ function run_grid_search() {
         --num_mutants_per_round 16 \
         --num_final_round_mutants 16 \
         --first_round_strategies "random" "diverse_medoids" \
-        --embedding_types "embeddings" "embeddings_norm" "embeddings_pca" \
+        --embedding_types "embeddings" "embeddings_pca" \
         --regression_types "ridge" "lasso" "elasticnet" "linear" "neuralnet" "randomforest" "gradientboosting" \
         --file_type "csvs" \
         --embeddings_type_pt "average" \
