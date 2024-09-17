@@ -10,7 +10,7 @@ There are two anaconda environments (esm2.yml and embedding.yml) to download and
 4. Run toplayer.sh which takes in the experimental results and predicts the top 10 mutations for subsequent rounds testing.
 5. Clone and test the predicted mutations and feed the data back in by appending the next round results to the experimental file by re-running toplayer.sh to generate more mutants.
 
-# directed_evolution
+# Further finetuning of the model and reproducing the data in Jiang et al 2024
 
 The order of analysis is specified below. This is a rough repo, but overall describes key steps undertaken in the analysis. We include the Brenan MAPK1 DMS experiment as a reference.
 
