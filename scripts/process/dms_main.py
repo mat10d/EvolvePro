@@ -1,7 +1,5 @@
 import os
-import pandas as pd
-import numpy as np
-from src.process.dms_process import *
+from evolvepro.process.dms_process import *
 
 # Find the project root directory
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
