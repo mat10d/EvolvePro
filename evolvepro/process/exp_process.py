@@ -37,6 +37,8 @@ def generate_single_aa_mutants(wt_fasta, output_file):
                 record = SeqRecord(Seq(mutant_sequence), id=variant, description="")
                 records.append(record)
 
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
     with open(output_file, "w") as handle:
         SeqIO.write(records, handle, "fasta")
     
@@ -92,5 +94,7 @@ def generate_n_mutant_combinations(wt_fasta, mutant_file, n, output_file, thresh
     print(f"Number of mutant combinations: {len(mutant_combinations)}")
     print(f"Number of valid mutant combinations: {len(records)}")
     
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
     with open(output_file, "w") as handle:
         SeqIO.write(records, handle, "fasta")

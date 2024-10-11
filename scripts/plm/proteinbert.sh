@@ -9,7 +9,7 @@
 #SBATCH --gres=gpu:a100:1
 #SBATCH --cpus-per-task=1  
 #SBATCH --constraint=high-capacity    
-#SBATCH --mem=80gb  
+#SBATCH --mem=200gb  
 #SBATCH --output out/proteinbert-%j.out 
 
 source ~/.bashrc
@@ -22,6 +22,8 @@ study_names=("brenan" "jones" "stiffler" "haddox" "doud" "giacomelli" "kelsic" "
 fasta_path="output/dms/"
 results_path="output/plm/proteinbert/"
 model_names=("proteinbert")
+
+mkdir -p ${results_path}
 
 for model_name in "${model_names[@]}"; do
   for study in "${study_names[@]}"; do

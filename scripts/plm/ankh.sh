@@ -23,6 +23,8 @@ fasta_path="output/dms/"
 results_path="output/plm/ankh/"
 model_names=("base" "large")
 
+mkdir -p ${results_path}
+
 for model_name in "${model_names[@]}"; do
   for study in "${study_names[@]}"; do
     command="python evolvepro/plm/ankh/extract.py --input ${fasta_path}${study}.fasta --output ${results_path}${study}_ankh_${model_name}.csv --model ${model_name}"

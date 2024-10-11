@@ -6,9 +6,8 @@
 #SBATCH --job-name=unirep
 #SBATCH -n 1 
 #SBATCH -N 1   
-#SBATCH --cpus-per-task=1  
-#SBATCH --constraint=high-capacity    
-#SBATCH --mem=80gb  
+#SBATCH --cpus-per-task=12  
+#SBATCH --mem=200gb  
 #SBATCH --output out/unirep-%j.out 
 
 source ~/.bashrc
@@ -21,6 +20,8 @@ study_names=("brenan" "jones" "stiffler" "haddox" "doud" "giacomelli" "kelsic" "
 fasta_path="output/dms/"
 results_path="output/plm/unirep/"
 model_names=("unirep")
+
+mkdir -p ${results_path}
 
 for model_name in "${model_names[@]}"; do
   for study in "${study_names[@]}"; do

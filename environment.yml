@@ -10,5 +10,12 @@ dependencies:
   - biopython
   - pip
   - openpyxl
+  - pytorch
   - pip:
     - -e .
+    - argparse
+    - ankh
+    - fair-esm
+    - jax-unirep
+    - transformers
+    - git+https://github.com/nadavbra/protein_bert.git

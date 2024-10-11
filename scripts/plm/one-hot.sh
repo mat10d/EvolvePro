@@ -17,6 +17,8 @@ encoding_methods=("one_hot" "integer")
 fasta_path="output/dms/"
 results_path="output/plm/one-hot/"
 
+mkdir -p ${results_path}
+
 for method in "${encoding_methods[@]}"; do
   for study in "${study_names[@]}"; do
     command="python3 evolvepro/plm/one-hot/extract.py ${fasta_path}${study}.fasta --method ${method} --results_path ${results_path}"

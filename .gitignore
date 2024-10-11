@@ -17,14 +17,14 @@
 # Specific directory
 /plm/proteinbert/proteinbert/
 
-# Ignore .out files
-*.out
+# Ignore .out files in any directory
+**/*.out
 
-# Python cache files
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Python cache files in any directory
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
 
 # Python virtual environments
 venv/

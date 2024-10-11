@@ -4,9 +4,11 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+import os
+import shutil
 import argparse
 import pathlib
-
+import pandas as pd
 import torch
 
 from esm import Alphabet, FastaBatchedDataset, ProteinBertModel, pretrained, MSATransformer
@@ -59,15 +61,12 @@ def create_parser():
     parser.add_argument("--nogpu", action="store_true", help="Do not use GPU even if available")
 
     parser.add_argument(
-        "--output_file",
+        "--concatenate_dir",
         type=pathlib.Path,
-        help="output file for extracted concatenated representations",
+        default=None,
+        help="output directory for concatenated representations",
     )
-    parser.add_argument(
-        "--concatenate",
-        action="store_true",
-        help="Concatenate individual .pt files into a single CSV",
-    )
+
     return parser
 
 def run(args):
@@ -102,6 +101,8 @@ def run(args):
             )
             if torch.cuda.is_available() and not args.nogpu:
                 toks = toks.to(device="cuda", non_blocking=True)
+            
+            print(f"Device: {toks.device}")
 
             out = model(toks, repr_layers=repr_layers, return_contacts=return_contacts)
 
@@ -143,7 +144,7 @@ def run(args):
 
     print(f"Saved representations to {args.output_dir}")
 
-def concatenate_files(output_dir, output_file):
+def concatenate_files(output_dir, output_csv):
     dataframes = []
     for file_path in output_dir.glob('*.pt'):
         file_data = torch.load(file_path)
@@ -159,20 +160,25 @@ def concatenate_files(output_dir, output_file):
     if dataframes:
         concatenated_df = pd.concat(dataframes)
         print("Shape of concatenated DataFrame:", concatenated_df.shape)
-        concatenated_df.to_csv(output_file)
-        print(f"Saved concatenated representations to {output_file}")
+        concatenated_df.to_csv(output_csv)
+        print(f"Saved concatenated representations to {output_csv}")
     else:
         print("No data to concatenate.")
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
+    
     run(args)
 
-    if args.concatenate:
-        if args.output_file is None:
-            args.output_file = args.output_dir / "concatenated_representations.csv"
-        concatenate_files(args.output_dir, args.output_file)
+    if args.concatenate_dir is not None:
+        fasta_file_name = args.fasta_file.stem
+        output_csv = f"{args.concatenate_dir}/{fasta_file_name}_{args.model_location}.csv"
+        concatenate_files(args.output_dir, output_csv)
+        print(f"Removing {args.output_dir}")
+        shutil.rmtree(args.output_dir)
+    else:
+        print("Skipping concatenation, file move, and cleanup as --concatenate_dir flag was not set.")
 
 if __name__ == "__main__":
     main()

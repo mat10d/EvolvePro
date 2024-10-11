@@ -16,50 +16,50 @@ wt_sequences = {
 }
 
 # Generate single amino acid mutants for t7_pol
-generate_wt(wt_sequences['t7_pol'], os.path.join(project_root, 'data', 'exp', 'wt_fasta', 't7_pol_WT.fasta'))
 t7_pol_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 't7_pol_WT.fasta')
+generate_wt(wt_sequences['t7_pol'], t7_pol_wt_fasta)
 t7_pol_output_file = os.path.join(project_root, 'output', 'exp', 't7_pol.fasta')
 generate_single_aa_mutants(t7_pol_wt_fasta, t7_pol_output_file)
 
 # Generate single amino acid mutants for r2
-generate_wt(wt_sequences['r2'], os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'r2_WT.fasta'))
 r2_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'r2_WT.fasta')
+generate_wt(wt_sequences['r2'], r2_wt_fasta)
 r2_output_file = os.path.join(project_root, 'output', 'exp', 'r2.fasta')
 generate_single_aa_mutants(r2_wt_fasta, r2_output_file)
 
 # Generate single amino acid mutants for fanzor
-generate_wt(wt_sequences['fanzor'], os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'fanzor_WT.fasta'))
 fanzor_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'fanzor_WT.fasta')
+generate_wt(wt_sequences['fanzor'], fanzor_wt_fasta)
 fanzor_output_file = os.path.join(project_root, 'output', 'exp', 'fanzor.fasta')
 generate_single_aa_mutants(fanzor_wt_fasta, fanzor_output_file)
 
 # Generate single amino acid mutants for mlv
-generate_wt(wt_sequences['mlv'], os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'mlv_WT.fasta'))
 mlv_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'mlv_WT.fasta')
+generate_wt(wt_sequences['mlv'], mlv_wt_fasta)
 mlv_output_file = os.path.join(project_root, 'output', 'exp', 'mlv.fasta')
 generate_single_aa_mutants(mlv_wt_fasta, mlv_output_file)
 
 # Generate single amino acid mutants for bxb1
-generate_wt(wt_sequences['bxb1'], os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'bxb1_WT.fasta'))
 bxb1_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'bxb1_WT.fasta')
+generate_wt(wt_sequences['bxb1'], bxb1_wt_fasta)
 bxb1_output_file = os.path.join(project_root, 'output', 'exp', 'bxb1.fasta')
 generate_single_aa_mutants(bxb1_wt_fasta, bxb1_output_file)
 
 # Generate single amino acid mutants for ca
-generate_wt(wt_sequences['ca'], os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'ca_WT.fasta'))
 ca_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'ca_WT.fasta')
+generate_wt(wt_sequences['ca'], ca_wt_fasta)
 ca_output_file = os.path.join(project_root, 'output', 'exp', 'ca.fasta')
 generate_single_aa_mutants(ca_wt_fasta, ca_output_file)
 
 # Generate single amino acid mutants for mmfunc
-generate_wt(wt_sequences['mmfunc'], os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'mmfunc_WT.fasta'))
 mmfunc_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'mmfunc_WT.fasta')
+generate_wt(wt_sequences['mmfunc'], mmfunc_wt_fasta)
 mmfunc_output_file = os.path.join(project_root, 'output', 'exp', 'mmfunc.fasta')
 generate_single_aa_mutants(mmfunc_wt_fasta, mmfunc_output_file)
 
 # Generate single amino acid mutants for psacas12f
-generate_wt(wt_sequences['psacas12f'], os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'psacas12f_WT.fasta'))
 psacas12f_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'psacas12f_WT.fasta')
+generate_wt(wt_sequences['psacas12f'], psacas12f_wt_fasta)
 psacas12f_output_file = os.path.join(project_root, 'output', 'exp', 'psacas12f.fasta')
 generate_single_aa_mutants(psacas12f_wt_fasta, psacas12f_output_file)
 
