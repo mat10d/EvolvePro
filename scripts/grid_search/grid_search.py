@@ -10,6 +10,8 @@ from sklearn.utils import resample
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.exceptions import ConvergenceWarning
 import xgboost
 from sklearn.decomposition import PCA
@@ -42,7 +44,8 @@ def create_parser():
     parser.add_argument("--num_final_round_mutants", type=int, help="Number of mutants in final round. Example: 16")
     parser.add_argument("--first_round_strategies", type=str, nargs="+", help="Type of first round strategy. Options: random diverse_medoids representative_hie")
     parser.add_argument("--embedding_types", type=str, nargs="+", help="Types of embeddings to train on. Options: embeddings embeddings_pca")
-    parser.add_argument("--regression_types", type=str, nargs="+", help="Regression types. Options: ridge lasso elasticnet linear neuralnet randomforest gradientboosting")
+    parser.add_argument("--pca_components", type=int, nargs="+", help="Number of PCA components to use")
+    parser.add_argument("--regression_types", type=str, nargs="+", help="Regression types. Options: ridge lasso elasticnet linear neuralnet randomforest gradientboosting knn gp")
     parser.add_argument("--file_type", type=str, help="Type of file to read. Options: csvs pts")
     parser.add_argument("--embeddings_type_pt", type=str, help="Type of pytorch embeddings to read. Options: average mutated both")
     return parser
@@ -50,6 +53,7 @@ def create_parser():
 # Function to read in the data
 def read_data(dataset_name, base_path, file_type, first_round_strategies, embeddings_type='both'):
     # Construct the file paths
+    print(file_type)
     if file_type == "csvs":
         split_name = dataset_name.split('_')
         if len(split_name[1]) == 1:
@@ -241,6 +245,7 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
         y_test_fitness_scaled = labels[iteration.isna()]['fitness_scaled']
         y_test_fitness_binary = labels[iteration.isna()]['fitness_binary']        
 
+
     # fit
     if regression_type == 'ridge':
         model = linear_model.RidgeCV()
@@ -265,6 +270,12 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
     elif regression_type == 'gradientboosting':
         model = xgboost.XGBRegressor(objective='reg:squarederror', colsample_bytree=0.3, learning_rate=0.1,
                                      max_depth=5, alpha=10, n_estimators=10)
+    elif regression_type == 'knn':
+        model = KNeighborsRegressor(n_neighbors=5, weights='uniform', algorithm='auto', leaf_size=30, p=2,
+                                    metric='minkowski', metric_params=None, n_jobs=None)
+    elif regression_type == 'gp':
+        model = GaussianProcessRegressor(kernel=None, alpha=1e-10, optimizer='fmin_l_bfgs_b', n_restarts_optimizer=0,
+                                        normalize_y=False, copy_X_train=True, random_state=None)
 
     model.fit(X_train, y_train)
 
@@ -282,7 +293,7 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
     # compute train and test r^2
     train_r_squared = r2_score(y_train, y_pred_train)
     test_r_squared = r2_score(y_test, y_pred_test)
-    if regression_type == 'linear' or regression_type == 'neuralnet' or regression_type == 'randomforest' or regression_type == 'gradientboosting':
+    if regression_type == 'linear' or regression_type == 'neuralnet' or regression_type == 'randomforest' or regression_type == 'gradientboosting' or regression_type == 'knn' or regression_type == 'gp':
         alpha = 0
     else:
         alpha = model.alpha_
@@ -453,18 +464,22 @@ def directed_evolution_simulation(labels, embeddings, hie_data, num_simulations,
 
 # Function to run the experiment with different combinations of parameters
 def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_iterations, measured_var, learning_strategies,
-                   num_mutants_per_round, num_final_round_mutants, first_round_strategies, embedding_types, regression_types, file_type, embeddings_type_pt=None):
+                   num_mutants_per_round, num_final_round_mutants, first_round_strategies, embedding_types, pca_components, regression_types, file_type, embeddings_type_pt=None):
     
     # read in dataset
     embeddings, labels, hie_data = read_data(dataset_name, base_path, file_type, embeddings_type_pt)
 
-    # generate embeddings_pca
-    embeddings_pca = pca_embeddings(embeddings, n_components=10)
+    # Generate PCA embeddings for each n_components
+    embeddings_pca = {
+        f'embeddings_pca_{n}': pca_embeddings(embeddings, n_components=n)
+        for n in pca_components
+    }
 
     # save the embeddings in a list    
     embeddings_list = {
         'embeddings': embeddings,
-        'embeddings_pca': embeddings_pca
+        **embeddings_pca  # Unpack the embeddings_pca dictionary into embeddings_list
+
     }
 
     # save the labels in a list
@@ -549,11 +564,23 @@ def grid_search(dataset_name, experiment_name, base_path, num_simulations, num_i
 def main():
     parser = create_parser()
     args = parser.parse_args()
+    print(args)
     grid_search(
-        args.dataset_name, args.experiment_name, args.base_path, args.num_simulations, args.num_iterations,
-        args.measured_var, args.learning_strategies, args.num_mutants_per_round, args.num_final_round_mutants, 
-        args.first_round_strategies, args.embedding_types, args.regression_types, args.file_type, 
-        args.embeddings_type_pt
+        dataset_name=args.dataset_name,
+        experiment_name=args.experiment_name,
+        base_path=args.base_path,
+        num_simulations=args.num_simulations,
+        num_iterations=args.num_iterations,
+        measured_var=args.measured_var,
+        learning_strategies=args.learning_strategies,
+        num_mutants_per_round=args.num_mutants_per_round,
+        num_final_round_mutants=args.num_final_round_mutants,
+        first_round_strategies=args.first_round_strategies,
+        embedding_types=args.embedding_types,
+        pca_components=args.pca_components,
+        regression_types=args.regression_types,
+        file_type=args.file_type,
+        embeddings_type_pt=args.embeddings_type_pt
     )
  
 if __name__ == "__main__":

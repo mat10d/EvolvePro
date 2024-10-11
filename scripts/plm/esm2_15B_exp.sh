@@ -19,7 +19,7 @@ cd /orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro
 
 study_names=("t7_pol" "r2" "fanzor" "mlv" "bxb1" "ca" "mmfunc" "psacas12f")
 model_names=("esm2_t48_15B_UR50D")
-fasta_path="output/dms/"
+fasta_path="output/exp/"
 results_path="output/plm/esm/"
 
 repr_layers=48
