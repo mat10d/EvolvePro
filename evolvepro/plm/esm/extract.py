@@ -57,8 +57,18 @@ def create_parser():
     )
 
     parser.add_argument("--nogpu", action="store_true", help="Do not use GPU even if available")
-    return parser
 
+    parser.add_argument(
+        "--output_file",
+        type=pathlib.Path,
+        help="output file for extracted concatenated representations",
+    )
+    parser.add_argument(
+        "--concatenate",
+        action="store_true",
+        help="Concatenate individual .pt files into a single CSV",
+    )
+    return parser
 
 def run(args):
     model, alphabet = pretrained.load_model_and_alphabet(args.model_location)
@@ -131,11 +141,38 @@ def run(args):
                     args.output_file,
                 )
 
+    print(f"Saved representations to {args.output_dir}")
+
+def concatenate_files(output_dir, output_file):
+    dataframes = []
+    for file_path in output_dir.glob('*.pt'):
+        file_data = torch.load(file_path)
+        label = file_data['label']
+        if 'mean_representations' in file_data:
+            representations = file_data['mean_representations']
+            key, tensor = next(iter(representations.items()))
+            row_name = label
+            row_data = tensor.tolist()
+            new_df = pd.DataFrame([row_data], index=[row_name])
+            dataframes.append(new_df)
+    
+    if dataframes:
+        concatenated_df = pd.concat(dataframes)
+        print("Shape of concatenated DataFrame:", concatenated_df.shape)
+        concatenated_df.to_csv(output_file)
+        print(f"Saved concatenated representations to {output_file}")
+    else:
+        print("No data to concatenate.")
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
     run(args)
+
+    if args.concatenate:
+        if args.output_file is None:
+            args.output_file = args.output_dir / "concatenated_representations.csv"
+        concatenate_files(args.output_dir, args.output_file)
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,2 @@
+Running command: python3 evolvepro/plm/esm/extract.py esm2_t48_15B_UR50D output/dms/brenan.fasta output/plm/esm/brenan/esm2_t48_15B_UR50D --toks_per_batch 512 --include mean
+slurmstepd: error: *** JOB 38970154 ON node102 CANCELLED AT 2024-10-10T17:47:21 ***

@@ -1,0 +1,169 @@
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/brenan.fasta --output output/plm/ankh/brenan_ankh_base.csv --model base
+2024-10-10 18:18:47.903378: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 18:18:51.169226: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/brenan_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/jones.fasta --output output/plm/ankh/jones_ankh_base.csv --model base
+2024-10-10 18:22:16.600480: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 18:22:17.753189: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/jones_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/stiffler.fasta --output output/plm/ankh/stiffler_ankh_base.csv --model base
+2024-10-10 18:26:31.533418: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 18:26:32.684340: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/stiffler_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/haddox.fasta --output output/plm/ankh/haddox_ankh_base.csv --model base
+2024-10-10 18:28:33.397284: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 18:28:34.558843: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/haddox_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/doud.fasta --output output/plm/ankh/doud_ankh_base.csv --model base
+2024-10-10 18:45:33.319445: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 18:45:34.453394: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/doud_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/giacomelli.fasta --output output/plm/ankh/giacomelli_ankh_base.csv --model base
+2024-10-10 18:53:48.649315: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 18:53:49.781377: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/giacomelli_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/kelsic.fasta --output output/plm/ankh/kelsic_ankh_base.csv --model base
+2024-10-10 18:57:43.882971: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 18:57:45.114722: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/kelsic_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/lee.fasta --output output/plm/ankh/lee_ankh_base.csv --model base
+2024-10-10 18:58:03.375163: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 18:58:04.254822: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/lee_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/markin.fasta --output output/plm/ankh/markin_ankh_base.csv --model base
+2024-10-10 19:06:20.592225: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 19:06:21.937369: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/markin_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/cas12f.fasta --output output/plm/ankh/cas12f_ankh_base.csv --model base
+2024-10-10 19:07:21.288001: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 19:07:23.522659: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/cas12f_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/cov2_S.fasta --output output/plm/ankh/cov2_S_ankh_base.csv --model base
+2024-10-10 19:11:59.914365: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 19:12:01.045018: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/cov2_S_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/zikv_E.fasta --output output/plm/ankh/zikv_E_ankh_base.csv --model base
+2024-10-10 19:16:48.289685: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 19:16:49.501764: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/zikv_E_ankh_base.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/brenan.fasta --output output/plm/ankh/brenan_ankh_large.csv --model large
+2024-10-10 19:23:09.911412: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 19:23:12.008960: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/brenan_ankh_large.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/jones.fasta --output output/plm/ankh/jones_ankh_large.csv --model large
+2024-10-10 19:30:13.538937: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 19:30:15.767496: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/jones_ankh_large.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/stiffler.fasta --output output/plm/ankh/stiffler_ankh_large.csv --model large
+2024-10-10 19:39:33.827890: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 19:39:36.396873: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/md3498/anaconda3/envs/embeddings/lib/python3.8/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+Using device: cuda:0
+Using GPU: NVIDIA A100 80GB PCIe
+Embeddings saved to output/plm/ankh/stiffler_ankh_large.csv
+Running command: python evolvepro/plm/ankh/extract.py --input output/dms/haddox.fasta --output output/plm/ankh/haddox_ankh_large.csv --model large
+2024-10-10 19:43:59.928842: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-10-10 19:44:02.003175: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
