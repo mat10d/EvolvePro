@@ -1,11 +1,33 @@
-*.DS_Store
-*.ipynb_checkpoints
+# macOS system files
+.DS_Store
 
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Data and output directories
 /data
 /output
 
+# Python package info
 /evolvepro.egg-info
 
+# Old environment file
 /environment_old.yml
 
+# Specific directory
 /plm/proteinbert/proteinbert/
+
+# Ignore .out files
+*.out
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python virtual environments
+venv/
+*.venv
+env/
+*.env
