@@ -41,6 +41,8 @@ For detailed instructions, see the [Visualize README](scripts/visualize/README.m
 
 [Include setup instructions, dependencies, and other relevant information]
 
+## Overview of approach for *de novo* improvement of a protein's activity
+
 ## Citation
 
 If you use this code in your research, please cite our paper:
