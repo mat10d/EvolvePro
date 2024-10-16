@@ -16,3 +16,4 @@ def pca_embeddings(embeddings_df, n_components=10):
     embeddings_pca_df = pd.DataFrame(embeddings_pca, index=indices, columns=[f'PCA {i}' for i in range(1, n_components + 1)])
     
     return embeddings_pca_df
+

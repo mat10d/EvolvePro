@@ -79,10 +79,24 @@ def first_round(labels, embeddings, explicit_variants=None, num_mutants_per_roun
     return labels_zero, iteration_zero, this_round_variants
 
 # Active learning function for one iteration
-def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, regression_type='ridge', top_n=None, final_round=10):
+def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, regression_type='randomforest', top_n=None, final_round=10, experimental=False):
+    
+    # if experimental, check alignment between embeddings and labels. This is done in the data loading for dms data
+    if experimental:
+        label_variants = labels_pd['variant'].tolist()
+        embedding_variants = embeddings_pd.index.tolist()
+
+        # Check if embedding row names and label variants are identical
+        if label_variants == embedding_variants:
+            print('Embeddings and labels are aligned')
+        else:
+            print('Embeddings and labels are not aligned')
+            print('Exiting.')
+            return None
+    
     # reset the indices of embeddings_pd and labels_pd
     embeddings_pd = embeddings_pd.reset_index(drop=True)
-    labels_pd = labels_pd.reset_index(drop=True)
+    labels_pd = labels_pd.reset_index(drop=True)    
 
     # save column 'iteration' in the labels dataframe
     iteration = labels_pd['iteration']
@@ -110,10 +124,12 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
 
     if iter_test is not None:
         y_test = labels[iteration.isin([iter_test])][measured_var]
+        print(y_test.shape)
         y_test_fitness_scaled = labels[iteration.isin([iter_test])]['fitness_scaled']
         y_test_fitness_binary = labels[iteration.isin([iter_test])]['fitness_binary']
     else:
         y_test = labels[iteration.isna()][measured_var]
+        print(y_test.shape)
         y_test_fitness_scaled = labels[iteration.isna()]['fitness_scaled']
         y_test_fitness_binary = labels[iteration.isna()]['fitness_binary']        
 
@@ -135,7 +151,7 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
                              beta_2=0.999, epsilon=1e-08)
     elif regression_type == 'randomforest':
         model = RandomForestRegressor(n_estimators=100, criterion='friedman_mse', max_depth=None, min_samples_split=2,
-                                      min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=1,
+                                      min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features='auto',
                                       max_leaf_nodes=None, min_impurity_decrease=0.0, bootstrap=True, oob_score=False,
                                       n_jobs=None, random_state=1, verbose=0, warm_start=False, ccp_alpha=0.0,
                                       max_samples=None)
@@ -161,16 +177,16 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
 
     # calculate metrics
     train_error = mean_squared_error(y_train, y_pred_train)
-    test_error = mean_squared_error(y_test, y_pred_test)
+    test_error = None if experimental else mean_squared_error(y_test, y_pred_test)
     # compute train and test r^2
     train_r_squared = r2_score(y_train, y_pred_train)
-    test_r_squared = r2_score(y_test, y_pred_test)
+    test_r_squared = None if experimental else r2_score(y_test, y_pred_test)
     if regression_type == 'linear' or regression_type == 'neuralnet' or regression_type == 'randomforest' or regression_type == 'gradientboosting' or regression_type == 'knn' or regression_type == 'gp':
         alpha = 0
     else:
         alpha = model.alpha_
     dist_metric_train = cdist(X_train, X_test, metric='euclidean').min(axis=1)
-    dist_metric_test = cdist(X_test, X_train, metric='euclidean').min(axis=1)
+    dist_metric_test = None if experimental else cdist(X_test, X_train, metric='euclidean').min(axis=1)
 
     # combine predicted and actual thermostability values with sequence IDs into a new dataframe
     df_train = pd.DataFrame({'variant': labels.variant[idx_train], 'y_pred': y_pred_train, 'y_actual': y_train, 
@@ -194,4 +210,8 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
     spearman_corr = df_sorted_all[['y_pred', 'y_actual']].corr(method='spearman').iloc[0, 1]
     fitness_binary_percentage = df_sorted_all.loc[:final_round, 'y_actual_binary'].mean()
 
-    return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, top_final_round_variants, fitness_binary_percentage, spearman_corr, df_test, this_round_variants
+    if experimental:
+        return this_round_variants, df_test, df_sorted_all
+    else:
+        return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, top_final_round_variants, fitness_binary_percentage, spearman_corr, df_test, this_round_variants
+

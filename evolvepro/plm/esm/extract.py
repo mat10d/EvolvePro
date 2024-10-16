@@ -145,18 +145,28 @@ def run(args):
     print(f"Saved representations to {args.output_dir}")
 
 def concatenate_files(output_dir, output_csv):
+    # dataframes = []
+    # for file_path in output_dir.glob('*.pt'):
+    #     file_data = torch.load(file_path)
+    #     label = file_data['label']
+    #     if 'mean_representations' in file_data:
+    #         representations = file_data['mean_representations']
+    #         key, tensor = next(iter(representations.items()))
+    #         row_name = label
+    #         row_data = tensor.tolist()
+    #         new_df = pd.DataFrame([row_data], index=[row_name])
+    #         dataframes.append(new_df)
     dataframes = []
     for file_path in output_dir.glob('*.pt'):
         file_data = torch.load(file_path)
         label = file_data['label']
-        if 'mean_representations' in file_data:
-            representations = file_data['mean_representations']
-            key, tensor = next(iter(representations.items()))
-            row_name = label
-            row_data = tensor.tolist()
-            new_df = pd.DataFrame([row_data], index=[row_name])
-            dataframes.append(new_df)
-    
+        representations = file_data['mean_representations']
+        key, tensor = representations.popitem()
+        row_name = label
+        row_data = tensor.tolist()
+        new_df = pd.DataFrame([row_data], index=[row_name])
+        dataframes.append(new_df)
+
     if dataframes:
         concatenated_df = pd.concat(dataframes)
         print("Shape of concatenated DataFrame:", concatenated_df.shape)
@@ -175,8 +185,8 @@ def main():
         fasta_file_name = args.fasta_file.stem
         output_csv = f"{args.concatenate_dir}/{fasta_file_name}_{args.model_location}.csv"
         concatenate_files(args.output_dir, output_csv)
-        print(f"Removing {args.output_dir}")
-        shutil.rmtree(args.output_dir)
+        # print(f"Removing {args.output_dir}")
+        # shutil.rmtree(args.output_dir)
     else:
         print("Skipping concatenation, file move, and cleanup as --concatenate_dir flag was not set.")
 

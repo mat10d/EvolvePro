@@ -27,21 +27,33 @@ For detailed instructions, see the [PLM README](scripts/plm/README.md).
 
 ### 3. Run EVOLVEpro
 
-Apply the EVOLVEpro model. Choose the appropriate workflow based on your data type:
-- Deep mutational scanning (DMS) data: See the [DMS README](scripts/dms/README.md)
-- Experimental data: See the [Experimental README](scripts/experimental/README.md)
+Apply the EVOLVEpro model to optimize protein activity. There are two main workflows:
+
+#### DMS Workflow
+Use this workflow to optimize a few-shot model on a deep mutational scanning (DMS) dataset, where fitness values are known for a large number of variants.
+
+For detailed instructions, see the [DMS README](scripts/dms/README.md).
+
+#### Experimental Workflow
+Use this workflow for iterative experimental optimization of protein activity.
+
+For detailed instructions, see the [Experimental README](scripts/exp/README.md).
 
 ### 4. Visualize
 
 Prepare outputs and create visualizations to interpret the results of the EVOLVEpro process.
 
-For detailed instructions, see the [Visualize README](scripts/visualize/README.md).
+For detailed instructions, see the [Plot README](scripts/plot/README.md).
 
 ## Getting Started
 
 [Include setup instructions, dependencies, and other relevant information]
 
-## Overview of approach for *de novo* improvement of a protein's activity
+## Colab Tutorial
+
+For a step-by-step guide on using EVOLVEpro to improve a protein's activity, see our Google Colab tutorial:
+
+[Include link to Google Colab notebook here]
 
 ## Citation
 

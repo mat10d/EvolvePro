@@ -30,4 +30,4 @@ Note: Adjust `--toks_per_batch` based on your GPU memory capacity.
 
 ## Model-Specific Instructions
 
-Different protein language models may require specific commands or have unique parameters. Refer to the `extract.py` files in each model's subdirectory and/or the SLURM-compatible files in this directory for model-specific instructions.
+Different protein language models may require specific commands or have unique parameters. Refer to the `extract.py` files in each model's subdirectory and/or the SLURM-compatible files in this directory for model-specific instructions. We recommend using a GPU powered HPC to extract protein language model embeddings, but these SLURM-compatible files can be easily adapted into a command line call.
