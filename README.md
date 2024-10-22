@@ -1,6 +1,6 @@
-# EVOLVEpro Code Repository
+# EVOLVEpro
 
-This repository contains the code for EVOLVEpro, a model for in silico directed evolution of protein activities using few-shot active learning.
+This is the offical codebase to reproduce and use EVOLVEpro, a model for in silico directed evolution of protein activities using few-shot active learning.
 
 ## Process Overview
 
