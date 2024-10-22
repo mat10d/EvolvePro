@@ -1,38 +1,34 @@
-*.DS_Store
-*.ipynb_checkpoints
-.cache/
-extract/esm/results_means/
-extract/esm/out/
-extract/one-hot/results/
-extract/one-hot/out/
+# macOS system files
+.DS_Store
 
-grid_search/results/
-grid_search/out/
-grid_search/old/
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
 
-extract/efficient-evolution/
-extract/ankh/
-extract/protein_bert/
-extract/prottrans/
-extract/unirep/
+# Data and output directories
+data/
+output/
 
+# Python package info
+evolvepro.egg-info
 
-top-layer-metrics/across_rounds/old/
+# Old environment file
+environment_old.yml
 
-notebooks/results_means/
-notebooks/t7/pts/
-notebooks/ca/csvs/
-notebooks/fanzor/csvs/
-notebooks/bxb1/csvs/
-notebooks/t7/csvs/
-notebooks/mmfnuc/csvs/
-notebooks/r2/csvs/
-notebooks/mlv/csvs/
-notebooks/psacas12f/csvs/
+# Specific directory
+evolvepro/plm/proteinbert/
+scripts/exp/check_embeddings/
 
-data_processing/wet_lab/
-data_processing/dataframes_VEP/
-data_processing/dms/
-data_processing/hie_temp/
-data_processing/output/
-data_processing/n_mutant_dicts/
+# Ignore .out files in any directory
+**/*.out
+
+# Python cache files in any directory
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Python virtual environments
+venv/
+*.venv
+env/
+*.env
