@@ -47,7 +47,7 @@ For detailed instructions, see the [Plot README](scripts/plot/README.md).
 
 ## Getting Started
 
-[Include setup instructions, dependencies, and other relevant information]
+[Include setup instructions, dependencies, and other relevant information--ongoing]
 
 ## Colab Tutorial
 
