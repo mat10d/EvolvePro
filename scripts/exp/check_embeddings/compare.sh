@@ -12,5 +12,7 @@
 source ~/.bashrc
 conda activate embeddings
 
-# python compare_fasta.py
-python compare_csv.py
+python compare_fasta.py
+python compare_tensor.py
+
+# python compare_csv.py

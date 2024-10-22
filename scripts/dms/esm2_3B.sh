@@ -6,7 +6,7 @@
 #SBATCH -n 12
 #SBATCH -N 1   
 #SBATCH --cpus-per-task=5  
-#SBATCH --mem=10gb  
+#SBATCH --mem=20gb  
 #SBATCH --output out/esm2_3B_optimal-%j.out 
 
 source ~/.bashrc

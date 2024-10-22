@@ -6,7 +6,7 @@
 #SBATCH -n 12
 #SBATCH -N 1   
 #SBATCH --cpus-per-task=5  
-#SBATCH --mem=10gb  
+#SBATCH --mem=50gb  
 #SBATCH --output out/esm2_15B_num_variants-%j.out 
 
 source ~/.bashrc
@@ -27,8 +27,8 @@ run_dms_main_500() {
         --model_name "esm2_t48_15B_UR50D" \
         --embeddings_path "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/output/plm/esm" \
         --labels_path "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/output/dms" \
-        --num_simulations 10 \
-        --num_iterations 1 \
+        --num_simulations 3 \
+        --num_iterations 10 \
         --measured_var "fitness" \
         --learning_strategies "top10" \
         --num_mutants_per_round 10 20 30 40 50 100 200 500 \

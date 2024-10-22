@@ -145,19 +145,17 @@ def run(args):
     print(f"Saved representations to {args.output_dir}")
 
 def concatenate_files(output_dir, output_csv):
-    # dataframes = []
-    # for file_path in output_dir.glob('*.pt'):
-    #     file_data = torch.load(file_path)
-    #     label = file_data['label']
-    #     if 'mean_representations' in file_data:
-    #         representations = file_data['mean_representations']
-    #         key, tensor = next(iter(representations.items()))
-    #         row_name = label
-    #         row_data = tensor.tolist()
-    #         new_df = pd.DataFrame([row_data], index=[row_name])
-    #         dataframes.append(new_df)
+
+    # Get all .pt files in the output directory
+    files = []
+    for r, d, f in os.walk(output_dir):
+        for file in f:
+            if '.pt' in file:
+                files.append(os.path.join(r, file))
+
+    # Load each file and append to a list of dataframes
     dataframes = []
-    for file_path in output_dir.glob('*.pt'):
+    for file_path in files:
         file_data = torch.load(file_path)
         label = file_data['label']
         representations = file_data['mean_representations']
@@ -167,6 +165,7 @@ def concatenate_files(output_dir, output_csv):
         new_df = pd.DataFrame([row_data], index=[row_name])
         dataframes.append(new_df)
 
+    # Concatenate all dataframes
     if dataframes:
         concatenated_df = pd.concat(dataframes)
         print("Shape of concatenated DataFrame:", concatenated_df.shape)

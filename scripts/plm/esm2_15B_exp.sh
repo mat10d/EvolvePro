@@ -17,7 +17,7 @@ conda activate embeddings
 
 cd /orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro
 
-study_names=("t7_pol" "r2" "fanzor" "mlv" "bxb1" "ca" "mmfunc" "psacas12f")
+study_names=("t7_pol" "mlv" "bxb1")
 model_names=("esm2_t48_15B_UR50D")
 fasta_path="output/exp/"
 results_path="output/plm/esm/"

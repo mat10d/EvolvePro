@@ -151,21 +151,3 @@ evolve_experimental(
     number_of_variants,
     output_dir
 )
-
-# # Round 9
-# round_name = 'Round9'
-# round_file_names = ['bxb1_Round1.xlsx', 'bxb1_Round2.xlsx', 'bxb1_Round3.xlsx', 'bxb1_Round4.xlsx', 'bxb1_Round5.xlsx', 'bxb1_Round6.xlsx', 'bxb1_Round7.xlsx', 'bxb1_Round8.xlsx', 'bxb1_Round9.xlsx']
-# rename_WT = True
-
-# evolve_experimental(
-#     protein_name,
-#     round_name,
-#     embeddings_base_path,
-#     embeddings_file_name,
-#     round_base_path,
-#     round_file_names,
-#     wt_fasta_path,
-#     rename_WT,
-#     number_of_variants,
-#     output_dir
-# )

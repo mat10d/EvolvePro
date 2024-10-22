@@ -1,6 +1,6 @@
 # Deep Mutational Scanning (DMS) Workflow for EVOLVEpro
 
-This directory contains scripts for running the DMS workflow of EVOLVEpro, which optimizes a few-shot model on deep mutational scanning datasets. The source functions used here are in `evolvepro/src/evolve.py`, which calls the underlying model.
+This directory contains scripts for running the DMS workflow of EVOLVEpro, which optimizes a few-shot model on deep mutational scanning datasets. The source functions used here are in `evolvepro/src/evolve.py`, which calls the underlying model, in `evolvepro/src/model.py`.
 
 ## Main Script: dms_main.py
 
