@@ -53,13 +53,10 @@ For detailed instructions, see the [Plot README](scripts/plot/README.md).
 
 For a step-by-step guide on using EVOLVEpro to improve a protein's activity, see our Google Colab tutorial:
 
-[Include link to Google Colab notebook here]
+[Include link to Google Colab notebook here--upcoming]
 
 ## Citation
 
 If you use this code in your research, please cite our paper:
-[Include citation information]
 
-## License
-
-[Include license information]
+[Include citation information--upcoming]
