@@ -2,6 +2,12 @@
 
 This directory contains scripts for running the experimental workflow of EVOLVEpro, which iteratively optimizes protein activity through experimental rounds of evolution. The source functions used here are in `evolvepro/src/evolve.py`, which calls the underlying model.
 
+For exp, use the evolvepro environment:
+
+```bash
+conda activate evolvepro
+```
+
 ## Evolution Types
 
 1. Single Mutant Evolution: Explores individual amino acid substitutions

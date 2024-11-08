@@ -47,12 +47,19 @@ For detailed instructions, see the [Plot README](scripts/plot/README.md).
 
 ## Getting Started
 
+### Install
+
+```bash
+git git clone https://github.com/mat10d/EvolvePro.git
+cd EvolvePro
+```
+
 ### EVOLVEpro Environment
 
 First, create and activate a conda environment with all necessary dependencies for EVOLVEpro:
 
 ```bash
-conda env create -f environment.yml
+conda env create -f evolvepro_environment.yml
 conda activate evolvepro
 ```
 

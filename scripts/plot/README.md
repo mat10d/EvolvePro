@@ -1,6 +1,12 @@
-# EVOLVEpro Plotting Functions
+# Plot
 
-Supplementary plotting functions for visualizing EVOLVEpro results. Examples are contained in `dms.py` and `exp.py`, and are based on source functions in `evolvepro/src/evolve.py`.
+This directory contains scripts for plotting functions for visualizing EVOLVEpro results. Examples are contained in `dms.py` and `exp.py`, and are based on source functions in `evolvepro/src/evolve.py`.
+
+For plot, use the evolvepro environment:
+
+```bash
+conda activate evolvepro
+```
 
 ## DMS Benchmark Visualization (dms.py)
 

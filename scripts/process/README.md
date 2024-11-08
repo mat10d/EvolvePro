@@ -2,6 +2,12 @@
 
 This directory contains scripts to prepare files for use in EvolvePro. There are two main scripts for processing mutation data: one for experimental data and another for deep mutational scanning (DMS) data. The source functions used here are in `evolvepro/src/process.py`.
 
+For process, use the evolvepro environment:
+
+```bash
+conda activate evolvepro
+```
+
 ## 1. Experimental Mutation Processing
 
 This script shows examples of how to generate single amino acid mutants and n-mutant variants for proteins to improve. The output target is a FASTA file of all single AA substitutions relative to the WT sequence.
@@ -12,8 +18,15 @@ To generate a wild-type FASTA file and create single amino acid mutants:
 
 ```python
 from evolvepro.src.process import generate_wt, generate_single_aa_mutants
-generate_wt('MNTINIAKNDFSDIELAAIPFNTLADHYGERLAREQLALEHE...', 'output_path', 'dataset_WT.fasta')
+generate_wt('MNTINIAKNDFS', 'output_path/dataset_WT.fasta')
 generate_single_aa_mutants('output_path/dataset_WT.fasta', 'output_path/dataset.fasta')
+```
+
+To suggest a random set of mutants to assay:
+
+```python
+from evolvepro.src.process import suggest_initial_mutants
+suggest_initial_mutants('output_path/dataset.fasta', 10)
 ```
 
 To generate n-mutant combinations:

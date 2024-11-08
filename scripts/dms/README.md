@@ -8,7 +8,10 @@ The main script `dms_main.py` is used to run experiments with different combinat
 
 ### Usage
 
+For dms, use the evolvepro environment:
+
 ```bash
+conda activate evolvepro
 python dms_main.py [arguments]
 ```
 

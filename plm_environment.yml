@@ -5,8 +5,8 @@ channels:
   - pytorch
 dependencies:
   - python=3.10
+  - numpy>=1.22,<1.25
   - pandas
-  - numpy
   - pytorch
   - cudatoolkit
   - pathlib
@@ -14,7 +14,7 @@ dependencies:
   - pip
   - pip:
     - ankh
-    - fair-esm  # For ESM models
-    - jax-unirep  # For UniRep
-    - transformers  # For ProtT5 and other transformer models
-    - tensorboard  # For monitoring training
+    - fair-esm
+    - jax-unirep
+    - transformers
+    - tensorboard
