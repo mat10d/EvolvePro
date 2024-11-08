@@ -1,0 +1,20 @@
+name: plm
+channels:
+  - conda-forge
+  - defaults
+  - pytorch
+dependencies:
+  - python=3.10
+  - pandas
+  - numpy
+  - pytorch
+  - cudatoolkit
+  - pathlib
+  - biopython
+  - pip
+  - pip:
+    - ankh
+    - fair-esm  # For ESM models
+    - jax-unirep  # For UniRep
+    - transformers  # For ProtT5 and other transformer models
+    - tensorboard  # For monitoring training

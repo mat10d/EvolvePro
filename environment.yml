@@ -1,21 +1,14 @@
 name: evolvepro
 channels:
   - conda-forge
-  - defaults
+  - bioconda
 dependencies:
-  - python=3.10
   - pandas
   - numpy
+  - scikit-learn
+  - scikit-learn-extra
+  - xgboost
   - matplotlib
+  - seaborn
   - biopython
-  - pip
-  - openpyxl
-  - pytorch
-  - pip:
-    - -e .
-    - argparse
-    - ankh
-    - fair-esm
-    - jax-unirep
-    - transformers
-    - git+https://github.com/nadavbra/protein_bert.git
+  - scipy

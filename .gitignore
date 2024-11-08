@@ -15,7 +15,7 @@ evolvepro.egg-info
 environment_old.yml
 
 # Specific directory
-evolvepro/plm/proteinbert/
+evolvepro/plm/proteinbert/proteinbert
 scripts/exp/check_embeddings/
 
 # Ignore .out files in any directory

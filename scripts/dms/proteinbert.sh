@@ -6,7 +6,7 @@
 #SBATCH -n 12
 #SBATCH -N 1   
 #SBATCH --cpus-per-task=5  
-#SBATCH --mem=20gb  
+#SBATCH --mem=80gb  
 #SBATCH --output out/proteinbert_optimal-%j.out 
 
 source ~/.bashrc

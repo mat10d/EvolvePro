@@ -47,7 +47,31 @@ For detailed instructions, see the [Plot README](scripts/plot/README.md).
 
 ## Getting Started
 
-[Include setup instructions, dependencies, and other relevant information--ongoing]
+### EVOLVEpro Environment
+
+First, create and activate a conda environment with all necessary dependencies for EVOLVEpro:
+
+```bash
+conda env create -f environment.yml
+conda activate evolvepro
+```
+
+### Protein Language Models Environment
+
+For installing all underlying protein language models, we use a different environment:
+
+```bash
+sh setup_plm.sh
+conda activate plm
+```
+
+This environment includes:
+
+- Deep learning frameworks (PyTorch)
+- Protein language models that are installable via pip (ESM, ProtT5, UniRep, ankh, unirep)
+- Protein language models that are only installable from github environments (proteinbert, efficient-evolution)
+
+These environments are kept separate to maintain clean dependencies and avoid conflicts between the core EVOLVEpro functionality and the various protein language models.
 
 ## Colab Tutorial
 
