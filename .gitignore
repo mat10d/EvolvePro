@@ -17,6 +17,10 @@ environment_old.yml
 # Specific directory
 evolvepro/plm/proteinbert/proteinbert
 scripts/exp/check_embeddings/
+external/
+
+# Specific files
+scripts/dms/dms_check.py
 
 # Ignore .out files in any directory
 **/*.out
