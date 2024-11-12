@@ -21,6 +21,7 @@ external/
 
 # Specific files
 scripts/dms/dms_check.py
+embeddings_env.yml
 
 # Ignore .out files in any directory
 **/*.out
