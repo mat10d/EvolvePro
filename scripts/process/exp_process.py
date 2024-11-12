@@ -12,24 +12,28 @@ wt_sequences = {
 }
 
 # Generate single amino acid mutants for t7_pol
+print('Generating single amino acid mutants for t7_pol...')
 t7_pol_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 't7_pol_WT.fasta')
 generate_wt(wt_sequences['t7_pol'], t7_pol_wt_fasta)
 t7_pol_output_file = os.path.join(project_root, 'output', 'exp', 't7_pol.fasta')
 generate_single_aa_mutants(t7_pol_wt_fasta, t7_pol_output_file)
 
 # Generate single amino acid mutants for mlv
+print('Generating single amino acid mutants for mlv...')
 mlv_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'mlv_WT.fasta')
 generate_wt(wt_sequences['mlv'], mlv_wt_fasta)
 mlv_output_file = os.path.join(project_root, 'output', 'exp', 'mlv.fasta')
 generate_single_aa_mutants(mlv_wt_fasta, mlv_output_file)
 
 # Generate single amino acid mutants for bxb1
+print('Generating single amino acid mutants for bxb1...')
 bxb1_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 'bxb1_WT.fasta')
 generate_wt(wt_sequences['bxb1'], bxb1_wt_fasta)
 bxb1_output_file = os.path.join(project_root, 'output', 'exp', 'bxb1.fasta')
 generate_single_aa_mutants(bxb1_wt_fasta, bxb1_output_file)
 
 # Generate n-mutant combinations for t7_pol for 2 to 7 mutations
+print('Generating n-mutant combinations for t7_pol...')
 t7_pol_wt_fasta = os.path.join(project_root, 'data', 'exp', 'wt_fasta', 't7_pol_WT.fasta')
 t7_pol_mutant_file = os.path.join(project_root, 'data', 'exp', 'n_mutant_dicts', 't7_pol_n_mutants.xlsx')
 t7_pol_2_output_file = os.path.join(project_root, 'output', 'exp', 't7_pol_2nd.fasta')

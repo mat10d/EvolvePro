@@ -133,13 +133,14 @@ def directed_evolution_simulation(
                 elif learning_strategy == 'random':
                     iteration_new_ids = random.sample(list(df_test_new.variant), num_mutants_per_round)
                 elif learning_strategy == 'top5bottom5':
-                    iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(int(num_mutants_per_round / 2)).variant
-                    iteration_new_ids.append(df_test_new.sort_values(by='y_pred', ascending=False).tail(int(num_mutants_per_round / 2)).variant)
+                    top_half = df_test_new.sort_values(by='y_pred', ascending=False).head(int(num_mutants_per_round / 2)).variant
+                    bottom_half = df_test_new.sort_values(by='y_pred', ascending=False).tail(int(num_mutants_per_round / 2)).variant
+                    iteration_new_ids = pd.concat([top_half, bottom_half])
                 elif learning_strategy == 'top10':
                     iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(num_mutants_per_round).variant
 
                 iteration_new = pd.DataFrame({'variant': iteration_new_ids, 'iteration': j})
-                iteration_new = iteration_new.append(iteration_old)
+                iteration_new = pd.concat([iteration_new, iteration_old], ignore_index=True)
                 labels_new = pd.merge(labels, iteration_new, on='variant', how='left')
 
                 num_mutants_per_round_list.append(num_mutants_per_round)

@@ -10,7 +10,7 @@
 #SBATCH --output out/esm1v_650M_optimal-%j.out 
 
 source ~/.bashrc
-conda activate embeddings
+conda activate evolvepro
 module load openmind8/gnu-parallel/20240222
 
 datasets=("brenan" "stiffler" "doud" "haddox" "giacomelli" "jones" "kelsic" "lee" "markin" "zikv_E" "cas12f" "cov2_S")

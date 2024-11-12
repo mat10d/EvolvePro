@@ -7,7 +7,7 @@ This directory contains SLURM-compatible files to generate protein language mode
 The usage of `extract.py` files may vary depending on the model. Below is a general example of how to use the scripts:
 
 ```bash
-python plm/[model_name]/extract.py [model_location] [fasta_file] [output_dir] [additional_options]
+python evolvepro/plm/[model_name]/extract.py [model_location] [fasta_file] [output_dir] [additional_options]
 ```
 
 ### Example:
@@ -15,7 +15,7 @@ python plm/[model_name]/extract.py [model_location] [fasta_file] [output_dir] [a
 To generate a CSV file of ESM-2 (15B parameter model) embeddings of the last hidden layer from a FASTA file of single amino acid mutants:
 
 ```bash
-python plm/esm/extract.py esm2_t48_15B_UR50D output/dms/brenan.fasta output/plm/esm/brenan --toks_per_batch 512 --include mean --concatenate_dir output/plm/esm/
+python evolvepro/plm/esm/extract.py esm2_t48_15B_UR50D output/dms/brenan.fasta output/plm/esm/brenan --toks_per_batch 512 --include mean --concatenate_dir output/plm/esm/
 ```
 
 In this example:

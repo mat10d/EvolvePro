@@ -69,7 +69,7 @@ def first_round(labels, embeddings, explicit_variants=None, num_mutants_per_roun
     # Create DataFrame for the first round
     iteration_zero = pd.DataFrame({'variant': iteration_zero_ids, 'iteration': 0})
     WT = pd.DataFrame({'variant': 'WT', 'iteration': 0}, index=[0])
-    iteration_zero = iteration_zero.append(WT)
+    iteration_zero = pd.concat([iteration_zero, WT], ignore_index=True)
     this_round_variants = iteration_zero.variant
 
     # Merge with labels DataFrame and fill null values with 1001
@@ -151,7 +151,7 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
                              beta_2=0.999, epsilon=1e-08)
     elif regression_type == 'randomforest':
         model = RandomForestRegressor(n_estimators=100, criterion='friedman_mse', max_depth=None, min_samples_split=2,
-                                      min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features='auto',
+                                      min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=1.0,
                                       max_leaf_nodes=None, min_impurity_decrease=0.0, bootstrap=True, oob_score=False,
                                       n_jobs=None, random_state=1, verbose=0, warm_start=False, ccp_alpha=0.0,
                                       max_samples=None)

@@ -59,7 +59,7 @@ cd EvolvePro
 First, create and activate a conda environment with all necessary dependencies for EVOLVEpro:
 
 ```bash
-conda env create -f evolvepro_environment.yml
+conda env create -f environment.yml
 conda activate evolvepro
 ```
 

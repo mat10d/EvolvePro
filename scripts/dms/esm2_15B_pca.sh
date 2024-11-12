@@ -10,7 +10,7 @@
 #SBATCH --output out/esm2_15B_pca-%j.out 
 
 source ~/.bashrc
-conda activate embeddings
+conda activate evolvepro
 module load openmind8/gnu-parallel/20240222
 
 datasets=("brenan" "stiffler" "doud" "haddox" "giacomelli" "jones" "kelsic" "lee" "markin" "zikv_E" "cas12f" "cov2_S")

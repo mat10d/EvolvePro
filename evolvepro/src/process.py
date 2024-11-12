@@ -433,13 +433,14 @@ def generate_n_mutant_combinations(wt_fasta, mutant_file, n, output_file, thresh
     with open(output_file, "w") as handle:
         SeqIO.write(records, handle, "fasta")
 
-def suggest_initial_mutants(fasta_file, num_mutants=10):
+def suggest_initial_mutants(fasta_file, num_mutants=10, random_seed=None):
     """
     Suggest initial mutants for experimental testing.
 
     Args:
         fasta_file (str): Path to the FASTA file containing the mutant sequences.
         num_mutants (int): Number of mutants to suggest (default: 10).
+        random_seed (int): Random seed for reproducibility (default: None).
 
     Returns:
         list: List of suggested mutant IDs
@@ -452,7 +453,7 @@ def suggest_initial_mutants(fasta_file, num_mutants=10):
     
     # Create list of indices and randomly select from them
     indices = np.arange(len(records))
-    selected_indices = np.random.choice(indices, num_mutants, replace=False)
+    selected_indices = np.random.choice(indices, num_mutants, replace=False, random_seed=random_seed)
     
     # Get the selected mutants
     suggested_mutants = [records[i] for i in selected_indices]

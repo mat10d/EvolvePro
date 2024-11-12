@@ -6,11 +6,11 @@
 #SBATCH -n 12
 #SBATCH -N 1   
 #SBATCH --cpus-per-task=5  
-#SBATCH --mem=80gb  
+#SBATCH --mem=160gb  
 #SBATCH --output out/proteinbert_optimal-%j.out 
 
 source ~/.bashrc
-conda activate embeddings
+conda activate evolvepro
 module load openmind8/gnu-parallel/20240222
 
 datasets=("brenan" "stiffler" "doud" "haddox" "giacomelli" "jones" "kelsic" "lee" "markin" "zikv_E" "cas12f" "cov2_S")
