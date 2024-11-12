@@ -415,8 +415,6 @@ def evolve_experimental(
     print(this_round_variants)
     print(f"\nTop {number_of_variants} variants predicted by the model:")
     print(df_test.sort_values(by=['y_pred'], ascending=False).head(number_of_variants))
-    print("\nSorted DataFrame (top 5 rows):")
-    print(df_sorted_all.head())
     
     # Save results if an output_dir is provided
     if output_dir is not None:
@@ -474,8 +472,6 @@ def evolve_experimental_multi(
     
     # Create iteration dataframes
     iteration, labels = create_iteration_dataframes(all_experimental_data, embeddings.index)
-    print(f"iteration shape: {iteration.shape}")
-    print(f"Labels shape: {labels.shape}")
     
     # Perform top layer analysis
     this_round_variants, df_test, df_sorted_all = top_layer(
@@ -492,9 +488,7 @@ def evolve_experimental_multi(
     print(f"\nTested variants in this round: {len(this_round_variants)}")
     print(this_round_variants)
     print(f"\nTop {number_of_variants} variants predicted by the model:")
-    print(df_test.sort_values(by=['y_pred'], ascending=False).head(number_of_variants))
-    print("\nSorted DataFrame (top 5 rows):")
-    print(df_sorted_all.head())
+    print(df_test.sort_values(by=['y_pred'], ascending=False).head(number_of_variants)[['variant', 'y_pred']])
     
     # Save results if an output_dir is provided
     if output_dir is not None:

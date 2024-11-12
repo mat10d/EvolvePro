@@ -443,7 +443,7 @@ def suggest_initial_mutants(fasta_file, num_mutants=10, random_seed=None):
         random_seed (int): Random seed for reproducibility (default: None).
 
     Returns:
-        list: List of suggested mutant IDs
+        None
     """
     # Read the FASTA file
     records = list(SeqIO.parse(fasta_file, "fasta"))
@@ -463,5 +463,3 @@ def suggest_initial_mutants(fasta_file, num_mutants=10, random_seed=None):
     print(f"\nSuggested {num_mutants} mutants for testing:")
     for i, mutant in enumerate(suggested_mutants, 1):
         print(f"{i}. {mutant.id}")
-    
-    return [mutant.id for mutant in suggested_mutants]

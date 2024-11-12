@@ -39,7 +39,7 @@ Use this workflow for iterative experimental optimization of protein activity.
 
 For detailed instructions, see the [Experimental README](scripts/exp/README.md).
 
-### 4. Visualize
+### 4. Plot
 
 Prepare outputs and create visualizations to interpret the results of the EVOLVEpro process.
 
