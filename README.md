@@ -82,9 +82,11 @@ These environments are kept separate to maintain clean dependencies and avoid co
 
 ## Colab Tutorial
 
-For a step-by-step guide on using EVOLVEpro to improve a protein's activity, see our Google Colab tutorial:
+For a step-by-step guide on using EVOLVEpro to improve a protein's activity, simulated on a small dataset that we used as part of the DMS work, see our Google Colab tutorial [here](https://colab.research.google.com/drive/1YCWvR73ItSsJn3P89yk_GY1g5GEJUlgy?usp=sharing).
 
-[Include link to Google Colab notebook here--upcoming]
+.
+
+
 
 ## Citation
 
