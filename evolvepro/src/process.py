@@ -453,8 +453,9 @@ def suggest_initial_mutants(fasta_file, num_mutants=10, random_seed=None):
     
     # Create list of indices and randomly select from them
     indices = np.arange(len(records))
-    selected_indices = np.random.choice(indices, num_mutants, replace=False, random_seed=random_seed)
-    
+    np.random.seed(random_seed)  
+    np.random.choice(indices, num_mutants, replace=False)  
+
     # Get the selected mutants
     suggested_mutants = [records[i] for i in selected_indices]
     
