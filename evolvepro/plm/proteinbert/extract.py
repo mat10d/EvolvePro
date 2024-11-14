@@ -3,9 +3,20 @@ import time
 from pathlib import Path
 import torch
 import pandas as pd
+import os
+import sys
 from Bio import SeqIO
-from proteinbert import load_pretrained_model
-from proteinbert.conv_and_global_attention_model import get_model_with_hidden_layers_as_outputs
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, "../../.."))
+sys.path.append(project_root)
+
+# Create a models directory next to extract.py
+model_path = os.path.join(current_dir, "models")
+os.makedirs(model_path, exist_ok=True)
+
+from external.proteinbert.proteinbert.existing_model_loading import load_pretrained_model
+from external.proteinbert.proteinbert.conv_and_global_attention_model import get_model_with_hidden_layers_as_outputs
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
@@ -43,7 +54,7 @@ def main():
     # Calculate seq_len based on the condition
     seq_len = 512 if max_seq_len <= 512 else max_seq_len + 2
     
-    pretrained_model_generator, input_encoder = load_pretrained_model()
+    pretrained_model_generator, input_encoder = load_pretrained_model(local_model_dump_dir=model_path, validate_downloading=False)
     model = get_model_with_hidden_layers_as_outputs(pretrained_model_generator.create_model(seq_len))
     encoded_x = input_encoder.encode_X(sequences, seq_len)
     local_representations, global_representations = model.predict(encoded_x, batch_size=batch_size)

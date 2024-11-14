@@ -15,7 +15,6 @@ evolvepro.egg-info
 environment_old.yml
 
 # Specific directory
-evolvepro/plm/proteinbert/proteinbert
 scripts/exp/check_embeddings/
 external/
 
