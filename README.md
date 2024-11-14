@@ -4,7 +4,7 @@
 
 EVOLVEpro interprets PLMs embeddings through a top-layer regression model, learning the relationship between sequence and experimentally determined activities through an iterative active learning process. The lightweight random forest regression model can optimize multiple protein properties simultaneously during iterative rounds of testing with as few as 10 experimental data points per round, enabling complex multi-objective evolution campaigns and minimal experimental setup.
 
-We employed an optimized version of EVOLVEpro to evolve a number of proteins for higher activity:
+We employed an optimized version of EVOLVEpro to evolve a number of proteins:
 
 ![EVOVLE pro optimized PsaCas12f](https://youtu.be/68ZZ2lb_scQ)
 
