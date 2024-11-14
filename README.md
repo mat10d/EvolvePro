@@ -5,11 +5,14 @@
 EVOLVEpro interprets PLMs embeddings through a top-layer regression model, learning the relationship between sequence and experimentally determined activities through an iterative active learning process. The lightweight random forest regression model can optimize multiple protein properties simultaneously during iterative rounds of testing with as few as 10 experimental data points per round, enabling complex multi-objective evolution campaigns and minimal experimental setup.
 
 We employed an optimized version of EVOLVEpro, which is available here, to evolve a number of proteins:
-- [Cas12f demo](images/cas12f_output.mp4)
-- [C143 demo](images/c143_output.mp4)
-- [T7 demo](images/T7_output.mp4)
 
-## Process Overview
+![C143 demo](images/c143_output.mp4)
+
+![Cas12f demo](images/cas12f_output.mp4)
+
+![T7 demo](images/T7_output.mp4)
+
+## Overview
 
 The EVOLVEpro workflow consists of four main steps:
 
@@ -57,7 +60,7 @@ For detailed instructions, see the [Plot README](scripts/plot/README.md).
 ### Install
 
 ```bash
-git git clone https://github.com/mat10d/EvolvePro.git
+git clone https://github.com/mat10d/EvolvePro.git
 cd EvolvePro
 ```
 
@@ -91,8 +94,26 @@ These environments are kept separate to maintain clean dependencies and avoid co
 
 For a step-by-step guide on using EVOLVEpro to improve a protein's activity, simulated on a small dataset that we used as part of the DMS work, see our Google Colab tutorial [here](https://colab.research.google.com/drive/1YCWvR73ItSsJn3P89yk_GY1g5GEJUlgy?usp=sharing).
 
+## Issues
+
+If you encounter any bugs, have feature requests, or need assistance, please open an issue on our [GitHub Issues page](https://github.com/mat10d/EvolvePro/issues). When opening an issue, please:
+
+1. Check if a similar issue already exists
+2. Include a clear description of the problem
+3. Add steps to reproduce the issue if applicable
+4. Specify your environment details (OS, Python version, etc.)
+5. Include any relevant error messages or screenshots
+
+We welcome contributions and feedback from the community.
+
 ## Citation
 
 If you use this code in your research, please cite our paper:
 
-[Include citation information--upcoming]
+```
+@ARTICLE
+author={Jiang, Kaiyi and Yan, Zhaoqing and Di Bernardo, Matteo and Sgrizzi, Samantha R. and Villiger, Lukas and Kayabölen, Alişan and Kim, Byungji and Carscadden, Josephine K. and Hiraizumi, Masahiro and Nishimasu, Hiroshi and Gootenberg, Jonathan S. and Abudayyeh, Omar O.}
+title={Rapid protein evolution by few-shot learning with a protein language model}, 
+year={2024},
+DOI={10.1101/2024.07.17.604015}
+```
