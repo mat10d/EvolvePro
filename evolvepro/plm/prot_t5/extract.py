@@ -11,9 +11,15 @@ import argparse
 import time
 from pathlib import Path
 import pandas as pd
+import os
 
 import torch
 from transformers import T5EncoderModel, T5Tokenizer
+
+# Create a models directory next to extract.py
+current_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(current_dir, "models")
+os.makedirs(model_path, exist_ok=True)
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
@@ -126,7 +132,7 @@ def main():
     
     seq_path = Path(args.input)
     emb_path = Path(args.output)
-    model_dir = Path(args.model) if args.model is not None else None
+    model_dir = Path(args.model) if args.model is not None else model_path
 
     per_protein = bool(int(args.per_protein))
     

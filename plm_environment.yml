@@ -5,8 +5,7 @@ channels:
   - pytorch
 dependencies:
   - python=3.10
-  - numpy>=1.22,<1.25
-  - pandas
+  - numpy>=1.22,<=1.24.3
   - pytorch
   - cudatoolkit
   - pathlib
@@ -17,4 +16,4 @@ dependencies:
     - fair-esm
     - jax-unirep
     - transformers
-    - tensorboard
+    - tensorflow>=2.0  
