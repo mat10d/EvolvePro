@@ -1,12 +1,13 @@
 #!/bin/bash
 # Configuration values for SLURM job submission.
 # One leading hash ahead of the word SBATCH is not a comment, but two are.
-#SBATCH --time=24:00:00 
+#SBATCH --time=96:00:00 
+#SBATCH -p abugoot
 #SBATCH --job-name=esm2_15B_num_variants
 #SBATCH -n 12
 #SBATCH -N 1   
 #SBATCH --cpus-per-task=5  
-#SBATCH --mem=80gb  
+#SBATCH --mem=40gb  
 #SBATCH --output out/esm2_15B_num_variants-%j.out 
 
 source ~/.bashrc

@@ -1,6 +1,13 @@
 # EVOLVEpro
 
-This is the offical codebase to reproduce and use EVOLVEpro, a model for in silico directed evolution of protein activities using few-shot active learning.
+![EVOLVEpro Process Overview](images/evolvepro_diagram.png)
+
+EVOLVEpro interprets PLMs embeddings through a top-layer regression model, learning the relationship between sequence and experimentally determined activities through an iterative active learning process. The lightweight random forest regression model can optimize multiple protein properties simultaneously during iterative rounds of testing with as few as 10 experimental data points per round, enabling complex multi-objective evolution campaigns and minimal experimental setup.
+
+We employed an optimized version of EVOLVEpro, which is available here, to evolve a number of proteins:
+- [Cas12f demo](images/cas12f_output.mp4)
+- [C143 demo](images/c143_output.mp4)
+- [T7 demo](images/T7_output.mp4)
 
 ## Process Overview
 
@@ -83,10 +90,6 @@ These environments are kept separate to maintain clean dependencies and avoid co
 ## Colab Tutorial
 
 For a step-by-step guide on using EVOLVEpro to improve a protein's activity, simulated on a small dataset that we used as part of the DMS work, see our Google Colab tutorial [here](https://colab.research.google.com/drive/1YCWvR73ItSsJn3P89yk_GY1g5GEJUlgy?usp=sharing).
-
-.
-
-
 
 ## Citation
 

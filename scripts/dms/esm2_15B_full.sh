@@ -1,7 +1,8 @@
 #!/bin/bash
 # Configuration values for SLURM job submission.
 # One leading hash ahead of the word SBATCH is not a comment, but two are.
-#SBATCH --time=48:00:00 
+#SBATCH --time=7-00:00:00 
+#SBATCH -p abugoot
 #SBATCH --job-name=esm2_15B_full
 #SBATCH -n 12
 #SBATCH -N 1   
