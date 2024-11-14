@@ -10,7 +10,8 @@ We employed an optimized version of EVOLVEpro to evolve a number of proteins:
 
 ![EVOVLE pro optimized C143 Antibody](https://youtu.be/ghorRNij-jQ)
 
-![EVOVLE pro optimized T7 RNAP](https://youtu.be/A0FQn-6qFIk)
+[![EVOVLEpro optimized T7 RNAP](https://img.youtube.com/vi/A0FQn-6qFIk/0.jpg)](https://www.youtube.com/watch?v=A0FQn-6qFIk)
+
 
 ## Overview
 
