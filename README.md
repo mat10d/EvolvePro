@@ -6,12 +6,14 @@ EVOLVEpro interprets PLMs embeddings through a top-layer regression model, learn
 
 We employed an optimized version of EVOLVEpro to evolve a number of proteins:
 
-![EVOLVEpro optimized PsaCas12f](https://youtu.be/68ZZ2lb_scQ)
+![EVOLVEpro optimized PsaCas12f](images/cas12f_output.gif)
+*Caption: EVOLVEpro optimized PsaCas12f*
 
-![EVOLVEpro optimized C143 Antibody](https://youtu.be/ghorRNij-jQ)
+![EVOLVEpro optimized C143 Antibody](images/c143_output.gif)
+*Caption: EVOLVEpro optimized C143 Antibody*
 
-[![EVOLVEpro optimized T7 RNAP](https://img.youtube.com/vi/A0FQn-6qFIk/0.jpg)](https://www.youtube.com/watch?v=A0FQn-6qFIk)
-
+![EVOLVEpro optimized T7 RNAP](images/T7_output.gif)
+*Caption: EVOLVEpro optimized T7 RNAP*
 
 ## Overview
 
