@@ -6,8 +6,8 @@
 #SBATCH --job-name=esm2_15B_full
 #SBATCH -n 12
 #SBATCH -N 1   
-#SBATCH --cpus-per-task=5  
-#SBATCH --mem=160gb  
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=80gb  
 #SBATCH --output out/esm2_15B_full-%j.out 
 
 source ~/.bashrc
