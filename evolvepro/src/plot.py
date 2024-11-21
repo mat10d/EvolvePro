@@ -238,7 +238,7 @@ def plot_comparison(concatenated_df, palette=None, variable='activity_binary_per
     # Plot 1: Bar plot by dataset
     plt.figure(figsize=(10, 6))
     ax = sns.barplot(data=concatenated_df, x='dataset', y=variable, 
-                     hue='label', palette=palette_colors, errorbar=None, alpha=0.75)
+                     hue='label', palette=palette_colors, alpha=0.75)
     plt.xlabel('Dataset')
     plt.ylabel(f'{variable.replace("_", " ").title()}')
     plt.title(title)
@@ -255,7 +255,7 @@ def plot_comparison(concatenated_df, palette=None, variable='activity_binary_per
     # Plot 2: Bar plot by label with swarm plot
     plt.figure(figsize=(7, 6))
     ax = sns.barplot(data=concatenated_df, x='label', y=variable,
-                     palette=palette_colors, errorbar=None, alpha=0.75)
+                     palette=palette_colors, alpha=0.75)
     sns.swarmplot(data=concatenated_df, x='label', y=variable, 
                   size=4, color="black")
     plt.xlabel('Model')
@@ -292,7 +292,7 @@ def plot_grid_search_bar(df, variable='activity_binary_percentage_mean', strateg
 
     # Plot
     plt.figure(figsize=(10, 6))
-    ax = sns.barplot(data=df, x='dataset', y=variable, hue=strategy_column, errorbar=None, alpha=0.75)
+    ax = sns.barplot(data=df, x='dataset', y=variable, hue=strategy_column, alpha=0.75)
     
     if title is None:
         title = f'{variable.replace("_", " ").title()} by {strategy_column.replace("_", " ").title()} ({round_num} rounds)'
