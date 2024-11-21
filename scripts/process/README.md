@@ -42,15 +42,15 @@ This script processes deep mutational scanning (DMS) data for various proteins.
 
 ### How to Run:
 
-Many of these DMS datasets were taken from Livesey & Marsh (Mol Syst Biol.) and can be accessed through [Figshare](https://figshare.com/articles/dataset/Raw_variant_effect_predictions_and_DMS_data_for_benchmarking_variant_effect_predictors_/12369359/1?file=22798430). A high fitness cutoff was set manually for each of these datasets. The output target is a FASTA file of all single AA substitutions *in the DMS dataset*, as well as a file that contains fitness measurements in a specific format. 
+Many of these DMS datasets were taken from Livesey & Marsh (Mol Syst Biol.) and can be accessed through [Figshare](https://figshare.com/articles/dataset/Raw_variant_effect_predictions_and_DMS_data_for_benchmarking_variant_effect_predictors_/12369359/1?file=22798430). A high activity cutoff was set manually for each of these datasets. The output target is a FASTA file of all single AA substitutions *in the DMS dataset*, as well as a file that contains activity measurements in a specific format. 
 
 ```python
 from evolvepro.src.process import process_dataset
 process_dataset(
-    file_path='data/dms/fitness/Source.xlsx',
+    file_path='data/dms/activity/Source.xlsx',
     dataset_name='brenan',
     wt_fasta_path='data/dms/wt_fasta/brenan_WT.fasta',
-    fitness_column='DMS_SCH',
+    activity_column='DMS_SCH',
     cutoff_value=2.5,
     output_dir='output/dms',
     sheet_name='MAPK1',

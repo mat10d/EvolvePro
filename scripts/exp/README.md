@@ -17,7 +17,7 @@ conda activate evolvepro
 
 1. FASTA file: Contains the wild-type protein sequence
 2. PLM embeddings: CSV file(s) containing embeddings for all mutants of interest
-3. Round data: Excel files containing fitness measurements for each round of evolution
+3. Round data: Excel files containing activity measurements for each round of evolution
 
 ## Key Parameters
 

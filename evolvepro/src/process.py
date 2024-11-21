@@ -9,7 +9,7 @@ from itertools import combinations
 
 # For dms data:
 
-def process_dataset(file_path, wt_fasta_path, dataset_name, fitness_column, cutoff_value, output_dir, sheet_name=None, cutoff_rule='greater_than', cutoff_percentiles=None, cutoff_function=None, AA_shift=None, drop_columns=False):
+def process_dataset(file_path, wt_fasta_path, dataset_name, activity_column, cutoff_value, output_dir, sheet_name=None, cutoff_rule='greater_than', cutoff_percentiles=None, cutoff_function=None, AA_shift=None, drop_columns=False):
     """
     Process a dataset from an Excel or CSV file and generate a FASTA file of mutations.
 
@@ -17,7 +17,7 @@ def process_dataset(file_path, wt_fasta_path, dataset_name, fitness_column, cuto
         file_path (str): Path to the input file (Excel or CSV).
         wt_fasta_path (str): Path to the WT sequence FASTA file.
         dataset_name (str): Name of the dataset to be used for output files.
-        fitness_column (str): Name of the column containing fitness values.
+        activity_column (str): Name of the column containing activity values.
         cutoff_value (float): Base cutoff value for binary classification.
         output_dir (str): Directory to save output files.
         sheet_name (str, optional): Name of the sheet if Excel file. Defaults to None.
@@ -39,19 +39,19 @@ def process_dataset(file_path, wt_fasta_path, dataset_name, fitness_column, cuto
         raise ValueError("Unsupported file format. Please provide an Excel (.xlsx) or CSV (.csv) file.")
 
     # Filter and process the data
-    filtered_df = dataframe.dropna(subset=[fitness_column]).copy()
+    filtered_df = dataframe.dropna(subset=[activity_column]).copy()
     wt_sequence = next(SeqIO.parse(wt_fasta_path, 'fasta')).seq
     
     # Generate FASTA file of mutations
     generate_mutation_fasta(filtered_df, wt_sequence, dataset_name, output_dir, AA_shift)
 
-    # Process fitness data
-    filtered_df['fitness'] = filtered_df[fitness_column]
-    filtered_df['fitness_scaled'] = (filtered_df[fitness_column] - filtered_df[fitness_column].min()) / (filtered_df[fitness_column].max() - filtered_df[fitness_column].min())
+    # Process activity data
+    filtered_df['activity'] = filtered_df[activity_column]
+    filtered_df['activity_scaled'] = (filtered_df[activity_column] - filtered_df[activity_column].min()) / (filtered_df[activity_column].max() - filtered_df[activity_column].min())
     
     # Calculate cutoffs including the base cutoff value
     cutoff_percentiles = cutoff_percentiles or []
-    all_cutoffs = [cutoff_value] + [np.percentile(filtered_df[fitness_column], p) for p in cutoff_percentiles]
+    all_cutoffs = [cutoff_value] + [np.percentile(filtered_df[activity_column], p) for p in cutoff_percentiles]
     cutoff_labels = [''] + [f'_{p}p' for p in cutoff_percentiles]
     
     # Apply cutoffs and calculate fractions
@@ -60,15 +60,15 @@ def process_dataset(file_path, wt_fasta_path, dataset_name, fitness_column, cuto
     number_above_cutoff = []
 
     for i, (cutoff, label) in enumerate(zip(all_cutoffs, cutoff_labels)):
-        column_name = f'fitness_binary{label}'
+        column_name = f'activity_binary{label}'
         if cutoff_rule == 'greater_than':
-            filtered_df[column_name] = (filtered_df[fitness_column] > cutoff).astype(int)
+            filtered_df[column_name] = (filtered_df[activity_column] > cutoff).astype(int)
         elif cutoff_rule == 'less_than':
-            filtered_df[column_name] = (filtered_df[fitness_column] < cutoff).astype(int)
+            filtered_df[column_name] = (filtered_df[activity_column] < cutoff).astype(int)
         elif cutoff_rule == 'custom':
             if cutoff_function is None:
                 raise ValueError("Custom function must be provided for 'custom' cutoff rule.")
-            filtered_df[column_name] = cutoff_function(filtered_df, fitness_column, cutoff).astype(int)
+            filtered_df[column_name] = cutoff_function(filtered_df, activity_column, cutoff).astype(int)
         else:
             raise ValueError("Invalid cutoff rule. Please specify 'greater_than', 'less_than', or 'custom'.")
         
@@ -85,7 +85,7 @@ def process_dataset(file_path, wt_fasta_path, dataset_name, fitness_column, cuto
 
     # Drop unnecessary columns if specified
     if drop_columns:
-        columns_to_keep = ['variant', fitness_column, 'fitness', 'fitness_scaled'] + [f'fitness_binary{label}' for label in cutoff_labels]
+        columns_to_keep = ['variant', activity_column, 'activity', 'activity_scaled'] + [f'activity_binary{label}' for label in cutoff_labels]
         filtered_df = filtered_df[columns_to_keep]
 
     # Save processed data
@@ -176,23 +176,23 @@ def plot_histogram_of_readout(df, column_name, cutoff=None):
     ax.legend()
     plt.show()
 
-def markin_custom_cutoff(markin_df, fitness_column, cutoff):
+def markin_custom_cutoff(markin_df, activity_column, cutoff):
     """
-    Apply a custom cutoff to the Markin dataframe based on fitness and p-value.
+    Apply a custom cutoff to the Markin dataframe based on activity and p-value.
 
     Args:
-        markin_df (pd.DataFrame): The input DataFrame containing fitness and p-values.
-        fitness_column (str): The column name of the fitness values.
-        cutoff (float): The cutoff value for the fitness column.
+        markin_df (pd.DataFrame): The input DataFrame containing activity and p-values.
+        activity_column (str): The column name of the activity values.
+        cutoff (float): The cutoff value for the activity column.
 
     Returns:
-        pd.Series: A binary Series ('fitness_binary') with values 0 or 1 based on cutoff and p-value.
+        pd.Series: A binary Series ('activity_binary') with values 0 or 1 based on cutoff and p-value.
     """
     
-    # Apply the cutoff on the fitness column and p-value
-    fitness_binary = ((markin_df[fitness_column] > cutoff) & (markin_df['kcatOverKM_cMUP_p-value'] < 0.01))
+    # Apply the cutoff on the activity column and p-value
+    activity_binary = ((markin_df[activity_column] > cutoff) & (markin_df['kcatOverKM_cMUP_p-value'] < 0.01))
 
-    return fitness_binary
+    return activity_binary
 
 def preprocess_cas12f(input_cas12f, wt_fasta_output, preprocessed_output_file):
     """
@@ -220,7 +220,7 @@ def preprocess_cas12f(input_cas12f, wt_fasta_output, preprocessed_output_file):
         f.write(f'>AsCas12f\n{wt_sequence}\n')
 
     # Process non-WT rows
-    df = df[df['mean'] != 1].rename(columns={'variant': 'variant_raw', 'mean': 'avg_fitness'})
+    df = df[df['mean'] != 1].rename(columns={'variant': 'variant_raw', 'mean': 'avg_activity'})
 
     # Merge WT information
     df = df.merge(wt_rows[['position', 'WT']], on='position', how='left')
@@ -230,14 +230,14 @@ def preprocess_cas12f(input_cas12f, wt_fasta_output, preprocessed_output_file):
 
     # Clean up the dataframe
     df = df.drop(columns=['No'])
-    df = df[(df['substitution'] != '*') & (~df['avg_fitness'].isna())]
+    df = df[(df['substitution'] != '*') & (~df['avg_activity'].isna())]
 
     # Add WT row
     wt_row = pd.DataFrame({
         'variant_raw': ['WT'],
         'rep1': [1.0],
         'rep2': [1.0],
-        'avg_fitness': [1.0],
+        'avg_activity': [1.0],
         'substitution': [np.nan],
         'position': [np.nan],
         'WT': ['WT'],
@@ -306,7 +306,7 @@ def preprocess_cov2_S(input_cov2_S, preprocessed_output_file):
     # Drop unnecessary columns
     df = df.drop(columns=['site_total_escape', 'site_max_escape', 'condition'])
 
-    # Group by variant and calculate mean fitness
+    # Group by variant and calculate mean activity
     df_averaged = df.groupby(['variant', 'site', 'wildtype', 'mutation'])['mut_escape'].mean().reset_index()
 
     # Sort by site

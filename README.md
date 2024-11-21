@@ -6,11 +6,11 @@ EVOLVEpro interprets PLMs embeddings through a top-layer regression model, learn
 
 We employed an optimized version of EVOLVEpro to evolve a number of proteins:
 
-![EVOVLE pro optimized PsaCas12f](https://youtu.be/68ZZ2lb_scQ)
+![EVOLVEpro optimized PsaCas12f](https://youtu.be/68ZZ2lb_scQ)
 
-![EVOVLE pro optimized C143 Antibody](https://youtu.be/ghorRNij-jQ)
+![EVOLVEpro optimized C143 Antibody](https://youtu.be/ghorRNij-jQ)
 
-[![EVOVLEpro optimized T7 RNAP](https://img.youtube.com/vi/A0FQn-6qFIk/0.jpg)](https://www.youtube.com/watch?v=A0FQn-6qFIk)
+[![EVOLVEpro optimized T7 RNAP](https://img.youtube.com/vi/A0FQn-6qFIk/0.jpg)](https://www.youtube.com/watch?v=A0FQn-6qFIk)
 
 
 ## Overview
@@ -41,7 +41,7 @@ For detailed instructions, see the [PLM README](scripts/plm/README.md).
 Apply the EVOLVEpro model to optimize protein activity. There are two main workflows:
 
 #### DMS Workflow
-Use this workflow to optimize a few-shot model on a deep mutational scanning (DMS) dataset, where fitness values are known for a large number of variants.
+Use this workflow to optimize a few-shot model on a deep mutational scanning (DMS) dataset, where activity values are known for a large number of variants.
 
 For detailed instructions, see the [DMS README](scripts/dms/README.md).
 

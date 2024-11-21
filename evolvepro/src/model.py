@@ -119,19 +119,19 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
     X_test = a.loc[idx_test, :]
     
     y_train = labels[iteration.isin(iter_train)][measured_var]
-    y_train_fitness_scaled = labels[iteration.isin(iter_train)]['fitness_scaled']
-    y_train_fitness_binary = labels[iteration.isin(iter_train)]['fitness_binary']
+    y_train_activity_scaled = labels[iteration.isin(iter_train)]['activity_scaled']
+    y_train_activity_binary = labels[iteration.isin(iter_train)]['activity_binary']
 
     if iter_test is not None:
         y_test = labels[iteration.isin([iter_test])][measured_var]
         print(y_test.shape)
-        y_test_fitness_scaled = labels[iteration.isin([iter_test])]['fitness_scaled']
-        y_test_fitness_binary = labels[iteration.isin([iter_test])]['fitness_binary']
+        y_test_activity_scaled = labels[iteration.isin([iter_test])]['activity_scaled']
+        y_test_activity_binary = labels[iteration.isin([iter_test])]['activity_binary']
     else:
         y_test = labels[iteration.isna()][measured_var]
         print(y_test.shape)
-        y_test_fitness_scaled = labels[iteration.isna()]['fitness_scaled']
-        y_test_fitness_binary = labels[iteration.isna()]['fitness_binary']        
+        y_test_activity_scaled = labels[iteration.isna()]['activity_scaled']
+        y_test_activity_binary = labels[iteration.isna()]['activity_binary']        
 
 
     # fit
@@ -190,10 +190,10 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
 
     # combine predicted and actual thermostability values with sequence IDs into a new dataframe
     df_train = pd.DataFrame({'variant': labels.variant[idx_train], 'y_pred': y_pred_train, 'y_actual': y_train, 
-                             'y_actual_scaled': y_train_fitness_scaled, 'y_actual_binary': y_train_fitness_binary,
+                             'y_actual_scaled': y_train_activity_scaled, 'y_actual_binary': y_train_activity_binary,
                              'dist_metric': dist_metric_train, 'std_predictions': y_std_train})
     df_test = pd.DataFrame({'variant': labels.variant[idx_test], 'y_pred': y_pred_test, 'y_actual': y_test, 
-                            'y_actual_scaled': y_test_fitness_scaled, 'y_actual_binary': y_test_fitness_binary,
+                            'y_actual_scaled': y_test_activity_scaled, 'y_actual_binary': y_test_activity_binary,
                             'dist_metric': dist_metric_test, 'std_predictions': y_std_test})
     df_all = pd.concat([df_train, df_test])
 
@@ -203,15 +203,15 @@ def top_layer(iter_train, iter_test, embeddings_pd, labels_pd, measured_var, reg
     this_round_variants = df_train.variant
 
     # Calculate additional metrics
-    median_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].median()
-    top_fitness_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].max()
-    top_variant = df_sorted_all.loc[df_sorted_all['y_actual_scaled'] == top_fitness_scaled, 'variant'].values[0]
+    median_activity_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].median()
+    top_activity_scaled = df_sorted_all.loc[:final_round, 'y_actual_scaled'].max()
+    top_variant = df_sorted_all.loc[df_sorted_all['y_actual_scaled'] == top_activity_scaled, 'variant'].values[0]
     top_final_round_variants = ",".join(df_sorted_all.loc[:final_round, 'variant'].tolist())
     spearman_corr = df_sorted_all[['y_pred', 'y_actual']].corr(method='spearman').iloc[0, 1]
-    fitness_binary_percentage = df_sorted_all.loc[:final_round, 'y_actual_binary'].mean()
+    activity_binary_percentage = df_sorted_all.loc[:final_round, 'y_actual_binary'].mean()
 
     if experimental:
         return this_round_variants, df_test, df_sorted_all
     else:
-        return train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, top_final_round_variants, fitness_binary_percentage, spearman_corr, df_test, this_round_variants
+        return train_error, test_error, train_r_squared, test_r_squared, alpha, median_activity_scaled, top_activity_scaled, top_variant, top_final_round_variants, activity_binary_percentage, spearman_corr, df_test, this_round_variants
 

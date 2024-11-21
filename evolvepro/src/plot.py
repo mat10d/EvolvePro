@@ -216,7 +216,7 @@ def concatenate_dataframes(dataframes, output_dir = None, output_file = None):
     
     return concatenated_df
 
-def plot_comparison(concatenated_df, palette=None, variable='fitness_binary_percentage_mean', title=None, output_dir=None, output_file=None):
+def plot_comparison(concatenated_df, palette=None, variable='activity_binary_percentage_mean', title=None, output_dir=None, output_file=None):
     """
     Generate plots from a concatenated dataframe.
     
@@ -269,7 +269,7 @@ def plot_comparison(concatenated_df, palette=None, variable='fitness_binary_perc
     
     plt.show()
 
-def plot_grid_search_bar(df, variable='fitness_binary_percentage_mean', strategy_column=None, title=None, output_dir=None, output_file=None):
+def plot_grid_search_bar(df, variable='activity_binary_percentage_mean', strategy_column=None, title=None, output_dir=None, output_file=None):
     """
     Generate plots from a dataframe to compare different strategies.
     
@@ -317,7 +317,7 @@ def plot_grid_search_bar(df, variable='fitness_binary_percentage_mean', strategy
     print("\nCounts of Winning Strategies:")
     print(winning_counts)
 
-def plot_grid_search_heatmap(df, variable='fitness_binary_percentage_mean', strategy_columns=None, title=None, output_dir=None, output_file=None):
+def plot_grid_search_heatmap(df, variable='activity_binary_percentage_mean', strategy_columns=None, title=None, output_dir=None, output_file=None):
     """
     Generate a heatmap from a dataframe to compare the intersection of two strategies.
     
@@ -359,7 +359,7 @@ def plot_grid_search_heatmap(df, variable='fitness_binary_percentage_mean', stra
     
     plt.show()
 
-def plot_by_round(df, variable='fitness_binary_percentage_mean', output_dir=None, output_file=None):
+def plot_by_round(df, variable='activity_binary_percentage_mean', output_dir=None, output_file=None):
     """
     Plot round-by-round comparison for each dataset.
     
@@ -399,7 +399,7 @@ def plot_by_round(df, variable='fitness_binary_percentage_mean', output_dir=None
     
     plt.show()
 
-def plot_by_round_split(df, variable='fitness_binary_percentage_mean', split_variable='num_mutants_per_round', output_dir=None, output_file=None):
+def plot_by_round_split(df, variable='activity_binary_percentage_mean', split_variable='num_mutants_per_round', output_dir=None, output_file=None):
     """
     Plot round-by-round comparison with separate subplots for each dataset, with lines split by a specified variable.
     Includes a shared legend for all subplots.
@@ -478,30 +478,30 @@ def plot_by_round_split(df, variable='fitness_binary_percentage_mean', split_var
     
     plt.show()
 
-def plot_variants_by_iteration(df, fitness_column='fitness', output_dir=None, output_file=None):
+def plot_variants_by_iteration(df, activity_column='activity', output_dir=None, output_file=None):
     """
     Simple bar plot of variants grouped by iteration.
     
     Args:
-    df: DataFrame with 'variant', 'iteration', and fitness column
-    fitness_column: Column name containing fitness values
+    df: DataFrame with 'variant', 'iteration', and activity column
+    activity_column: Column name containing activity values
     output_dir: Directory to save the plot
     output_file: Filename for the saved plot
     """
-    # sort the dataframe by iteration and the fitness column within each iteration
+    # sort the dataframe by iteration and the activity column within each iteration
     df['iteration'] = df['iteration'].astype(int)
-    df = df.sort_values(['iteration', fitness_column], ascending=[True, True])
+    df = df.sort_values(['iteration', activity_column], ascending=[True, True])
     df = df.reset_index(drop=True)
 
     plt.figure(figsize=(12, 6))
     
     # Plot each variant in the order of the dataframe, colored by iteration
     for iteration, group in df.groupby('iteration'):
-        plt.bar(group.index, group[fitness_column], label=f"Round {iteration}")
+        plt.bar(group.index, group[activity_column], label=f"Round {iteration}")
 
     # Customize
     plt.xticks(df.index, df['variant'], rotation=90)
-    plt.ylabel(fitness_column.capitalize())
+    plt.ylabel(activity_column.capitalize())
     plt.legend()
     
     plt.tight_layout()

@@ -23,6 +23,6 @@ conda activate evolvepro
 
 ## Experimental Evolution Visualization (exp.py)
 - `read_exp_data()`: Loads experimental round data from Excel files
-- `plot_variants_by_iteration()`: Tracks fitness progression across rounds
+- `plot_variants_by_iteration()`: Tracks activity progression across rounds
 
 All functions save outputs as PNG/PDF files and processed data as CSVs.

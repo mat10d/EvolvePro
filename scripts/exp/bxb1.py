@@ -62,7 +62,7 @@ evolve_experimental(
     output_dir
 )
 
-# Round 4 -- round 3 was excluded due to concerns surrounding fitness measurements
+# Round 4 -- round 3 was excluded due to concerns surrounding activity measurements
 round_name = 'Round4'
 round_file_names = ['bxb1_Round1.xlsx', 'bxb1_Round2.xlsx', 'bxb1_Round4.xlsx']
 rename_WT = True
@@ -80,7 +80,7 @@ evolve_experimental(
     output_dir
 )
 
-# Round 5 -- rounds 2 and 3 were excluded due to concerns surrounding fitness measurements (for all subsequent rounds)
+# Round 5 -- rounds 2 and 3 were excluded due to concerns surrounding activity measurements (for all subsequent rounds)
 round_name = 'Round5'
 round_file_names = ['bxb1_Round1.xlsx', 'bxb1_Round4.xlsx', 'bxb1_Round5.xlsx']
 rename_WT = True

@@ -13,7 +13,7 @@ wt_fasta_path = "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/data
 
 df = read_exp_data(round_base_path, round_file_names_single, wt_fasta_path, round_file_names_multi)
 
-plot_variants_by_iteration(df, fitness_column='fitness', output_dir=output_dir, output_file="t7_pol")
+plot_variants_by_iteration(df, activity_column='activity', output_dir=output_dir, output_file="t7_pol")
 
 # mlv
 round_base_path = '/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/data/exp/exp_data/mlv/rounds'
@@ -22,7 +22,7 @@ wt_fasta_path = "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/data
 
 df = read_exp_data(round_base_path, round_file_names_single, wt_fasta_path)
 
-plot_variants_by_iteration(df, fitness_column='fitness', output_dir=output_dir, output_file="mlv")
+plot_variants_by_iteration(df, activity_column='activity', output_dir=output_dir, output_file="mlv")
 
 # bxb1
 round_base_path = '/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/data/exp/exp_data/bxb1/rounds'
@@ -31,6 +31,6 @@ wt_fasta_path = "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/data
 
 df = read_exp_data(round_base_path, round_file_names_single, wt_fasta_path)
 
-plot_variants_by_iteration(df, fitness_column='fitness', output_dir=output_dir, output_file="bxb1")
+plot_variants_by_iteration(df, activity_column='activity', output_dir=output_dir, output_file="bxb1")
 
 

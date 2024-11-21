@@ -42,7 +42,7 @@ def load_dms_data(dataset_name: str, model_name: str, embeddings_path: str, labe
         return None, None
 
     # Align embeddings with labels
-    labels = labels[labels['fitness'].notna()]
+    labels = labels[labels['activity'].notna()]
     embeddings = embeddings[embeddings.index.isin(labels['variant'])]
 
     # Sort labels and embeddings by variant
@@ -159,7 +159,7 @@ def create_iteration_dataframes(df_list: List[pd.DataFrame], expected_variants: 
     Returns:
         Tuple[Union[pd.DataFrame, None], Union[pd.DataFrame, None]]: 
             - iteration DataFrame: Contains variant and iteration information for training.
-            - labels DataFrame: Contains variant, fitness, and iteration information for testing.
+            - labels DataFrame: Contains variant, activity, and iteration information for testing.
             Returns (None, None) if duplicates are found.
     """
     processed_dfs = []
@@ -191,11 +191,11 @@ def create_iteration_dataframes(df_list: List[pd.DataFrame], expected_variants: 
     iteration = combined_df[['variant', 'iteration']]
 
     # Create iter_test dataframe
-    labels = combined_df[['variant', 'fitness', 'iteration']]
+    labels = combined_df[['variant', 'activity', 'iteration']]
 
-    # Add a fitness_binary and fitness_scaled column to labels
-    labels['fitness_binary'] = labels['fitness'].apply(lambda x: 1 if x >= 1 else 0)
-    labels['fitness_scaled'] = labels['fitness'].apply(lambda x: (x - labels['fitness'].min()) / (labels['fitness'].max() - labels['fitness'].min()))
+    # Add a activity_binary and activity_scaled column to labels
+    labels['activity_binary'] = labels['activity'].apply(lambda x: 1 if x >= 1 else 0)
+    labels['activity_scaled'] = labels['activity'].apply(lambda x: (x - labels['activity'].min()) / (labels['activity'].max() - labels['activity'].min()))
 
     # Add missing variants to iter_test
     labels = add_missing_variants(labels, expected_variants)
@@ -241,9 +241,9 @@ def add_missing_variants(df: pd.DataFrame, expected_variants: List[str]) -> pd.D
     missing_variants = set(expected_variants) - set(df['variant'])
     missing_df = pd.DataFrame({
         'variant': list(missing_variants),
-        'fitness': np.nan,
-        'fitness_binary': np.nan,
-        'fitness_scaled': np.nan,
+        'activity': np.nan,
+        'activity_binary': np.nan,
+        'activity_scaled': np.nan,
         'iteration': np.nan
     })
     return pd.concat([df, missing_df], ignore_index=True)

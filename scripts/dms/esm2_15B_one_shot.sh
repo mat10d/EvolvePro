@@ -29,7 +29,7 @@ run_dms_main() {
         --labels_path "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/output/dms" \
         --num_simulations 10 \
         --num_iterations 1 \
-        --measured_var "fitness" \
+        --measured_var "activity" \
         --learning_strategies "top10" \
         --num_mutants_per_round 16 80 160 500 1000 \
         --num_final_round_mutants 16 \

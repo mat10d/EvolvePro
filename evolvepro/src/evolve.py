@@ -15,7 +15,7 @@ def directed_evolution_simulation(
     num_simulations: int, 
     num_iterations: int, 
     num_mutants_per_round: int = 10, 
-    measured_var: str = 'fitness', 
+    measured_var: str = 'activity', 
     regression_type: str = 'ridge', 
     learning_strategy: str = 'top10', 
     top_n: int = None, 
@@ -66,12 +66,12 @@ def directed_evolution_simulation(
         train_r_squared_list = []
         test_r_squared_list = []
         alpha_list = []
-        median_fitness_scaled_list = []
+        median_activity_scaled_list = []
         top_variant_list = []
         top_final_round_variants_list = []
-        top_fitness_scaled_list = []
+        top_activity_scaled_list = []
         spearman_corr_list = []
-        fitness_binary_percentage_list = []
+        activity_binary_percentage_list = []
         
         # Initialize the list of variants for each round
         this_round_variants_list = []
@@ -106,11 +106,11 @@ def directed_evolution_simulation(
                 train_r_squared_list.append("None")
                 test_r_squared_list.append("None")
                 alpha_list.append("None")
-                median_fitness_scaled_list.append("None")
-                top_fitness_scaled_list.append("None")
+                median_activity_scaled_list.append("None")
+                top_activity_scaled_list.append("None")
                 top_variant_list.append("None")
                 top_final_round_variants_list.append("None")
-                fitness_binary_percentage_list.append("None")
+                activity_binary_percentage_list.append("None")
                 spearman_corr_list.append("None")
                 # Append the variants for the first round, round 0 will have None
                 this_round_variants_list.append("None")
@@ -123,7 +123,7 @@ def directed_evolution_simulation(
                 iteration_old = iteration_new
                 print("iterations considered", iteration_old)
                 
-                train_error, test_error, train_r_squared, test_r_squared, alpha, median_fitness_scaled, top_fitness_scaled, top_variant, top_final_round_variants, fitness_binary_percentage, spearman_corr, df_test_new, this_round_variants = top_layer(
+                train_error, test_error, train_r_squared, test_r_squared, alpha, median_activity_scaled, top_activity_scaled, top_variant, top_final_round_variants, activity_binary_percentage, spearman_corr, df_test_new, this_round_variants = top_layer(
                     iter_train=iteration_old['iteration'].unique().tolist(), iter_test=None,
                     embeddings_pd=embeddings, labels_pd=labels_new,
                     measured_var=measured_var, regression_type=regression_type, top_n=top_n, final_round=final_round)
@@ -156,11 +156,11 @@ def directed_evolution_simulation(
                 train_r_squared_list.append(train_r_squared)
                 test_r_squared_list.append(test_r_squared)
                 alpha_list.append(alpha)
-                median_fitness_scaled_list.append(median_fitness_scaled)
-                top_fitness_scaled_list.append(top_fitness_scaled)
+                median_activity_scaled_list.append(median_activity_scaled)
+                top_activity_scaled_list.append(top_activity_scaled)
                 top_variant_list.append(top_variant)
                 top_final_round_variants_list.append(top_final_round_variants)
-                fitness_binary_percentage_list.append(fitness_binary_percentage)
+                activity_binary_percentage_list.append(activity_binary_percentage)
                 spearman_corr_list.append(spearman_corr)
 
                 this_round_variants_list.append(",".join(iteration_old.variant))
@@ -183,9 +183,9 @@ def directed_evolution_simulation(
                 'test_r_squared': test_r_squared_list,
                 'alpha': alpha_list, 
                 "spearman_corr": spearman_corr_list,
-                'median_fitness_scaled': median_fitness_scaled_list, 
-                'top_fitness_scaled': top_fitness_scaled_list, 
-                'fitness_binary_percentage': fitness_binary_percentage_list, 
+                'median_activity_scaled': median_activity_scaled_list, 
+                'top_activity_scaled': top_activity_scaled_list, 
+                'activity_binary_percentage': activity_binary_percentage_list, 
                 "top_variant": top_variant_list, 
                 "top_final_round_variants": top_final_round_variants_list, 
                 "this_round_variants": this_round_variants_list, 
@@ -405,7 +405,7 @@ def evolve_experimental(
         iter_test=None,
         embeddings_pd=embeddings,
         labels_pd=labels,
-        measured_var='fitness',
+        measured_var='activity',
         regression_type='randomforest',
         experimental=True
     )
@@ -479,7 +479,7 @@ def evolve_experimental_multi(
         iter_test=None,
         embeddings_pd=embeddings,
         labels_pd=labels,
-        measured_var='fitness',
+        measured_var='activity',
         regression_type='randomforest',
         experimental=True
     )

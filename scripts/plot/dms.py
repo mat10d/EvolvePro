@@ -18,7 +18,7 @@ esm2_15B_one_shot = read_dms_data(
     model="esm2_t48_15B_UR50D",
     experiment="esm2_15B_one_shot",
     group_columns=["num_mutants_per_round", "round_num"],
-    aggregate_columns=["median_fitness_scaled", "top_fitness_scaled", "fitness_binary_percentage"]
+    aggregate_columns=["median_activity_scaled", "top_activity_scaled", "activity_binary_percentage"]
 )
 
 esm2_15B_one_shot = apply_labels(
@@ -35,7 +35,7 @@ esm2_15B_optimal = read_dms_data(
     model="esm2_t48_15B_UR50D",
     experiment="esm2_15B_optimal",
     group_columns=["num_mutants_per_round", "round_num"],
-    aggregate_columns=["median_fitness_scaled", "top_fitness_scaled", "fitness_binary_percentage"]
+    aggregate_columns=["median_activity_scaled", "top_activity_scaled", "activity_binary_percentage"]
 )
 
 esm2_15B_optimal = filter_dataframe(esm2_15B_optimal, conditions={"round_num": [5, 10]})
@@ -51,7 +51,7 @@ esm2_15B_optimal = apply_labels(
 background = load_external_data(
     os.path.join(base_dir, "output/dms/background_df.csv"),
     label="background",
-    rename_columns={'defined': 'fitness_binary_percentage_mean'}
+    rename_columns={'defined': 'activity_binary_percentage_mean'}
 )
 efficient_evolution = load_external_data(
     os.path.join(base_dir, "output/dms_results/external_data/efficient-evolution.csv"),
@@ -100,7 +100,7 @@ for model, experiment in models:
         model=model,
         experiment=experiment,
         group_columns=["num_mutants_per_round", "round_num"],
-        aggregate_columns=["median_fitness_scaled", "top_fitness_scaled", "fitness_binary_percentage"]
+        aggregate_columns=["median_activity_scaled", "top_activity_scaled", "activity_binary_percentage"]
     )
     df = apply_labels(df, column='label', value_column='model')
     processed_dfs.append(df)
@@ -149,7 +149,7 @@ esm2_15B_grid = read_dms_data(
         "num_mutants_per_round", "round_num", "first_round_strategy",
         "measured_var", "learning_strategy", "regression_type", "embedding_type"
     ],
-    aggregate_columns=["median_fitness_scaled", "top_fitness_scaled", "fitness_binary_percentage"]
+    aggregate_columns=["median_activity_scaled", "top_activity_scaled", "activity_binary_percentage"]
 )
 
 esm2_15B_grid_5 = filter_dataframe(esm2_15B_grid, conditions={"round_num": [5]})
@@ -160,7 +160,7 @@ for strategy in ['first_round_strategy', 'measured_var', 'learning_strategy', 'r
     for rounds, df in [('5', esm2_15B_grid_5), ('10', esm2_15B_grid_10)]:
         plot_grid_search_bar(
             df=df,
-            variable='fitness_binary_percentage_mean',
+            variable='activity_binary_percentage_mean',
             strategy_column=strategy,
             title=f'{strategy} ({rounds} rounds)',
             output_dir=output_dir,
@@ -171,7 +171,7 @@ for strategy in ['first_round_strategy', 'measured_var', 'learning_strategy', 'r
 for rounds, df in [('5', esm2_15B_grid_5), ('10', esm2_15B_grid_10)]:
     plot_grid_search_heatmap(
         df=df,
-        variable='fitness_binary_percentage_mean',
+        variable='activity_binary_percentage_mean',
         strategy_columns=['regression_type', 'learning_strategy'],
         output_dir=output_dir,
         output_file=f'regression_type_learning_strategy_{rounds}'
@@ -184,7 +184,7 @@ esm2_15B_grid_pca = read_dms_data(
     model="esm2_t48_15B_UR50D",
     experiment="esm2_15B_pca",
     group_columns=["num_mutants_per_round", "round_num", "embedding_type"],
-    aggregate_columns=["median_fitness_scaled", "top_fitness_scaled", "fitness_binary_percentage"]
+    aggregate_columns=["median_activity_scaled", "top_activity_scaled", "activity_binary_percentage"]
 )
 
 esm2_15B_grid_pca_5 = filter_dataframe(esm2_15B_grid_pca, conditions={"round_num": [5]})
@@ -193,7 +193,7 @@ esm2_15B_grid_pca_10 = filter_dataframe(esm2_15B_grid_pca, conditions={"round_nu
 for rounds, df in [('5', esm2_15B_grid_pca_5), ('10', esm2_15B_grid_pca_10)]:
     plot_grid_search_bar(
         df=df,
-        variable='fitness_binary_percentage_mean',
+        variable='activity_binary_percentage_mean',
         strategy_column='embedding_type',
         title=f'embedding_type ({rounds} rounds)',
         output_dir=output_dir,
@@ -207,7 +207,7 @@ esm2_15B_optimal = read_dms_data(
     model="esm2_t48_15B_UR50D",
     experiment="esm2_15B_optimal",
     group_columns=["num_mutants_per_round", "round_num"],
-    aggregate_columns=["median_fitness_scaled", "top_fitness_scaled", "fitness_binary_percentage"]
+    aggregate_columns=["median_activity_scaled", "top_activity_scaled", "activity_binary_percentage"]
 )
 
 save_dataframe(
@@ -218,7 +218,7 @@ save_dataframe(
 
 plot_by_round(
     esm2_15B_optimal,
-    variable='fitness_binary_percentage_mean',
+    variable='activity_binary_percentage_mean',
     output_dir=output_dir,
     output_file='esm2_15B_optimal'
 )
@@ -230,12 +230,12 @@ esm2_15B_num_variants = read_dms_data(
     model="esm2_t48_15B_UR50D",
     experiment="esm2_15B_num_variants",
     group_columns=["num_mutants_per_round", "round_num"],
-    aggregate_columns=["median_fitness_scaled", "top_fitness_scaled", "fitness_binary_percentage"]
+    aggregate_columns=["median_activity_scaled", "top_activity_scaled", "activity_binary_percentage"]
 )
 
 plot_by_round_split(
     esm2_15B_num_variants,
-    variable='fitness_binary_percentage_mean',
+    variable='activity_binary_percentage_mean',
     split_variable='num_mutants_per_round',
     output_dir=output_dir,
     output_file='esm2_15B_optimal'

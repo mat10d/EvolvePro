@@ -30,7 +30,7 @@ run_dms_main_500() {
         --labels_path "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/output/dms" \
         --num_simulations 3 \
         --num_iterations 10 \
-        --measured_var "fitness" \
+        --measured_var "activity" \
         --learning_strategies "top10" \
         --num_mutants_per_round 10 20 30 40 50 100 200 500 \
         --num_final_round_mutants 16 \
@@ -65,7 +65,7 @@ run_dms_main_200() {
         --labels_path "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/output/dms" \
         --num_simulations 10 \
         --num_iterations 1 \
-        --measured_var "fitness" \
+        --measured_var "activity" \
         --learning_strategies "top10" \
         --num_mutants_per_round 10 20 30 40 50 100 200 \
         --num_final_round_mutants 16 \
@@ -100,7 +100,7 @@ run_dms_main_100() {
         --labels_path "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/output/dms" \
         --num_simulations 10 \
         --num_iterations 1 \
-        --measured_var "fitness" \
+        --measured_var "activity" \
         --learning_strategies "top10" \
         --num_mutants_per_round 10 20 30 40 50 100 \
         --num_final_round_mutants 16 \
