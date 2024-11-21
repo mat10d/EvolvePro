@@ -116,7 +116,7 @@ If you use this code in your research, please cite our paper:
 ```
 @ARTICLE
 author={Jiang, Kaiyi and Yan, Zhaoqing and Di Bernardo, Matteo and Sgrizzi, Samantha R. and Villiger, Lukas and Kayabölen, Alişan and Kim, Byungji and Carscadden, Josephine K. and Hiraizumi, Masahiro and Nishimasu, Hiroshi and Gootenberg, Jonathan S. and Abudayyeh, Omar O.}
-title={Rapid protein evolution by few-shot learning with a protein language model}, 
+title={Rapid in silico directed evolution by a protein language model with EVOLVEpro}, 
 year={2024},
-DOI={10.1101/2024.07.17.604015}
+DOI={10.1126/science.adr6006}
 ```
