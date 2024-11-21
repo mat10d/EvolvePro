@@ -10,7 +10,7 @@ def create_parser():
     parser.add_argument("--labels_path", type=str, help="Path to the labels file")
     parser.add_argument("--num_simulations", type=int, help="Number of simulations for each parameter combination. Example: 3, 10")
     parser.add_argument("--num_iterations", type=int, nargs="+", help="List of number of iterations. Example: 3 5 10 (must be greater than 1)")
-    parser.add_argument("--measured_var", type=str, nargs="+", help="Fitness type to train on. Options: activity activity_scaled")
+    parser.add_argument("--measured_var", type=str, nargs="+", help="Activity type to train on. Options: activity activity_scaled")
     parser.add_argument("--learning_strategies", type=str, nargs="+", help="Type of learning strategy. Options: random top5bottom5 top10 dist")
     parser.add_argument("--num_mutants_per_round", type=int, nargs="+", help="Number of mutants per round. Example: 8 10 16 32 128")
     parser.add_argument("--num_final_round_mutants", type=int, help="Number of mutants in final round. Example: 16")

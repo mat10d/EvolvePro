@@ -31,7 +31,7 @@ run_dms_main_500() {
         --num_simulations 3 \
         --num_iterations 10 \
         --measured_var "activity" \
-        --learning_strategies "top10" \
+        --learning_strategies "topn" \
         --num_mutants_per_round 10 20 30 40 50 100 200 500 \
         --num_final_round_mutants 16 \
         --first_round_strategies "random" \
@@ -66,7 +66,7 @@ run_dms_main_200() {
         --num_simulations 10 \
         --num_iterations 1 \
         --measured_var "activity" \
-        --learning_strategies "top10" \
+        --learning_strategies "topn" \
         --num_mutants_per_round 10 20 30 40 50 100 200 \
         --num_final_round_mutants 16 \
         --first_round_strategies "random" \
@@ -101,7 +101,7 @@ run_dms_main_100() {
         --num_simulations 10 \
         --num_iterations 1 \
         --measured_var "activity" \
-        --learning_strategies "top10" \
+        --learning_strategies "topn" \
         --num_mutants_per_round 10 20 30 40 50 100 \
         --num_final_round_mutants 16 \
         --first_round_strategies "random" \

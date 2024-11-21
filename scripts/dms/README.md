@@ -24,8 +24,8 @@ python dms_main.py [arguments]
 - `--labels_path`: Path to the labels file
 - `--num_simulations`: Number of simulations for each parameter combination
 - `--num_iterations`: List of number of iterations (must be greater than 1)
-- `--measured_var`: Fitness type to train on (options: activity, activity_scaled)
-- `--learning_strategies`: Type of learning strategy (options: random, top5bottom5, top10, dist)
+- `--measured_var`: Activity type to train on (options: activity, activity_scaled)
+- `--learning_strategies`: Type of learning strategy (options: random, topn2bottomn2, topn, dist)
 - `--num_mutants_per_round`: Number of mutants per round
 - `--num_final_round_mutants`: Number of mutants in final round
 - `--first_round_strategies`: Type of first round strategy (options: random, diverse_medoids, representative_hie)

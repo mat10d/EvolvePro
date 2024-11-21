@@ -31,7 +31,7 @@ run_dms_main() {
         --num_simulations 3 \
         --num_iterations 10 \
         --measured_var "activity" "activity_scaled" \
-        --learning_strategies "random" "top5bottom5" "top10" "dist" \
+        --learning_strategies "random" "topn2bottomn2" "topn" "dist" \
         --num_mutants_per_round 16 \
         --num_final_round_mutants 16 \
         --first_round_strategies "random" "diverse_medoids" \

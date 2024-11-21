@@ -17,7 +17,7 @@ def directed_evolution_simulation(
     num_mutants_per_round: int = 10, 
     measured_var: str = 'activity', 
     regression_type: str = 'ridge', 
-    learning_strategy: str = 'top10', 
+    learning_strategy: str = 'topn', 
     top_n: int = None, 
     final_round: int = 10, 
     first_round_strategy: str = 'random', 
@@ -132,11 +132,11 @@ def directed_evolution_simulation(
                     iteration_new_ids = df_test_new.sort_values(by='dist_metric', ascending=False).head(num_mutants_per_round).variant
                 elif learning_strategy == 'random':
                     iteration_new_ids = random.sample(list(df_test_new.variant), num_mutants_per_round)
-                elif learning_strategy == 'top5bottom5':
+                elif learning_strategy == 'topn2bottomn2':
                     top_half = df_test_new.sort_values(by='y_pred', ascending=False).head(int(num_mutants_per_round / 2)).variant
                     bottom_half = df_test_new.sort_values(by='y_pred', ascending=False).tail(int(num_mutants_per_round / 2)).variant
                     iteration_new_ids = pd.concat([top_half, bottom_half])
-                elif learning_strategy == 'top10':
+                elif learning_strategy == 'topn':
                     iteration_new_ids = df_test_new.sort_values(by='y_pred', ascending=False).head(num_mutants_per_round).variant
 
                 iteration_new = pd.DataFrame({'variant': iteration_new_ids, 'iteration': j})

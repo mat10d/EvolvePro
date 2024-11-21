@@ -30,7 +30,7 @@ run_dms_main() {
         --num_simulations 10 \
         --num_iterations 10 \
         --measured_var "activity" \
-        --learning_strategies "top10" \
+        --learning_strategies "topn" \
         --num_mutants_per_round 16 \
         --num_final_round_mutants 16 \
         --first_round_strategies "random" \
