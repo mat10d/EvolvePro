@@ -5,7 +5,8 @@
 .ipynb_checkpoints
 
 # Data and output directories
-data/
+data/exp
+data/dms/wt_fasta
 output/
 
 # Python package info
