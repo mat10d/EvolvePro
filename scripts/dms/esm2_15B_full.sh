@@ -3,10 +3,11 @@
 # One leading hash ahead of the word SBATCH is not a comment, but two are.
 #SBATCH --time=7-00:00:00 
 #SBATCH -p abugoot
+#SBATCH -x node[111]
 #SBATCH --job-name=esm2_15B_full
 #SBATCH -n 12
 #SBATCH -N 1   
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=6
 #SBATCH --mem=80gb  
 #SBATCH --output out/esm2_15B_full-%j.out 
 
