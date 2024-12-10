@@ -383,13 +383,13 @@ def generate_n_mutant_combinations(wt_fasta, mutant_file, n, output_file, thresh
     wt_sequence = str(SeqIO.read(wt_fasta, "fasta").seq)
     
     # Read and process mutant data
-    mutants = pd.read_excel(mutant_file, header=None)
+    mutants = pd.read_excel(mutant_file) 
     
     # Filter mutants based on threshold
-    mutants = mutants[mutants[1] > threshold]
+    mutants = mutants[mutants['activity'] > threshold]
 
     # Extract information from mutants
-    mutants[['position', 'mutant_aa']] = mutants[0].str.extract('(\d+)([A-Z]+)', expand=True)
+    mutants[['position', 'mutant_aa']] = mutants['Variant'].str.extract('(\d+)([A-Z]+)', expand=True)
     mutants['wt_aa'] = mutants.apply(lambda row: wt_sequence[int(row['position'])-1], axis=1)
     mutants['variant'] = mutants['wt_aa'] + mutants['position'] + mutants['mutant_aa']
     
