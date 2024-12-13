@@ -1,26 +1,67 @@
-# EVOLVEpro Community License Agreement
+# Internal Research End User Agreement for Academic and other Non-Profit Research Institutions
 
-Please read this EVOLVEpro Community License Agreement before using it. 
+Massachusetts Institute to Technology (hereafter MIT) is the owner of certain rights, title and interest in software disclosed under MIT Case No. 25084, "Methods for Machine-Learning Guided Protein Design" by Omar Abudayyeh, Jonathan Gootenberg, Kaiyi Jiang, and Matteo Di Bernardo (as further defined herein, the "Software"), and has the right to grant licenses thereunder.
 
-Permission is hereby granted, free of charge, to any person in academic setting obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including the rights
-to use, copy, modify, merge, publish, and distribute
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions and restrictions:
+This Internal Research End User Agreement for Academic and other Non-Profit Research Institutions (the "Agreement"), sets forth the terms of use governing your (the "End User") use of the Software. The Software is being released on Github for free by MIT to the End User solely for academic and/or internal research purposes (the "Purpose").
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+FOR AVOIDANCE OF DOUBT, THE PURPOSE DOES NOT PERMIT: (1) USE OF THE SOFTWARE IN HUMANS OR IN CONNECTION WITH HUMAN SUBJECTS, INCLUDING FOR DIAGNOSTIC OR OTHER CLINICAL RESEARCH PURPOSES AND (2) USE OF THE SOFTWARE FOR COMMERCIAL RESEARCH AND DEVELOPMENT PURPOSES.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Absent your agreement to the terms below (the "Agreement"), you (the "End User") have no right to access or use the Software whatsoever.
 
+MIT agrees to grant, hereunder, a non-exclusive, non-transferable, non-sublicensable license to End User for the use of the Software solely for the Purpose on the following terms and conditions:
 
-## Use Restrictions.
+1. NO REDISTRIBUTION; RESTRICTIONS ON USE. 
+Software remains the property of MIT and End User shall not: 
+(a) publish, distribute, or otherwise transfer or make available the Software to any other third party for any purpose whatsoever; 
+(b) merge, reverse engineer, decompile or reverse assemble the Software or any portion thereof; 
+(c) modify, derivatize, rewrite, or otherwise adapt the Software in any way, except as necessary to install and use the Software for the Purpose in accordance with the terms herein.
 
-**No Commercial Use**.  You may only use EVOLVEpro for Non-Commercial Purposes. Any commercial use of any of the foregoing, including, without limitation, any use by, on behalf of or for any Commercial Entity or to facilitate the development of any product or service to be sold or made available for a fee, is strictly prohibited under this Agreement.
+2. NO COMMERCIAL USE. 
+End User shall use the Software for the Purpose only and shall not use the Software for commercial purposes; any such use of the Software is expressly prohibited. Commercial purposes include, but are not limited to, use of the Software in fee-for-service arrangements, core facilities or laboratories, to create or include within commercial products or services, or to provide research services to third parties for a fee. If End User wishes to use Software for commercial purposes, or for other purposes not permitted herein, End User must execute a separate written license agreement with MIT.
+
+   In order to request use of the Software for commercial purposes, or for other purposes not permitted herein, please contact:
+   
+   MIT Technology Licensing Office
+   255 Main Street
+   Cambridge, MA 02142
+   Tel.: 617-253-6966
+   Email: software-licenses@mit.edu
+
+   Notwithstanding the foregoing, and for avoidance of doubt, MIT is under no obligation to grant any commercial rights to an End User.
+
+3. OWNERSHIP AND COPYRIGHT NOTICE. 
+This Agreement does not transfer any ownership of the Software to End User. All right, title and interest in and to the Software, and any intellectual property or proprietary rights therein, will remain with MIT. End User acknowledges that the Software may be covered by MIT's copyrights, patents, or, patent applications, including but not limited to: PCT/US24/50915. End User acknowledges that there may be third party code contained within the Software that may be governed by separate terms and conditions and End User agrees to comply with such separate terms and conditions. End User shall not remove or delete and shall retain in the Software and any modifications to Software, the copyright, trademark, or other notices pertaining to the Software as are provided with the Software.
+
+4. FEEDBACK. 
+In order to improve the Software, comments from End Users may be useful. End User agrees to provide MIT with feedback on the End User's use of the Software (e.g., any bugs in the Software, the user experience. etc.) (collectively, "Feedback"). Feedback should be sent to: Matteo Di Bernardo at md3498@mit.edu. MIT is permitted to use Feedback to make changes and improvements to the Software without any notice, compensation or an accounting to End User. End User acknowledges that MIT may develop modifications to the Software that may be based on Feedback without attribution to the End User. MIT shall not be restricted in any way by End User regarding MIT's use of such Feedback.
+
+5. INTELLECTUAL PROPERTY. 
+End User agrees not to file any patent applications that are related to, or claim, any portion of the Software.
+
+6. PUBLICATION & ATTRIBUTION. 
+End User has the right to publish, present, or share results derived from the use of the Software. If utilization of the Software results in outcomes which will be published, End User shall acknowledge MIT as the provider and owner of the Software, shall specify the version of Software used, and include the following:
+
+   "Copyright Notice and Disclaimer. © MIT 2023 used with permission. All Rights Reserved."
+
+7. LIMITATION OF LIABILITY. 
+IN NO EVENT SHALL MIT BE LIABLE TO END USER, IN CONTRACT, TORT OR OTHERWISE, FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, CONSEQUENTIAL, PUNITIVE OR OTHER DAMAGES OF ANY KIND WHATSOEVER ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, THE SOFTWARE AND/OR USE OF THE SOFTWARE, EVEN IF MIT IS NEGLIGENT OR OTHERWISE AT FAULT, AND REGARDLESS OF WHETHER MIT IS ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. USE OF THE SOFTWARE IS AT END USER'S OWN RISK. IF END USER IS DISSATISFIED WITH THE SOFTWARE, ITS EXCLUSIVE REMEDY IS TO STOP USING IT.
+
+8. DATA AND OTHER INFORMATION SUPPLIED BY END USERS. 
+Any data, communication or other information End User transmits to MIT will be deemed to be non-confidential and non-proprietary.
+
+9. NO WARRANTIES. 
+THE SOFTWARE IS PROVIDED "AS IS." TO THE FULLEST EXTENT PERMITTED BY LAW, MIT HEREBY DISCLAIMS ALL WARRANTIES OF ANY KIND (EXPRESS, IMPLIED OR OTHERWISE) REGARDING THE SOFTWARE, INCLUDING BUT NOT LIMITED TO ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OWNERSHIP, AND NON-INFRINGEMENT. MIT MAKES NO WARRANTY ABOUT THE ACCURACY, RELIABILITY, COMPLETENESS, TIMELINESS, SUFFICIENCY OR QUALITY OF THE SOFTWARE. MIT DOES NOT WARRANT THAT THE SOFTWARE WILL OPERATE WITHOUT ERROR OR INTERRUPTION, OR THAT THE SOFTWARE IS FREE OF COMPUTER VIRUSES OR OTHER HARMFUL COMPUTER CODE.
+
+10. INDEMNIFICATION. 
+To the fullest extent permitted by law, End User shall indemnify, defend and hold harmless MIT and its respective affiliates, current or future directors, trustees, officers, faculty, employees, students and agents and their respective successors, heirs and assigns (the "Indemnitees"), against any liability, damage, loss or expense (including reasonable attorney's fees and expenses of litigation) incurred by or imposed upon the Indemnitees or any one of them in connection with any claims, suits, actions, demands or judgments arising from End User's access to and/or use of the Software except to the extent directly caused by the gross negligence or willful misconduct of an Indemnitee.
+
+11. GOVERNING LAW. 
+This Agreement and all disputes arising hereunder shall be construed and governed by the laws of the Commonwealth of Massachusetts regardless of otherwise applicable choice of law standards.
+
+12. NON-USE OF NAME. 
+Nothing in this Agreement shall be construed as granting End Users or their institutions any rights or licenses to use any trademarks, service marks or logos displayed on the Software. End User shall not otherwise use or allow the use of the name of "Massachusetts Institute of Technology," "MIT," or any variation, adaptation, or abbreviation thereof, or of any of its trustees, officers, faculty, students, employees, or agents, or any trademark owned by MIT, in any other public announcement or disclosure without prior written consent. MIT consent can be requested by email (via ioc-useofname@mit.edu), which MIT may withhold in its sole discretion. If End User seeks to use the name of an individual trustee, officer, faculty, student, employee or agent, End User must receive the written consent of such individual.
+
+13. MISCELLANEOUS. 
+This Agreement represents the entire agreement between the parties with respect to the subject matter hereof and supersedes any prior negotiations or discussions, whether written or oral. End User shall use the Software in compliance with all applicable laws and regulations. These terms may be modified or amended only in writing signed by authorized representatives of MIT. This Agreement may not be assigned. The failure of MIT to enforce at any time any of the provisions of the Agreement will in no way be construed to be a present or future waiver of such provisions, nor in any way affect the ability to enforce each and every such provision thereafter.
+
+END OF LICENSE
