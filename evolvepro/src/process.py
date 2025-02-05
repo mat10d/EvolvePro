@@ -335,31 +335,38 @@ def generate_wt(wt_sequence, output_file):
     with open(output_file, "w") as handle:
         SeqIO.write(record, handle, "fasta")
 
-def generate_single_aa_mutants(wt_fasta, output_file):
+
+def generate_single_aa_mutants(wt_fasta, output_file, positions=None):
     """
     Generate a FASTA file containing all possible single amino acid mutations.
-
     Args:
         wt_fasta (str): Path to the FASTA file containing the wild-type protein sequence.
         output_file (str): Path to the output FASTA file.
+        positions (list, optional): List of positions (1-based) to mutate. If None, mutates all positions.
     """
-
     # Define the amino acid alphabet
     aa_alphabet = "ACDEFGHIKLMNPQRSTVWY"
-
+    
     # Read the wild-type sequence from the FASTA file
     wt_sequence = SeqIO.read(wt_fasta, "fasta").seq
     records = [SeqRecord(wt_sequence, id="WT", description="Wild-type sequence")]
-
-    # Generate all possible single amino acid mutants
-    for i, wt_aa in enumerate(wt_sequence):
+    
+    # Convert positions to 0-based indexing if provided
+    if positions is not None:
+        positions_to_mutate = [pos - 1 for pos in positions]
+    else:
+        positions_to_mutate = range(len(wt_sequence))
+    
+    # Generate mutants at specified positions or all positions
+    for i in positions_to_mutate:
+        wt_aa = wt_sequence[i]
         for mutant_aa in aa_alphabet:
             if mutant_aa != wt_aa:
                 mutant_sequence = wt_sequence[:i] + mutant_aa + wt_sequence[i+1:]
                 variant = f'{wt_aa}{i+1}{mutant_aa}'
                 record = SeqRecord(Seq(mutant_sequence), id=variant, description="")
                 records.append(record)
-
+    
     # Write the mutant sequences to a FASTA file
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "w") as handle:
@@ -367,6 +374,7 @@ def generate_single_aa_mutants(wt_fasta, output_file):
     
     # Print the number of mutants generated
     print(f"Number of mutants: {len(records)}")
+
 
 def generate_n_mutant_combinations(wt_fasta, mutant_file, n, output_file, threshold=1):
     """
