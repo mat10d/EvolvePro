@@ -5,7 +5,9 @@
 .ipynb_checkpoints
 
 # Data and output directories
-data/exp
+data/exp/exp_data/
+data/exp/n_mutant_dicts/
+data/exp/wt_fasta/
 output/
 
 # Python package info
