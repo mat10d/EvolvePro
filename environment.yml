@@ -5,7 +5,7 @@ channels:
   - bioconda
 dependencies:
   - pandas
-  - numpy
+  - numpy<2.0
   - openpyxl
   - scikit-learn
   - scikit-learn-extra
