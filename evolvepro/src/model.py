@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
-from sklearn_extra.cluster import KMedoids
 from sklearn import linear_model
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -30,6 +29,9 @@ def first_round(labels, embeddings, explicit_variants=None, num_mutants_per_roun
         iteration_zero_ids = random_mutants
 
     elif first_round_strategy == 'diverse_medoids':
+        # Import KMedoids from sklearn_extra -- this is incompatible with numpy<2.0
+        from sklearn_extra.cluster import KMedoids
+
         # Set random seed
         if random_seed is not None:
             np.random.seed(random_seed)  # Use NumPy's random seed for consistent randomization
