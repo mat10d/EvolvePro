@@ -149,7 +149,7 @@ def concatenate_files(output_dir, output_csv):
     # Get all .pt files in the output directory
     files = []
     for r, d, f in os.walk(output_dir):
-        for file in f:
+        for file in sorted(f):
             if '.pt' in file:
                 files.append(os.path.join(r, file))
 
