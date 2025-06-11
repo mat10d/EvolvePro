@@ -5,13 +5,12 @@
 # LICENSE file in the root directory of this source tree.
 
 import os
-import shutil
 import argparse
 import pathlib
 import pandas as pd
 import torch
 
-from esm import Alphabet, FastaBatchedDataset, ProteinBertModel, pretrained, MSATransformer
+from esm import FastaBatchedDataset, pretrained, MSATransformer
 
 
 def create_parser():
@@ -35,7 +34,9 @@ def create_parser():
         help="output directory for extracted representations",
     )
 
-    parser.add_argument("--toks_per_batch", type=int, default=4096, help="maximum batch size")
+    parser.add_argument(
+        "--toks_per_batch", type=int, default=4096, help="maximum batch size"
+    )
     parser.add_argument(
         "--repr_layers",
         type=int,
@@ -58,7 +59,9 @@ def create_parser():
         help="truncate sequences longer than the given value",
     )
 
-    parser.add_argument("--nogpu", action="store_true", help="Do not use GPU even if available")
+    parser.add_argument(
+        "--nogpu", action="store_true", help="Do not use GPU even if available"
+    )
 
     parser.add_argument(
         "--concatenate_dir",
@@ -68,6 +71,7 @@ def create_parser():
     )
 
     return parser
+
 
 def run(args):
     model, alphabet = pretrained.load_model_and_alphabet(args.model_location)
@@ -87,12 +91,15 @@ def run(args):
     )
     print(f"Read {args.fasta_file} with {len(dataset)} sequences")
 
-
     args.output_dir.mkdir(parents=True, exist_ok=True)
     return_contacts = "contacts" in args.include
 
-    assert all(-(model.num_layers + 1) <= i <= model.num_layers for i in args.repr_layers)
-    repr_layers = [(i + model.num_layers + 1) % (model.num_layers + 1) for i in args.repr_layers]
+    assert all(
+        -(model.num_layers + 1) <= i <= model.num_layers for i in args.repr_layers
+    )
+    repr_layers = [
+        (i + model.num_layers + 1) % (model.num_layers + 1) for i in args.repr_layers
+    ]
 
     with torch.no_grad():
         for batch_idx, (labels, strs, toks) in enumerate(data_loader):
@@ -101,7 +108,7 @@ def run(args):
             )
             if torch.cuda.is_available() and not args.nogpu:
                 toks = toks.to(device="cuda", non_blocking=True)
-            
+
             print(f"Device: {toks.device}")
 
             out = model(toks, repr_layers=repr_layers, return_contacts=return_contacts)
@@ -135,7 +142,9 @@ def run(args):
                         layer: t[i, 0].clone() for layer, t in representations.items()
                     }
                 if return_contacts:
-                    result["contacts"] = contacts[i, : truncate_len, : truncate_len].clone()
+                    result["contacts"] = contacts[
+                        i, :truncate_len, :truncate_len
+                    ].clone()
 
                 torch.save(
                     result,
@@ -144,21 +153,21 @@ def run(args):
 
     print(f"Saved representations to {args.output_dir}")
 
-def concatenate_files(output_dir, output_csv):
 
+def concatenate_files(output_dir, output_csv):
     # Get all .pt files in the output directory
     files = []
     for r, d, f in os.walk(output_dir):
         for file in f:
-            if '.pt' in file:
+            if ".pt" in file:
                 files.append(os.path.join(r, file))
 
     # Load each file and append to a list of dataframes
     dataframes = []
     for file_path in files:
         file_data = torch.load(file_path)
-        label = file_data['label']
-        representations = file_data['mean_representations']
+        label = file_data["label"]
+        representations = file_data["mean_representations"]
         key, tensor = representations.popitem()
         row_name = label
         row_data = tensor.tolist()
@@ -174,20 +183,26 @@ def concatenate_files(output_dir, output_csv):
     else:
         print("No data to concatenate.")
 
+
 def main():
     parser = create_parser()
     args = parser.parse_args()
-    
+
     run(args)
 
     if args.concatenate_dir is not None:
         fasta_file_name = args.fasta_file.stem
-        output_csv = f"{args.concatenate_dir}/{fasta_file_name}_{args.model_location}.csv"
+        output_csv = (
+            f"{args.concatenate_dir}/{fasta_file_name}_{args.model_location}.csv"
+        )
         concatenate_files(args.output_dir, output_csv)
         # print(f"Removing {args.output_dir}")
         # shutil.rmtree(args.output_dir)
     else:
-        print("Skipping concatenation, file move, and cleanup as --concatenate_dir flag was not set.")
+        print(
+            "Skipping concatenation, file move, and cleanup as --concatenate_dir flag was not set."
+        )
+
 
 if __name__ == "__main__":
     main()
