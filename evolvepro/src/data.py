@@ -98,6 +98,9 @@ def load_experimental_embeddings(base_path: str, embeddings_file_name: str, rena
     if rename_WT:
         embeddings = embeddings.rename(index={'WT Wild-type sequence': 'WT'})
 
+    # Sort embeddings by index (variant name)
+    embeddings = embeddings.sort_index() 
+
     return embeddings
 
 def load_experimental_data(base_path: str, round_file_name: str, wt_fasta_path: str, single_mutant: bool = True) -> pd.DataFrame:
