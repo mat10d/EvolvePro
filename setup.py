@@ -14,5 +14,6 @@ setup(
         "seaborn",
         "biopython",
         "scipy",
+        "openpyxl",
     ],
 )
