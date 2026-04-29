@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 from dataclasses import asdict
 from pathlib import Path
@@ -171,6 +172,74 @@ def validate_previous_manifest(expected_sha256: str, path: Path) -> None:
         raise ValueError(
             f"previous manifest hash mismatch: expected {expected_sha256}, got {actual}"
         )
+
+
+def _validate_file_hash(entry: dict[str, Any]) -> None:
+    path = Path(entry["path"])
+    actual = sha256_file(path)
+    if actual != entry["sha256"]:
+        raise ValueError(
+            f"manifest file hash mismatch for {path}: expected {entry['sha256']}, got {actual}"
+        )
+    actual_size = path.stat().st_size
+    if actual_size != entry["size"]:
+        raise ValueError(
+            f"manifest file size mismatch for {path}: expected {entry['size']}, got {actual_size}"
+        )
+
+
+def _walk_file_hashes(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, dict):
+        if {"path", "sha256", "size"} <= value.keys():
+            return [value]
+        hashes: list[dict[str, Any]] = []
+        for item in value.values():
+            hashes.extend(_walk_file_hashes(item))
+        return hashes
+    if isinstance(value, list):
+        hashes = []
+        for item in value:
+            hashes.extend(_walk_file_hashes(item))
+        return hashes
+    return []
+
+
+def validate_round_directory(round_dir: Path) -> None:
+    lock_path = round_dir / "round.lock.json"
+    manifest_path = round_dir / "manifest.json"
+    if not lock_path.is_file():
+        raise ValueError(f"missing round lock: {lock_path}")
+    if not manifest_path.is_file():
+        raise ValueError(f"missing round manifest: {manifest_path}")
+
+    manifest = json.loads(manifest_path.read_text())
+    actual_lock_sha256 = sha256_file(lock_path)
+    if manifest["lock_sha256"] != actual_lock_sha256:
+        raise ValueError(
+            f"round lock hash mismatch: expected {manifest['lock_sha256']}, got {actual_lock_sha256}"
+        )
+
+    for entry in _walk_file_hashes(manifest["inputs"]):
+        _validate_file_hash(entry)
+    for entry in _walk_file_hashes(manifest["outputs"]):
+        _validate_file_hash(entry)
+
+    predictions_path = Path(manifest["outputs"]["predictions_file"]["path"])
+    predictions = pd.read_parquet(predictions_path)
+    actual_predictions_hash = semantic_hash_table(predictions, sort_by=["variant"])
+    if manifest["outputs"]["predictions_semantic_sha256"] != actual_predictions_hash:
+        raise ValueError(
+            "predictions semantic hash mismatch: "
+            f"expected {manifest['outputs']['predictions_semantic_sha256']}, "
+            f"got {actual_predictions_hash}"
+        )
+
+    previous_path = manifest.get("previous_manifest_path")
+    previous_sha256 = manifest.get("previous_manifest_sha256")
+    if previous_path is not None:
+        if previous_sha256 is None:
+            raise ValueError("previous manifest path set without hash")
+        validate_previous_manifest(previous_sha256, Path(previous_path))
 
 
 def validate_round_lock(lock: RoundLock) -> None:

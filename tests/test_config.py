@@ -15,6 +15,7 @@ from evolvepro.io.config import (
     write_config,
 )
 from evolvepro.io.hashing import sha256_file
+from evolvepro.io.manifest import validate_round_directory
 from evolvepro.src.data import load_experimental_data
 from evolvepro.src.evolve import evolve_experimental
 
@@ -344,3 +345,32 @@ def test_config_model_seed_and_params_control_training(
     assert model.n_jobs == 1
     assert lock["model"]["seed"] == 7
     assert lock["model"]["params"] == {"n_estimators": 11, "n_jobs": 1}
+
+
+def test_validate_round_directory_accepts_completed_config_run(
+    tmp_path, repo_root, kelsic_wt_fasta
+):
+    config_output = tmp_path / "config-output"
+    config_path = _write_round_config(
+        tmp_path, repo_root, kelsic_wt_fasta, config_output
+    )
+    config = load_config(config_path)
+    evolve_experimental_from_config(config)
+
+    validate_round_directory(config_output / "kelsic" / "Round1")
+
+
+def test_validate_round_directory_rejects_output_hash_mismatch(
+    tmp_path, repo_root, kelsic_wt_fasta
+):
+    config_output = tmp_path / "config-output"
+    config_path = _write_round_config(
+        tmp_path, repo_root, kelsic_wt_fasta, config_output
+    )
+    config = load_config(config_path)
+    evolve_experimental_from_config(config)
+    round_dir = config_output / "kelsic" / "Round1"
+    (round_dir / "legacy" / "df_sorted_all.csv").write_text("changed\n")
+
+    with pytest.raises(ValueError, match="manifest file hash mismatch"):
+        validate_round_directory(round_dir)
