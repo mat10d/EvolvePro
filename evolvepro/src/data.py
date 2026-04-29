@@ -226,8 +226,10 @@ def create_iteration_dataframes(
     # Add a activity_binary and activity_scaled column to labels
     labels["activity_binary"] = labels["activity"].apply(lambda x: 1 if x >= 1 else 0)
     labels["activity_scaled"] = labels["activity"].apply(
-        lambda x: (x - labels["activity"].min())
-        / (labels["activity"].max() - labels["activity"].min())
+        lambda x: (
+            (x - labels["activity"].min())
+            / (labels["activity"].max() - labels["activity"].min())
+        )
     )
 
     # Add missing variants to iter_test

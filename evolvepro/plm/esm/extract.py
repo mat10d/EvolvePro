@@ -113,7 +113,6 @@ def run(args):
 
             out = model(toks, repr_layers=repr_layers, return_contacts=return_contacts)
 
-            logits = out["logits"].to(device="cpu")
             representations = {
                 layer: t.to(device="cpu") for layer, t in out["representations"].items()
             }
