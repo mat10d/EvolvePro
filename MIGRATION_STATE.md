@@ -46,6 +46,7 @@ d514b91 feat: plumb model seed and parameters
 f95cbce feat: add workspace initialization primitives
 c835ab9 feat: validate completed round manifests
 7658092 feat: add minimal workspace CLI
+872b3fc fix: install evolvepro console script in uv env
 ```
 
 ## Current validation command
@@ -60,7 +61,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-61 passed, 23 warnings
+62 passed, 23 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -183,6 +184,7 @@ Implemented in `035c4ab` and `79559ef`:
 - workspace discovery walks parent directories from an arbitrary path
 - completed round validation checks `round.lock.json`, `manifest.json`, input hashes, output hashes, prediction semantic hash, and previous manifest hash chain
 - minimal non-interactive CLI exists with `evolvepro init`, `evolvepro run --config`, and `evolvepro validate`
+- `uv sync --frozen` installs the project editable and exposes `.venv/bin/evolvepro`; `setup.py` is now a shim over `pyproject.toml`
 
 Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
 
@@ -206,7 +208,7 @@ Compatibility output policy is documented in `docs/WORKSPACE_CONTRACT.md`:
 Next implementation stage:
 
 1. Add interactive command-selection scaffolding now that non-interactive CLI is locked.
-2. Add CLI-level tests for installed console script invocation if packaging behavior becomes part of the contract.
-3. Start migrating public README/script workflows to CLI entrypoints while preserving compatibility outputs.
+2. Start migrating public README/script workflows to CLI entrypoints while preserving compatibility outputs.
+3. Add subprocess-level console script tests if direct invocation behavior needs stricter coverage than metadata registration.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
