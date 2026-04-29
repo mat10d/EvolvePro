@@ -1,33 +1,59 @@
 # Protein Language Model (PLM) Embeddings Generation
 
-This directory contains SLURM-compatible files to generate protein language model embeddings from various models. These files run `evolvepro/plm/[protein_language_model]/extract.py` to generate embeddings in CSV format from a FASTA file containing all single amino acid mutants of interest.
+This directory contains legacy SLURM-compatible files for generating protein language model embeddings from FASTA inputs. They call `evolvepro/plm/[protein_language_model]/extract.py` directly and remain compatibility scaffolding during the CLI migration.
 
-## How to Run
+## Target workspace workflow
 
-The usage of `extract.py` files may vary depending on the model. Below is a general example of how to use the scripts:
+For active-learning workspaces, prefer the high-level CLI:
+
+```bash
+evolvepro init my-protein --set-default --yes
+cd my-protein
+# edit evolvepro.toml: [embedding] backend/model/device as needed
+evolvepro evolve
+# fill activity values in rounds/round_000/candidates.csv
+evolvepro evolve --device cuda:0
+```
+
+When `inputs/embeddings.csv` exists, `evolvepro evolve` reuses it and records raw/semantic hashes. When embeddings are missing, `evolvepro evolve` can prepare them through the configured backend. Generated FASTA, embedding CSV, metadata, backend/device metadata, and CAS snapshots are recorded in `round.lock` and `manifest.json`.
+
+GPU-first defaults apply to PLM extraction:
+
+- `device = "auto"` prefers CUDA.
+- Missing CUDA fails unless CPU fallback is explicitly enabled.
+- CPU extraction is compatibility/test mode:
+
+```bash
+evolvepro evolve --allow-cpu-embedding --device cpu
+```
+
+## Legacy direct extraction
+
+Use these scripts only when reproducing old workflows or preparing standalone embedding CSV files outside the workspace state machine. The direct extractor usage varies by model. A general shape is:
 
 ```bash
 python evolvepro/plm/[model_name]/extract.py [model_location] [fasta_file] [output_dir] [additional_options]
 ```
 
-### Example:
-
-To generate a CSV file of ESM-2 (15B parameter model) embeddings of the last hidden layer from a FASTA file of single amino acid mutants:
+Example ESM-2 15B direct extraction:
 
 ```bash
 python evolvepro/plm/esm/extract.py esm2_t48_15B_UR50D output/dms/brenan.fasta output/plm/esm/brenan --toks_per_batch 512 --include mean --concatenate_dir output/plm/esm/
 ```
 
-In this example:
-- `esm2_t48_15B_UR50D` is the model name
-- `output/dms/brenan.fasta` is the input FASTA file
-- `output/plm/esm/brenan` is the output directory for the embeddings
-- `--toks_per_batch 512` sets the number of tokens per batch
-- `--include mean` specifies to include mean pooled embeddings
-- `--concatenate_dir output/plm/esm/` sets the directory for concatenated results
+Arguments in this example:
 
-Note: Adjust `--toks_per_batch` based on your GPU memory capacity.
+- `esm2_t48_15B_UR50D`: model name
+- `output/dms/brenan.fasta`: input FASTA
+- `output/plm/esm/brenan`: per-record output directory
+- `--toks_per_batch 512`: token batch size; tune for GPU memory
+- `--include mean`: mean-pooled embeddings
+- `--concatenate_dir output/plm/esm/`: concatenated CSV output directory
 
-## Model-Specific Instructions
+Direct extraction output should be normalized to the workspace CSV contract before target provenance:
 
-Different protein language models may require specific commands or have unique parameters. Refer to the `extract.py` files in each model's subdirectory and/or the SLURM-compatible files in this directory for model-specific instructions. We recommend using a GPU powered HPC to extract protein language model embeddings, but these SLURM-compatible files can be easily adapted into a command line call.
+```text
+variant,feature_0,feature_1,...
+```
+
+The current target backend bridge covers ESM-style extraction. Other PLM shell scripts remain legacy compatibility entry points until equivalent backend adapters exist.

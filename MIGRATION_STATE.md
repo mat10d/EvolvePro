@@ -240,6 +240,7 @@ Implemented in `035c4ab` and `79559ef`:
 - `evolvepro evolve` persists normalized per-round measured observations under `rounds/round_NNN/observations/activity_observations.csv` with CAS and semantic hashes; model-backed rounds already persist accumulated `training/training_set.csv` with CAS and semantic hashes
 - `evolvepro evolve --device ...` and `--allow-cpu-embedding` provide run-local embedding overrides and record them in `round.lock`/`manifest.json`
 - CLI reports embedding device resolution failures as actionable user errors instead of tracebacks
+- `scripts/plm/README.md` now points active-learning users to the target workspace embedding workflow and scopes direct extraction scripts as legacy compatibility entry points
 
 Key decisions:
 
@@ -297,10 +298,10 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Implement compatibility bridge/docs for legacy `scripts/plm/*`.
-2. Decide whether default `esm` workspaces should fail immediately on missing CUDA during second `evolve` or remain deferred until explicit embedding preparation UX is exposed.
-3. Add embedding reuse/staleness policy for generated round embeddings.
-4. Start target `evolvepro plot` migration.
-5. Add richer user-facing errors for model-download permission failures.
+1. Decide whether default `esm` workspaces should fail immediately on missing CUDA during second `evolve` or remain deferred until explicit embedding preparation UX is exposed.
+2. Add embedding reuse/staleness policy for generated round embeddings.
+3. Start target `evolvepro plot` migration.
+4. Add richer user-facing errors for model-download permission failures.
+5. Add backend adapters for non-ESM legacy PLM scripts only if target users need them.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.
