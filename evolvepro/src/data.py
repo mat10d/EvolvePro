@@ -3,7 +3,6 @@ from typing import List, Dict, Tuple, Union
 from Bio import SeqIO
 import pandas as pd
 import numpy as np
-import torch
 
 
 def load_dms_data(
@@ -41,6 +40,8 @@ def load_dms_data(
     if embeddings_file_type == "csv":
         embeddings = pd.read_csv(embeddings_file, index_col=0)
     elif embeddings_file_type == "pt":
+        import torch
+
         embeddings = torch.load(embeddings_file)
         embeddings = process_pt_embeddings(embeddings, embeddings_type_pt)
         if embeddings is None:

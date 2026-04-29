@@ -1,27 +1,11 @@
 from __future__ import annotations
 
-import sys
-import types
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from tests.fixtures.synthetic import make_embeddings, make_labels
-
-
-# The upstream core package imports torch at module import time to support .pt
-# embeddings. Stage-0 regression tests exercise CSV/Excel paths only, so a small
-# stub keeps those paths importable without forcing the heavyweight PLM stack into
-# the baseline test environment.
-try:  # pragma: no cover - exercised only when torch is installed externally
-    import torch as _torch  # noqa: F401
-except ModuleNotFoundError:  # pragma: no cover - branch depends on environment
-    sys.modules["torch"] = types.SimpleNamespace(
-        load=lambda *args, **kwargs: (_ for _ in ()).throw(
-            RuntimeError("torch.load is unavailable in the test stub")
-        )
-    )
 
 
 KELSIC_WT_SEQUENCE = (
