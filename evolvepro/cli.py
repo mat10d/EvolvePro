@@ -7,7 +7,11 @@ from typing import Sequence
 from evolvepro.io.config import evolve_experimental_from_config, load_config
 from evolvepro.io.manifest import validate_round_directory
 from evolvepro.src.evolve import grid_search
-from evolvepro.src.process import generate_single_aa_mutants, generate_wt
+from evolvepro.src.process import (
+    generate_single_aa_mutants,
+    generate_wt,
+    process_dataset,
+)
 from evolvepro.workspace import CONFIG_FILE, init_workspace
 
 
@@ -43,6 +47,21 @@ def _parser() -> argparse.ArgumentParser:
     mutants_parser.add_argument("--wt-fasta", required=True)
     mutants_parser.add_argument("--output", required=True)
     mutants_parser.add_argument("--positions")
+
+    dataset_parser = process_subparsers.add_parser(
+        "dataset", help="process a CSV or Excel activity dataset"
+    )
+    dataset_parser.add_argument("--file-path", required=True)
+    dataset_parser.add_argument("--wt-fasta", required=True)
+    dataset_parser.add_argument("--dataset-name", required=True)
+    dataset_parser.add_argument("--activity-column", required=True)
+    dataset_parser.add_argument("--cutoff-value", required=True, type=float)
+    dataset_parser.add_argument("--output-dir", required=True)
+    dataset_parser.add_argument("--sheet-name")
+    dataset_parser.add_argument("--cutoff-rule", default="greater_than")
+    dataset_parser.add_argument("--cutoff-percentiles", nargs="*")
+    dataset_parser.add_argument("--aa-shift", type=int)
+    dataset_parser.add_argument("--drop-columns", action="store_true")
 
     dms_parser = subparsers.add_parser("dms", help="run DMS workflows")
     dms_subparsers = dms_parser.add_subparsers(dest="dms_command")
@@ -82,6 +101,19 @@ def _parse_positions(value: str | None) -> list[int] | None:
     if value is None or value == "":
         return None
     return [int(item.strip()) for item in value.split(",") if item.strip()]
+
+
+def _parse_number(value: str) -> int | float:
+    number = float(value)
+    if number.is_integer():
+        return int(number)
+    return number
+
+
+def _parse_number_list(values: list[str] | None) -> list[int | float] | None:
+    if values is None:
+        return None
+    return [_parse_number(value) for value in values]
 
 
 def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
@@ -125,6 +157,25 @@ def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
                 str(wt_fasta), str(output), positions=_parse_positions(args.positions)
             )
             print(f"wrote single amino acid mutant FASTA: {output}")
+            return 0
+        if args.process_command == "dataset":
+            file_path = _resolve_path(base, args.file_path)
+            wt_fasta = _resolve_path(base, args.wt_fasta)
+            output_dir = _resolve_path(base, args.output_dir)
+            process_dataset(
+                file_path=str(file_path),
+                wt_fasta_path=str(wt_fasta),
+                dataset_name=args.dataset_name,
+                activity_column=args.activity_column,
+                cutoff_value=args.cutoff_value,
+                output_dir=str(output_dir),
+                sheet_name=args.sheet_name,
+                cutoff_rule=args.cutoff_rule,
+                cutoff_percentiles=_parse_number_list(args.cutoff_percentiles),
+                AA_shift=args.aa_shift,
+                drop_columns=args.drop_columns,
+            )
+            print(f"processed dataset: {output_dir}")
             return 0
         parser.error("process requires a subcommand")
 

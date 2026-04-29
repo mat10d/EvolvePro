@@ -41,6 +41,17 @@ evolvepro process generate-single-aa-mutants \
   --wt-fasta kelsic_WT.fasta \
   --output kelsic_mutants.fasta \
   --positions 1,2,3
+
+evolvepro process dataset \
+  --file-path data/dms/activity/sarscov2_preprocessed.csv \
+  --wt-fasta data/dms/wt_fasta/cov2_S_WT.fasta \
+  --dataset-name sarscov2 \
+  --activity-column mut_escape \
+  --cutoff-value 0.1 \
+  --output-dir output/dms \
+  --cutoff-rule greater_than \
+  --cutoff-percentiles 90 95 \
+  --drop-columns
 ```
 
 For detailed instructions, see the [Process README](scripts/process/README.md).
