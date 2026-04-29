@@ -58,6 +58,7 @@ d4a5f7c docs: map scripts to CLI replacements
 d1ef6c1 docs: define target CLI interface
 4b86990 docs: limit xlsx to compatibility paths
 4aaccfb feat: start workspace evolve state machine
+ed8c0c8 feat: advance workspace evolve rounds
 ```
 
 ## Current validation command
@@ -72,7 +73,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-78 passed, 24 warnings
+81 passed, 24 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -203,8 +204,10 @@ Implemented in `035c4ab` and `79559ef`:
 - DMS/process dataset preparation has CLI coverage via `evolvepro process dataset`
 - `evolvepro init` accepts target setup flags `--set-default`, `--reconfigure`, and `--yes`; `--force` remains as compatibility overwrite
 - `evolvepro evolve` starts the target workspace state machine by generating `round_000/candidates.csv` from the configured WT FASTA, snapshotting it into CAS, writing read-only `round.lock` and `manifest.json`, and updating `evolvepro.lock`
+- `evolvepro evolve` now ingests partially filled candidate CSV files, records measured/unmeasured counts, snapshots the edited handoff into CAS, and writes the next round candidate handoff
 - CSV candidate handoff helpers enforce exact `variant,activity` columns, numeric filled activity values, duplicate rejection, and blank activity as unmeasured
 - CAS helpers write content-addressed read-only snapshots under `.evolvepro/cas/sha256/`
+- workspace validation now checks `evolvepro.lock`, `round.lock`, manifest hashes, previous-manifest links, and CAS snapshots while allowing mutable handoff files to change
 
 Key decisions:
 
@@ -230,8 +233,10 @@ Implemented files:
 - `evolvepro/io/cas.py`
 - `evolvepro/io/handoff.py`
 - `evolvepro/workflows.py`
+- `evolvepro/validation.py`
 - `tests/test_handoff_and_cas.py`
 - `tests/test_evolve_workspace.py`
+- `tests/test_workspace_validate.py`
 
 Compatibility output policy is documented in `docs/WORKSPACE_CONTRACT.md`:
 
@@ -243,9 +248,9 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Extend `evolvepro evolve` beyond the initial round: ingest filled candidate CSV rows, snapshot the edited handoff file, record measured/unmeasured counts, and produce the next round.
-2. Add workspace-wide `evolvepro validate` over `evolvepro.lock`, `round.lock`, manifest hashes, and CAS snapshots while preserving existing round-dir validation.
-3. Add semantic hashes for candidate handoff CSVs in `round.lock`/`manifest.json`, not just byte hashes.
+1. Replace the placeholder next-round candidate generation with model-backed training/prediction using accumulated measured rows and configured embeddings.
+2. Persist normalized observation/training tables as artifacts with semantic hashes.
+3. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
 4. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.
 5. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
 
