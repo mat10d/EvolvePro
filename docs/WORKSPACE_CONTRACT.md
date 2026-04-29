@@ -190,7 +190,7 @@ Rules:
 - non-blank activity must parse as numeric
 - partial measurement is normal state
 
-XLSX is not part of the primary handoff contract. If legacy XLSX import remains available, it must immediately normalize to canonical CSV and validation must proceed from the CSV artifact.
+XLSX is not part of the primary handoff contract. XLSX remains allowed only for legacy regression tests and upstream compatibility fixtures during migration. If legacy XLSX import remains available, it must immediately normalize to canonical CSV and validation must proceed from the CSV artifact.
 
 ## Mutable handoff and immutable artifacts
 

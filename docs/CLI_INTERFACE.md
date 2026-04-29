@@ -90,6 +90,8 @@ Partial experiments are normal. For example, if 15 candidates were proposed but 
 
 Primary user input/output handoff files are CSV only.
 
+XLSX remains supported only for legacy regression coverage and upstream compatibility fixtures during migration. Target workflows must write and read CSV handoff files. Legacy XLSX inputs must be normalized into canonical CSV before participating in target provenance.
+
 Supported table shape:
 
 ```text
@@ -106,7 +108,7 @@ Rules:
 - Row order should be preserved for the user-facing file.
 - Canonical table hashes define semantic identity for validation.
 
-XLSX is not part of the primary handoff workflow because spreadsheet metadata, formatting, blank cells, and layout changes make byte-level provenance fragile. If legacy XLSX import is retained, it must be normalized immediately to canonical CSV and the rest of the workflow must use the CSV artifact.
+XLSX is not part of the primary handoff workflow because spreadsheet metadata, formatting, blank cells, and layout changes make byte-level provenance fragile. During migration, XLSX support exists for regression tests only. New public workflows and docs should use CSV, and any legacy XLSX import must normalize immediately to canonical CSV.
 
 ## Mutable handoff vs immutable provenance
 
@@ -215,4 +217,5 @@ Integrity is enforced by hash validation. POSIX read-only bits only reduce accid
 - Keep torch/PLM dependencies optional for core CSV workflows.
 - Make `evolve` deterministic and resumable.
 - Treat failed or partial experimental measurements as normal state, not an edge case.
+- Keep XLSX support only for legacy regression/compatibility paths; migrate target user workflows to CSV-only handoff.
 - Prefer additive migration: implement target commands first, then deprecate compatibility commands.

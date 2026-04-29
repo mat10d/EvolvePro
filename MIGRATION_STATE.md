@@ -205,7 +205,7 @@ Key decisions:
 - Target user-facing commands are `evolvepro init`, `evolvepro evolve`, `evolvepro validate`, `evolvepro plot`, plus optional `evolvepro dms ...`.
 - A separate public `configure` command is not planned; `init` owns setup and `init --reconfigure` owns overrides.
 - One workspace manages one protein.
-- User handoff files are CSV-only with `variant,activity` columns; XLSX may only remain as legacy import normalized to CSV.
+- User handoff files are CSV-only with `variant,activity` columns; XLSX support is limited to legacy regression/compatibility paths and must normalize to CSV before target provenance.
 - `evolve` owns initial candidate generation, measured activity ingest, model training, prediction, checkpointing, implicit recursive validation, and state updates.
 - Mutable candidate CSV files are handoff files; immutable provenance comes from CAS snapshots, `round.lock`, `manifest.json`, and `evolvepro.lock`.
 - Use `.lock` filenames (`evolvepro.lock`, `round.lock`) for target lock files, even if internal encoding remains deterministic JSON.
@@ -234,6 +234,7 @@ Next implementation stage:
 1. Add target `evolvepro evolve` state-machine tests before implementation.
 2. Introduce target `evolvepro.lock` and per-round `round.lock` compatibility while preserving existing `round.lock.json` tests until migration is complete.
 3. Implement CSV-only candidate handoff with `variant,activity` columns, partial-measurement handling, CAS snapshots, and implicit validation.
-4. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
+4. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.
+5. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
