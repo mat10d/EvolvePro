@@ -130,6 +130,8 @@ def test_evolve_uses_embeddings_and_model_when_available(tmp_path):
     assert round1.joinpath("training", "training_set.csv").exists()
     assert round1.joinpath("predictions", "predictions.parquet").exists()
     manifest = json.loads(round1.joinpath("manifest.json").read_text())
+    assert "embeddings" in manifest["inputs"]
+    assert "semantic_sha256" in manifest["inputs"]["embeddings"]
     assert "training_table" in manifest["outputs"]
     assert "predictions" in manifest["outputs"]
     assert "model_checkpoint" in manifest["outputs"]

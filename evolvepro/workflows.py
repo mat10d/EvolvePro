@@ -176,6 +176,15 @@ def _labels_for_embeddings(
     return labels
 
 
+def _input_table_artifact(path: Path, table: pd.DataFrame) -> dict[str, object]:
+    canonical = table.reset_index()
+    sort_column = str(table.index.name or canonical.columns[0])
+    return {
+        **asdict(_file_hash(path)),
+        "semantic_sha256": semantic_hash_table(canonical, sort_by=[sort_column]),
+    }
+
+
 def _write_table_artifact(
     path: Path, table: pd.DataFrame, workspace: Path, *, sort_by: list[str]
 ) -> dict[str, object]:
@@ -193,7 +202,7 @@ def _rank_with_model(
     round_dir: Path,
     workspace_lock: dict[str, object],
     exclude: set[str],
-) -> tuple[list[str], dict[str, object]] | None:
+) -> tuple[list[str], dict[str, object], dict[str, object]] | None:
     config = load_config(workspace / CONFIG_FILE)
     embeddings_path = (
         config.experiment.embeddings_base_path / config.experiment.embeddings_file_name
@@ -202,6 +211,9 @@ def _rank_with_model(
         return None
 
     embeddings = pd.read_csv(embeddings_path, index_col=0)
+    embedding_inputs = {
+        "embeddings": _input_table_artifact(embeddings_path, embeddings),
+    }
     observations = _measured_observations(workspace, workspace_lock)
     if observations.empty:
         return None
@@ -256,7 +268,7 @@ def _rank_with_model(
         },
         "metrics": metrics,
     }
-    return variants, outputs
+    return variants, embedding_inputs, outputs
 
 
 def _initial_candidate_round(workspace: Path) -> Path:
@@ -332,6 +344,7 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
 
     used_variants = _used_variants(workspace, workspace_lock)
     model_result = _rank_with_model(workspace, round_dir, workspace_lock, used_variants)
+    model_inputs: dict[str, object] = {}
     model_outputs: dict[str, object] = {}
     if model_result is None:
         wt_record = SeqIO.read(config.experiment.wt_fasta_path, "fasta")
@@ -341,7 +354,7 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
             exclude=used_variants,
         )
     else:
-        variants, model_outputs = model_result
+        variants, model_inputs, model_outputs = model_result
     write_candidate_handoff(candidates_path, variants)
 
     activity_artifact = _handoff_artifact_entry(activity_path, workspace)
@@ -359,6 +372,7 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
         "config_sha256": config_sha256(config),
         "inputs": {
             "activity_handoff": activity_artifact,
+            **model_inputs,
             "previous_manifest": {
                 "path": str(previous_entry["manifest"]),
                 "sha256": previous_entry["manifest_sha256"],
