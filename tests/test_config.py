@@ -133,6 +133,70 @@ seed = 7
     assert config.experiment.round_file_names == ["activity.xlsx"]
     assert config.model.regression_type == "randomforest"
     assert config.model.seed == 7
+    assert config.embedding.backend == "esm"
+    assert config.embedding.device == "auto"
+    assert config.embedding.cache_dir == tmp_path / ".evolvepro" / "cache" / "plm"
+
+
+def test_load_config_reads_embedding_section(tmp_path):
+    (tmp_path / "inputs").mkdir()
+    (tmp_path / "rounds").mkdir()
+    (tmp_path / "inputs" / "embeddings.csv").write_text("variant,e0\nA,1.0\n")
+    (tmp_path / "inputs" / "wt.fasta").write_text(">WT\nACD\n")
+    config_path = tmp_path / "evolvepro.toml"
+    config_path.write_text(
+        """
+schema_version = 1
+workflow = "experimental_round"
+
+[run]
+seed = 7
+output_dir = "outputs"
+overwrite = false
+
+[experiment]
+protein_name = "protein"
+round_name = "round-001"
+number_of_variants = 3
+
+[inputs]
+embeddings_base_path = "inputs"
+embeddings_file_name = "embeddings.csv"
+round_base_path = "rounds"
+round_file_names = ["activity.xlsx"]
+wt_fasta_path = "inputs/wt.fasta"
+
+[model]
+regression_type = "randomforest"
+seed = 7
+
+[embedding]
+backend = "fake"
+model_name = "test-model"
+model_revision = "abc123"
+representation = "mean"
+repr_layers = [-1, 33]
+toks_per_batch = 128
+device = "cuda:0"
+dtype = "float16"
+allow_download = true
+allow_cpu_fallback = false
+cache_dir = ".evolvepro/cache/test-plm"
+""".lstrip()
+    )
+
+    config = load_config(config_path)
+
+    assert config.embedding.backend == "fake"
+    assert config.embedding.model_name == "test-model"
+    assert config.embedding.model_revision == "abc123"
+    assert config.embedding.repr_layers == [-1, 33]
+    assert config.embedding.toks_per_batch == 128
+    assert config.embedding.device == "cuda:0"
+    assert config.embedding.dtype == "float16"
+    assert config.embedding.allow_download is True
+    assert config.embedding.allow_cpu_fallback is False
+    assert config.embedding.cache_dir == tmp_path / ".evolvepro" / "cache" / "test-plm"
 
 
 def test_load_config_missing_required_field_raises_clear_error(tmp_path):

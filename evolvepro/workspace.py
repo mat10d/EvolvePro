@@ -37,6 +37,18 @@ def _default_config() -> str:
         'regression_type = "randomforest"\n'
         "seed = 0\n"
         "n_jobs = 1\n"
+        "\n"
+        "[embedding]\n"
+        'backend = "esm"\n'
+        'model_name = "esm2_t33_650M_UR50D"\n'
+        'representation = "mean"\n'
+        "repr_layers = [-1]\n"
+        "toks_per_batch = 512\n"
+        'device = "auto"\n'
+        'dtype = "float32"\n'
+        "allow_download = false\n"
+        "allow_cpu_fallback = false\n"
+        'cache_dir = ".evolvepro/cache/plm"\n'
     )
 
 

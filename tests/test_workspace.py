@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from evolvepro.io.config import load_config
 from evolvepro.workspace import find_workspace, init_workspace
 
 
@@ -33,6 +34,11 @@ def test_init_workspace_creates_file_scaffold(tmp_path):
     assert workspace == (
         'schema_version = 1\nworkspace_version = 1\nconfig = "evolvepro.toml"\n'
     )
+
+    config = load_config(tmp_path / "evolvepro.toml")
+    assert config.embedding.backend == "esm"
+    assert config.embedding.device == "auto"
+    assert config.embedding.allow_cpu_fallback is False
 
 
 def test_init_workspace_is_idempotent_without_force(tmp_path):

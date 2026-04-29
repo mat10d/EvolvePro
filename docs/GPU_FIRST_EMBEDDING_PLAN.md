@@ -61,7 +61,7 @@ Add an embedding section to `evolvepro.toml`:
 [embedding]
 backend = "esm"
 model_name = "esm2_t33_650M_UR50D"
-model_revision = null
+# model_revision is omitted unless a backend-specific revision is pinned.
 representation = "mean"
 repr_layers = [-1]
 toks_per_batch = 512

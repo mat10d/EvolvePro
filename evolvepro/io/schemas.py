@@ -34,12 +34,28 @@ class ModelConfig:
 
 
 @dataclass(frozen=True)
+class EmbeddingConfig:
+    backend: str = "esm"
+    model_name: str = "esm2_t33_650M_UR50D"
+    model_revision: str | None = None
+    representation: str = "mean"
+    repr_layers: list[int] = field(default_factory=lambda: [-1])
+    toks_per_batch: int = 512
+    device: str = "auto"
+    dtype: str = "float32"
+    allow_download: bool = False
+    allow_cpu_fallback: bool = False
+    cache_dir: Path = Path(".evolvepro/cache/plm")
+
+
+@dataclass(frozen=True)
 class EvolveProConfig:
     schema_version: int
     workflow: Literal["experimental_round"]
     run: RunConfig
     experiment: ExperimentalRoundConfig
     model: ModelConfig
+    embedding: EmbeddingConfig = field(default_factory=EmbeddingConfig)
     config_path: Path | None = None
 
 

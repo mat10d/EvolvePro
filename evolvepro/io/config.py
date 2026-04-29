@@ -9,6 +9,7 @@ import tomli
 
 from evolvepro.io.canonical import canonical_json_sha256
 from evolvepro.io.schemas import (
+    EmbeddingConfig,
     EvolveProConfig,
     ExperimentalRoundConfig,
     ModelConfig,
@@ -65,6 +66,31 @@ def _require_string_list(data: dict[str, Any], key: str, prefix: str) -> list[st
     return value
 
 
+def _optional_string(data: dict[str, Any], key: str, default: str, prefix: str) -> str:
+    value = data.get(key, default)
+    if not isinstance(value, str):
+        raise ValueError(f"{prefix}.{key} must be str")
+    return value
+
+
+def _optional_string_or_none(
+    data: dict[str, Any], key: str, default: str | None, prefix: str
+) -> str | None:
+    value = data.get(key, default)
+    if value is not None and not isinstance(value, str):
+        raise ValueError(f"{prefix}.{key} must be str")
+    return value
+
+
+def _optional_int_list(
+    data: dict[str, Any], key: str, default: list[int], prefix: str
+) -> list[int]:
+    value = data.get(key, default)
+    if not isinstance(value, list) or not all(isinstance(item, int) for item in value):
+        raise ValueError(f"{prefix}.{key} must be list[int]")
+    return value
+
+
 def load_config(path: Path) -> EvolveProConfig:
     config_path = path.resolve()
     with config_path.open("rb") as handle:
@@ -79,6 +105,9 @@ def load_config(path: Path) -> EvolveProConfig:
     experiment_data = _require_section(data, "experiment")
     inputs_data = _require_section(data, "inputs")
     model_data = _require_section(data, "model")
+    embedding_data = data.get("embedding", {})
+    if not isinstance(embedding_data, dict):
+        raise ValueError("embedding must be a table")
     base = config_path.parent
 
     run = RunConfig(
@@ -128,12 +157,74 @@ def load_config(path: Path) -> EvolveProConfig:
     if not isinstance(model.regression_type, str):
         raise ValueError("model.regression_type must be str")
 
+    default_embedding = EmbeddingConfig()
+    embedding = EmbeddingConfig(
+        backend=_optional_string(
+            embedding_data, "backend", default_embedding.backend, "embedding"
+        ),
+        model_name=_optional_string(
+            embedding_data, "model_name", default_embedding.model_name, "embedding"
+        ),
+        model_revision=_optional_string_or_none(
+            embedding_data,
+            "model_revision",
+            default_embedding.model_revision,
+            "embedding",
+        ),
+        representation=_optional_string(
+            embedding_data,
+            "representation",
+            default_embedding.representation,
+            "embedding",
+        ),
+        repr_layers=_optional_int_list(
+            embedding_data,
+            "repr_layers",
+            default_embedding.repr_layers,
+            "embedding",
+        ),
+        toks_per_batch=_optional_int(
+            embedding_data,
+            "toks_per_batch",
+            default_embedding.toks_per_batch,
+            "embedding",
+        ),
+        device=_optional_string(
+            embedding_data, "device", default_embedding.device, "embedding"
+        ),
+        dtype=_optional_string(
+            embedding_data, "dtype", default_embedding.dtype, "embedding"
+        ),
+        allow_download=_optional_bool(
+            embedding_data,
+            "allow_download",
+            default_embedding.allow_download,
+            "embedding",
+        ),
+        allow_cpu_fallback=_optional_bool(
+            embedding_data,
+            "allow_cpu_fallback",
+            default_embedding.allow_cpu_fallback,
+            "embedding",
+        ),
+        cache_dir=_path(
+            base,
+            _optional_string(
+                embedding_data,
+                "cache_dir",
+                default_embedding.cache_dir.as_posix(),
+                "embedding",
+            ),
+        ),
+    )
+
     return EvolveProConfig(
         schema_version=schema_version,
         workflow="experimental_round",
         run=run,
         experiment=experiment,
         model=model,
+        embedding=embedding,
         config_path=config_path,
     )
 
@@ -159,6 +250,10 @@ def _toml_path(value: Path) -> str:
 
 def _toml_list(values: list[str]) -> str:
     return "[" + ", ".join(_toml_string(value) for value in values) + "]"
+
+
+def _toml_int_list(values: list[int]) -> str:
+    return "[" + ", ".join(str(value) for value in values) + "]"
 
 
 def _toml_bool(value: bool) -> str:
@@ -210,6 +305,30 @@ def write_config(config: EvolveProConfig, path: Path) -> None:
     )
     for key in sorted(config.model.params):
         lines.append(f"{key} = {_toml_value(config.model.params[key])}")
+    lines.extend(
+        [
+            "",
+            "[embedding]",
+            f"backend = {_toml_string(config.embedding.backend)}",
+            f"model_name = {_toml_string(config.embedding.model_name)}",
+        ]
+    )
+    if config.embedding.model_revision is not None:
+        lines.append(
+            f"model_revision = {_toml_string(config.embedding.model_revision)}"
+        )
+    lines.extend(
+        [
+            f"representation = {_toml_string(config.embedding.representation)}",
+            f"repr_layers = {_toml_int_list(config.embedding.repr_layers)}",
+            f"toks_per_batch = {config.embedding.toks_per_batch}",
+            f"device = {_toml_string(config.embedding.device)}",
+            f"dtype = {_toml_string(config.embedding.dtype)}",
+            f"allow_download = {_toml_bool(config.embedding.allow_download)}",
+            f"allow_cpu_fallback = {_toml_bool(config.embedding.allow_cpu_fallback)}",
+            f"cache_dir = {_toml_path(config.embedding.cache_dir)}",
+        ]
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
