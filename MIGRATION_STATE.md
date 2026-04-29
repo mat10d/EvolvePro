@@ -28,7 +28,7 @@ See:
 - `docs/INTERACTIVE_CLI.md` for the deferred rich-click interactive CLI plan.
 - `docs/SCRIPT_MIGRATION.md` for the script-to-CLI replacement map and compatibility command table.
 
-## Completed commits on `cli-migration`
+## Completed commits on `main`
 
 ```text
 79ab014 docs: audit upstream examples for regression baseline
@@ -62,6 +62,7 @@ ed8c0c8 feat: advance workspace evolve rounds
 1428ef9 feat: train workspace evolve from embeddings
 5beacd9 docs: make embedding workflow gpu first
 79ecfde feat: hash workspace embedding inputs
+2df0da7 feat: add gpu-first embedding config
 ```
 
 ## Current validation command
@@ -76,7 +77,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-83 passed, 26 warnings
+85 passed, 26 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -215,6 +216,7 @@ Implemented in `035c4ab` and `79559ef`:
 - core top-layer training is CPU-bound scikit-learn/XGBoost style regression; GPU is not used in the train step
 - target workflow is GPU-first for PLM embedding extraction, but embedding extraction is still not part of `evolve`; current implementation consumes precomputed embedding CSV files
 - embedding CSV inputs used by `evolvepro evolve` are recorded in `round.lock`/`manifest.json` with raw file hash and semantic table hash; workspace validation rejects embedding file mutation
+- `EmbeddingConfig` is part of typed config loading/writing and default workspaces now include GPU-first embedding settings without importing torch
 
 Key decisions:
 
@@ -256,12 +258,11 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Implement `docs/GPU_FIRST_EMBEDDING_PLAN.md` milestone M1: `EmbeddingConfig`, TOML load/write, GPU-first defaults, and optional dependency tests.
-2. Implement M2: canonical embedding FASTA generation, deterministic fake backend, embedding CSV normalization, and CAS snapshots without torch/GPU/network in CI.
-3. Implement M3: integrate embedding preparation into `evolvepro evolve`, reuse valid embeddings, and record embedding artifacts in `round.lock`/`manifest.json`.
-4. Implement M4: wrap ESM extraction behind the backend interface with GPU-first device resolution and explicit CPU fallback only.
-5. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
-6. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
-7. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
+1. Implement M2 from `docs/GPU_FIRST_EMBEDDING_PLAN.md`: canonical embedding FASTA generation, deterministic fake backend, embedding CSV normalization, and CAS snapshots without torch/GPU/network in CI.
+2. Implement M3: integrate embedding preparation into `evolvepro evolve`, reuse valid embeddings, and record embedding artifacts in `round.lock`/`manifest.json`.
+3. Implement M4: wrap ESM extraction behind the backend interface with GPU-first device resolution and explicit CPU fallback only.
+4. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
+5. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
+6. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.
