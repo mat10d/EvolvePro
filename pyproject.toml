@@ -23,6 +23,13 @@ dependencies = [
 [project.scripts]
 evolvepro = "evolvepro.cli:main"
 
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["evolvepro*"]
+
 [tool.uv]
 default-groups = ["test"]
 

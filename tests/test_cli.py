@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+from importlib.metadata import entry_points
+
 from evolvepro.cli import main
 from tests.test_config import _write_round_config
+
+
+def test_console_script_entrypoint_registered():
+    scripts = entry_points(group="console_scripts")
+    assert any(script.name == "evolvepro" for script in scripts)
 
 
 def test_cli_init_creates_workspace(tmp_path, capsys):
