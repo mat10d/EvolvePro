@@ -25,6 +25,7 @@ See:
 - `tests/REACHABLE.md` for reachable-code audit and CLI replacement gates.
 - `docs/WORKSPACE_CONTRACT.md` for the planned file-based workspace, round, lock, and manifest contract.
 - `docs/INTERACTIVE_CLI.md` for the deferred rich-click interactive CLI plan.
+- `docs/SCRIPT_MIGRATION.md` for the script-to-CLI replacement map and current CLI interface table.
 
 ## Completed commits on `cli-migration`
 
@@ -219,8 +220,8 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Audit remaining public script workflows (`scripts/exp`, `scripts/plot`, `scripts/plm`) and choose the next CLI replacement.
-2. Add interactive command-selection scaffolding after core public workflows have non-interactive CLI coverage.
-3. Consider extracting argparse command handlers into smaller modules before adding more CLI surface.
+1. Review CLI naming before adding more nested commands; current `evolvepro process ...` shape is documented as potentially too verbose.
+2. If continuing implementation, add missing process commands (`suggest_initial_mutants`, `generate_n_mutant_combinations`) before plots/PLM.
+3. For `scripts/exp`, prefer TOML template/config-generator work over script-specific commands.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
