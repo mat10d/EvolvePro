@@ -261,7 +261,7 @@ A run is deterministic if the following are unchanged:
 
 Model training must expose and persist all stochastic parameters. Random forest must use explicit `random_state` and deterministic defaults for config-driven runs. Prefer `n_jobs = 1` for strict determinism.
 
-GPU embedding generation is target first-class workflow state, but it is not fully implemented yet. The current compatibility run contract consumes precomputed embedding files and verifies their hashes. The migration must add an embedding-preparation phase that prefers GPU when available and writes its own manifest with PLM backend, model name, model revision, dtype, device, torch/CUDA metadata, seed, input FASTA hash, and output embedding hash. CPU/no-PLM paths remain compatibility and test paths, not the primary UX.
+GPU embedding generation is target first-class workflow state. The target `evolve` state machine reuses precomputed embedding files when present and can prepare missing embeddings through configured backends. Generated embedding provenance records backend, model name, model revision, dtype, device metadata, seed, input FASTA hash, output embedding hash, metadata hash, CAS paths, and embedding config semantic hash. CPU/no-PLM paths remain compatibility and test paths, not the primary UX.
 
 ## Compatibility output policy
 

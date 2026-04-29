@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from evolvepro.io.canonical import canonical_json_sha256
 from evolvepro.io.hashing import sha256_file
 from evolvepro.workspace import LOCK_FILE, find_workspace
 
@@ -60,6 +61,30 @@ def _walk_hash_entries(value: Any) -> list[dict[str, Any]]:
     return []
 
 
+def _walk_semantic_payload_entries(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, dict):
+        entries: list[dict[str, Any]] = []
+        if {"payload", "semantic_sha256"} <= value.keys():
+            entries.append(value)
+        for item in value.values():
+            entries.extend(_walk_semantic_payload_entries(item))
+        return entries
+    if isinstance(value, list):
+        entries = []
+        for item in value:
+            entries.extend(_walk_semantic_payload_entries(item))
+        return entries
+    return []
+
+
+def _validate_semantic_payload_entry(entry: dict[str, Any]) -> None:
+    actual = canonical_json_sha256(entry["payload"])
+    if actual != entry["semantic_sha256"]:
+        raise ValueError(
+            f"semantic hash mismatch: expected {entry['semantic_sha256']}, got {actual}"
+        )
+
+
 def _validate_manifest(workspace: Path, manifest_path: Path) -> None:
     manifest = _load_json(manifest_path)
     lock_path = manifest_path.parent / "round.lock"
@@ -77,6 +102,9 @@ def _validate_manifest(workspace: Path, manifest_path: Path) -> None:
                 _validate_file_entry(entry, workspace)
         else:
             _validate_file_entry(entry, workspace)
+
+    for entry in _walk_semantic_payload_entries(manifest):
+        _validate_semantic_payload_entry(entry)
 
     previous_path = manifest.get("previous_manifest_path")
     previous_sha256 = manifest.get("previous_manifest_sha256")

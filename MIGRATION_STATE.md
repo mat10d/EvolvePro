@@ -88,7 +88,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-129 passed, 28 warnings
+136 passed, 32 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -225,7 +225,7 @@ Implemented in `035c4ab` and `79559ef`:
 - workspace validation now checks `evolvepro.lock`, `round.lock`, manifest hashes, previous-manifest links, and CAS snapshots while allowing mutable handoff files to change
 - when `inputs/embeddings.csv` exists, `evolvepro evolve` now trains the configured top-layer model on accumulated measured rows, ranks unmeasured embedded variants, and writes model/training/prediction artifacts
 - core top-layer training is CPU-bound scikit-learn/XGBoost style regression; GPU is not used in the train step
-- target workflow is GPU-first for PLM embedding extraction, but embedding extraction is still not part of `evolve`; current implementation consumes precomputed embedding CSV files
+- target workflow is GPU-first for PLM embedding extraction; `evolve` reuses precomputed embedding CSV files when present and can prepare missing embeddings through configured backends
 - embedding CSV inputs used by `evolvepro evolve` are recorded in `round.lock`/`manifest.json` with raw file hash and semantic table hash; workspace validation rejects embedding file mutation
 - `EmbeddingConfig` is part of typed config loading/writing and default workspaces now include GPU-first embedding settings without importing torch
 - embedding backend API scaffold exists with `EmbeddingRequest`, `EmbeddingResult`, and `EmbeddingBackend` protocol
@@ -236,6 +236,7 @@ Implemented in `035c4ab` and `79559ef`:
 - ESM backend wraps legacy extraction lazily, uses GPU-first device resolution, normalizes legacy CSV output to canonical embedding CSV, and records metadata
 - `evolvepro evolve` can prepare missing embeddings through configured backends, with CI coverage for the deterministic `fake` backend; generated FASTA, embedding CSV, metadata, backend/device metadata, and embedding config hashes are recorded in round lock/manifest payloads
 - workspace validation now distinguishes mutable handoff CAS snapshots from immutable generated artifacts and rejects generated embedding file mutation
+- workspace validation rejects generated embedding FASTA/CSV/metadata mutation, generated embedding CAS mutation, embedding config payload/hash mismatch, manifest mutation, round lock mutation, and previous-manifest chain breakage
 
 Key decisions:
 
@@ -293,10 +294,10 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Add dedicated validation tests for generated embedding FASTA mutation, metadata mutation, embedding config mutation, and generated embedding CAS mutation.
+1. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
 2. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
-3. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
-4. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
-5. Decide whether default `esm` workspaces should fail immediately on missing CUDA during second `evolve` or remain deferred until explicit embedding preparation UX is exposed.
+3. Decide whether default `esm` workspaces should fail immediately on missing CUDA during second `evolve` or remain deferred until explicit embedding preparation UX is exposed.
+4. Add embedding reuse/staleness policy for generated round embeddings.
+5. Start target `evolvepro plot` migration.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.
