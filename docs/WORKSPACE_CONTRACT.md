@@ -241,6 +241,46 @@ Model training must expose and persist all stochastic parameters. Random forest 
 
 GPU embedding generation is outside the first deterministic run contract. The first CLI run contract consumes precomputed embedding files and verifies their hashes. A later embedding-preparation workflow must write its own manifest with model name, model revision, dtype, device, torch/CUDA metadata, and seed.
 
+## Compatibility output policy
+
+During migration, config-driven runs write both the historical root-level outputs and the planned round layout.
+
+Historical root-level outputs are compatibility artifacts:
+
+```text
+rounds/<round-id>/iteration.csv
+rounds/<round-id>/this_round_variants.csv
+rounds/<round-id>/df_test.csv
+rounds/<round-id>/df_sorted_all.csv
+rounds/<round-id>/model.pkl
+rounds/<round-id>/predictions.parquet
+rounds/<round-id>/metrics.json
+rounds/<round-id>/inputs.json
+rounds/<round-id>/version.txt
+```
+
+Planned layout outputs are the forward-looking CLI contract:
+
+```text
+rounds/<round-id>/legacy/iteration.csv
+rounds/<round-id>/legacy/this_round_variants.csv
+rounds/<round-id>/legacy/df_test.csv
+rounds/<round-id>/legacy/df_sorted_all.csv
+rounds/<round-id>/model/model.pkl
+rounds/<round-id>/model/params.json
+rounds/<round-id>/predictions/predictions.parquet
+rounds/<round-id>/predictions/candidates.csv
+```
+
+Compatibility rules:
+
+- Root-level CSV outputs remain byte-identical to the Stage 0 golden baseline.
+- Planned-layout files are copies or deterministic derivatives of root-level compatibility files.
+- `manifest.json` records hashes for both compatibility outputs and planned-layout outputs.
+- Root-level outputs must remain until all legacy scripts and public examples have CLI replacements with regression coverage.
+- After CLI migration is complete, root-level outputs may be deprecated only through a documented compatibility window.
+- The planned layout is the preferred target for new CLI and interactive UI code.
+
 ## SQLite policy
 
 Do not implement SQLite in the next stages.

@@ -197,10 +197,16 @@ Implemented files:
 - `tests/test_config.py`
 - `tests/test_manifest.py`
 
+Compatibility output policy is documented in `docs/WORKSPACE_CONTRACT.md`:
+
+- root-level outputs are migration compatibility artifacts and must remain until all legacy scripts/examples have CLI replacements with regression coverage
+- planned layout is the forward-looking CLI contract
+- `manifest.json` records both compatibility and planned-layout outputs
+
 Next implementation stage:
 
-1. Decide whether root-level dump artifacts should remain compatibility outputs permanently or become transitional after CLI migration.
-2. Add interactive command-selection scaffolding now that non-interactive CLI is locked.
-3. Add CLI-level tests for installed console script invocation if packaging behavior becomes part of the contract.
+1. Add interactive command-selection scaffolding now that non-interactive CLI is locked.
+2. Add CLI-level tests for installed console script invocation if packaging behavior becomes part of the contract.
+3. Start migrating public README/script workflows to CLI entrypoints while preserving compatibility outputs.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
