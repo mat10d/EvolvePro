@@ -16,6 +16,7 @@ dependencies = [
     "scikit-learn-extra>=0.3.0",
     "scipy>=1.15.3",
     "seaborn>=0.13.2",
+    "tomli>=2.4.1",
     "xgboost==1.7.6",
 ]
 

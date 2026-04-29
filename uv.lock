@@ -258,6 +258,7 @@ dependencies = [
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "seaborn" },
+    { name = "tomli" },
     { name = "xgboost" },
 ]
 
@@ -283,6 +284,7 @@ requires-dist = [
     { name = "scikit-learn-extra", specifier = ">=0.3.0" },
     { name = "scipy", specifier = ">=1.15.3" },
     { name = "seaborn", specifier = ">=0.13.2" },
+    { name = "tomli", specifier = ">=2.4.1" },
     { name = "xgboost", specifier = "==1.7.6" },
 ]
 

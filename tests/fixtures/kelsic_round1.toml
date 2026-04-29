@@ -1,0 +1,24 @@
+schema_version = 1
+workflow = "experimental_round"
+
+[run]
+seed = 0
+output_dir = "outputs"
+overwrite = false
+
+[experiment]
+protein_name = "kelsic"
+round_name = "Round1"
+rename_WT = false
+number_of_variants = 12
+
+[inputs]
+embeddings_base_path = "inputs"
+embeddings_file_name = "kelsic_synthetic.csv"
+round_base_path = "colab/rounds_data"
+round_file_names = ["kelsic_Round1.xlsx"]
+wt_fasta_path = "inputs/kelsic_WT.fasta"
+
+[model]
+regression_type = "randomforest"
+seed = 0
