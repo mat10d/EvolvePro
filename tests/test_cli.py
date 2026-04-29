@@ -3,7 +3,9 @@ from __future__ import annotations
 import builtins
 from importlib.metadata import entry_points
 
+import evolvepro.cli
 from evolvepro.cli import main
+from evolvepro.embeddings.device import EmbeddingDeviceError
 from tests.test_config import _write_round_config
 
 
@@ -56,6 +58,17 @@ def test_cli_run_config_writes_round_manifest(tmp_path, repo_root, kelsic_wt_fas
 
     assert (tmp_path / "output" / "kelsic" / "Round1" / "manifest.json").exists()
     assert (tmp_path / "output" / "kelsic" / "Round1" / "round.lock.json").exists()
+
+
+def test_cli_evolve_reports_embedding_device_errors(tmp_path, monkeypatch, capsys):
+    def fail_evolve(*_args, **_kwargs):
+        raise EmbeddingDeviceError("CUDA is not available")
+
+    monkeypatch.setattr(evolvepro.cli, "evolve_workspace", fail_evolve)
+
+    assert main(["evolve"], cwd=tmp_path) == 1
+
+    assert "embedding device error: CUDA is not available" in capsys.readouterr().out
 
 
 def test_cli_validate_completed_round(tmp_path, repo_root, kelsic_wt_fasta, capsys):

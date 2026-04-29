@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
+from evolvepro.embeddings.device import EmbeddingDeviceError
 from evolvepro.io.config import evolve_experimental_from_config, load_config
 from evolvepro.io.manifest import validate_round_directory
 from evolvepro.src.evolve import grid_search
@@ -174,6 +175,9 @@ def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
             )
         except UserActionRequired as error:
             print(error)
+            return 1
+        except EmbeddingDeviceError as error:
+            print(f"embedding device error: {error}")
             return 1
         print(f"wrote candidate handoff: {candidates_path}")
         return 0
