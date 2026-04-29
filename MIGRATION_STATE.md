@@ -40,6 +40,7 @@ a40770c docs: record baseline coverage and deletion scope
 3b7f3a5 docs: record migration state after dump artifacts
 1dde955 docs: define file-based workspace contract
 035c4ab feat: add file-based config and lock primitives
+79559ef feat: write round lock and manifest for config runs
 ```
 
 ## Current validation command
@@ -54,7 +55,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-43 passed, 14 warnings
+44 passed, 15 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -159,7 +160,7 @@ Defer deletion of:
 
 Read `docs/WORKSPACE_CONTRACT.md` first after context compaction.
 
-Implemented in `035c4ab`:
+Implemented in `035c4ab` and `79559ef`:
 
 - deterministic canonical JSON bytes and JSON SHA256
 - table semantic hashes with explicit sort columns
@@ -168,6 +169,8 @@ Implemented in `035c4ab`:
 - config-driven `evolve_experimental` adapter
 - round lock construction with raw input hashes, model config, config hash, and previous manifest hash
 - round lock validation that stops on input or previous-manifest hash mismatch
+- config-driven runs write `round.lock.json` and `manifest.json` into the legacy round output directory
+- manifest captures lock hash, raw input hashes, model checkpoint hash, prediction file hash, prediction semantic hash, dump file hashes, and legacy CSV hashes
 
 Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
 
@@ -184,10 +187,9 @@ Implemented files:
 
 Next implementation stage:
 
-1. Add explicit manifest output construction for completed experimental rounds.
-2. Write `round.lock.json` and `manifest.json` into the configured round directory.
-3. Move current dump artifacts into the planned round layout or add compatibility links while preserving current legacy CSV output tests.
-4. Add seed/model-parameter plumbing to `top_layer` so config-driven runs can force deterministic model parameters without changing legacy defaults.
-5. Add minimal workspace initialization primitives for a later `evolvepro init` command.
+1. Move current dump artifacts into the planned round layout or add compatibility links while preserving current legacy CSV output tests.
+2. Add seed/model-parameter plumbing to `top_layer` so config-driven runs can force deterministic model parameters without changing legacy defaults.
+3. Add minimal workspace initialization primitives for a later `evolvepro init` command.
+4. Add manifest validation helpers for completed round directories.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
