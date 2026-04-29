@@ -24,6 +24,7 @@ See:
 - `tests/UPSTREAM_EXAMPLES.md` for upstream workflow audit and deletion proposal.
 - `tests/REACHABLE.md` for reachable-code audit and CLI replacement gates.
 - `docs/WORKSPACE_CONTRACT.md` for the planned file-based workspace, round, lock, and manifest contract.
+- `docs/INTERACTIVE_CLI.md` for the deferred rich-click interactive CLI plan.
 
 ## Completed commits on `cli-migration`
 
@@ -205,10 +206,12 @@ Compatibility output policy is documented in `docs/WORKSPACE_CONTRACT.md`:
 - planned layout is the forward-looking CLI contract
 - `manifest.json` records both compatibility and planned-layout outputs
 
+Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse` for the current non-interactive contract; defer `rich-click` until config/workflow migration is more stable.
+
 Next implementation stage:
 
-1. Add interactive command-selection scaffolding now that non-interactive CLI is locked.
-2. Start migrating public README/script workflows to CLI entrypoints while preserving compatibility outputs.
-3. Add subprocess-level console script tests if direct invocation behavior needs stricter coverage than metadata registration.
+1. Start migrating public README/script workflows to CLI entrypoints while preserving compatibility outputs.
+2. Add subprocess-level console script tests if direct invocation behavior needs stricter coverage than metadata registration.
+3. Add rich-click interactive scaffolding after non-interactive workflow migration stabilizes.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
