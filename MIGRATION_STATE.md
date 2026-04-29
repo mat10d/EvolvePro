@@ -63,6 +63,7 @@ ed8c0c8 feat: advance workspace evolve rounds
 5beacd9 docs: make embedding workflow gpu first
 79ecfde feat: hash workspace embedding inputs
 2df0da7 feat: add gpu-first embedding config
+a6570b9 feat: scaffold embedding backend api
 ```
 
 ## Current validation command
@@ -77,7 +78,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-85 passed, 26 warnings
+86 passed, 26 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -217,6 +218,7 @@ Implemented in `035c4ab` and `79559ef`:
 - target workflow is GPU-first for PLM embedding extraction, but embedding extraction is still not part of `evolve`; current implementation consumes precomputed embedding CSV files
 - embedding CSV inputs used by `evolvepro evolve` are recorded in `round.lock`/`manifest.json` with raw file hash and semantic table hash; workspace validation rejects embedding file mutation
 - `EmbeddingConfig` is part of typed config loading/writing and default workspaces now include GPU-first embedding settings without importing torch
+- embedding backend API scaffold exists with `EmbeddingRequest`, `EmbeddingResult`, and `EmbeddingBackend` protocol; device, FASTA, normalization, fake backend, and ESM backend can now branch independently
 
 Key decisions:
 
@@ -232,6 +234,10 @@ Key decisions:
 Implemented/planning files:
 
 - `docs/GPU_FIRST_EMBEDDING_PLAN.md`
+- `evolvepro/embeddings/__init__.py`
+- `evolvepro/embeddings/schemas.py`
+- `evolvepro/embeddings/backends/__init__.py`
+- `evolvepro/embeddings/backends/base.py`
 - `evolvepro/io/schemas.py`
 - `evolvepro/io/config.py`
 - `evolvepro/io/manifest.py`
@@ -258,9 +264,14 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Implement M2 from `docs/GPU_FIRST_EMBEDDING_PLAN.md`: canonical embedding FASTA generation, deterministic fake backend, embedding CSV normalization, and CAS snapshots without torch/GPU/network in CI.
+1. Implement M2 parallel branches from `docs/GPU_FIRST_EMBEDDING_PLAN.md`:
+   - device resolver with lazy torch import
+   - canonical embedding FASTA generation
+   - embedding CSV normalization and CAS helpers
+   - deterministic fake backend without torch/GPU/network in CI
+   - ESM backend wrapper smoke-tested with monkeypatching only
 2. Implement M3: integrate embedding preparation into `evolvepro evolve`, reuse valid embeddings, and record embedding artifacts in `round.lock`/`manifest.json`.
-3. Implement M4: wrap ESM extraction behind the backend interface with GPU-first device resolution and explicit CPU fallback only.
+3. Implement M4: finalize ESM extraction with GPU-first device resolution and explicit CPU fallback only.
 4. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
 5. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
 6. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
