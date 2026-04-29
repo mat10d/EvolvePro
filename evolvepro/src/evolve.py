@@ -1,8 +1,12 @@
 import os
 import random
 import time
+from pathlib import Path
 import pandas as pd
 from typing import List, Optional, Tuple
+
+from evolvepro import __version__
+from evolvepro.io.dump import dump_round
 
 from evolvepro.src.data import (
     load_dms_data,
@@ -472,7 +476,7 @@ def evolve_experimental(
     print(f"Labels shape: {labels.shape}")
 
     # Perform top layer analysis
-    this_round_variants, df_test, df_sorted_all = top_layer(
+    this_round_variants, df_test, df_sorted_all, metrics, model = top_layer(
         iter_train=iteration["iteration"].unique().tolist(),
         iter_test=None,
         embeddings_pd=embeddings,
@@ -497,6 +501,26 @@ def evolve_experimental(
         df_test = df_test.sort_values(by=["y_pred"], ascending=False)
         df_test.to_csv(os.path.join(output_dir, "df_test.csv"))
         df_sorted_all.to_csv(os.path.join(output_dir, "df_sorted_all.csv"))
+        dump_round(
+            Path(output_dir),
+            model=model,
+            predictions=df_sorted_all,
+            metrics=metrics,
+            inputs=[
+                Path(embeddings_base_path) / embeddings_file_name,
+                *[Path(round_base_path) / name for name in round_file_names],
+                Path(wt_fasta_path),
+            ],
+            config={
+                "protein_name": protein_name,
+                "round_name": round_name,
+                "round_file_names": round_file_names,
+                "rename_WT": rename_WT,
+                "number_of_variants": number_of_variants,
+                "regression_type": "randomforest",
+            },
+            evolvepro_version=__version__,
+        )
         print(f"\nData saved to {output_dir}")
 
     return this_round_variants, df_test, df_sorted_all
@@ -561,7 +585,7 @@ def evolve_experimental_multi(
     )
 
     # Perform top layer analysis
-    this_round_variants, df_test, df_sorted_all = top_layer(
+    this_round_variants, df_test, df_sorted_all, metrics, model = top_layer(
         iter_train=iteration["iteration"].unique().tolist(),
         iter_test=None,
         embeddings_pd=embeddings,
@@ -590,6 +614,28 @@ def evolve_experimental_multi(
         df_test = df_test.sort_values(by=["y_pred"], ascending=False)
         df_test.to_csv(os.path.join(output_dir, "df_test.csv"))
         df_sorted_all.to_csv(os.path.join(output_dir, "df_sorted_all.csv"))
+        dump_round(
+            Path(output_dir),
+            model=model,
+            predictions=df_sorted_all,
+            metrics=metrics,
+            inputs=[
+                *[Path(embeddings_base_path) / name for name in embeddings_file_names],
+                *[Path(round_base_path) / name for name in round_file_names_single],
+                *[Path(round_base_path) / name for name in round_file_names_multi],
+                Path(wt_fasta_path),
+            ],
+            config={
+                "protein_name": protein_name,
+                "round_name": round_name,
+                "round_file_names_single": round_file_names_single,
+                "round_file_names_multi": round_file_names_multi,
+                "rename_WT": rename_WT,
+                "number_of_variants": number_of_variants,
+                "regression_type": "randomforest",
+            },
+            evolvepro_version=__version__,
+        )
         print(f"\nData saved to {output_dir}")
 
     return this_round_variants, df_test, df_sorted_all

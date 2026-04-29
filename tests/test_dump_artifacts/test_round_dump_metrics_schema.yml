@@ -1,0 +1,18 @@
+alpha: 0
+config:
+  number_of_variants: 12
+  protein_name: kelsic
+  regression_type: randomforest
+  rename_WT: false
+  round_file_names:
+  - kelsic_Round1.xlsx
+  round_name: Round1
+n_test: 24
+n_train: 12
+regression_type: randomforest
+seed: null
+spearman_corr: 0.8951048951048951
+test_error: null
+test_r2: null
+train_error: 0.005822611363020805
+train_r2: 0.87273838672478

@@ -322,9 +322,21 @@ def top_layer(
     activity_binary_percentage = df_sorted_all.loc[
         :final_round, "y_actual_binary"
     ].mean()
+    metrics = {
+        "train_error": train_error,
+        "test_error": test_error,
+        "train_r2": train_r_squared,
+        "test_r2": test_r_squared,
+        "alpha": alpha,
+        "spearman_corr": spearman_corr,
+        "n_train": len(idx_train),
+        "n_test": len(idx_test),
+        "regression_type": regression_type,
+        "seed": None,
+    }
 
     if experimental:
-        return this_round_variants, df_test, df_sorted_all
+        return this_round_variants, df_test, df_sorted_all, metrics, model
     else:
         return (
             train_error,
