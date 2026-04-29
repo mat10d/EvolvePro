@@ -132,6 +132,14 @@ workspace/
 
 Validation uses the CAS snapshots and recorded hashes, not trust in the mutable handoff path.
 
+## Training and embedding policy
+
+The current core training path uses scikit-learn/XGBoost style top-layer regressors and runs on CPU. It does not use GPU. GPU use is limited to optional PLM embedding extraction scripts/backends, not the regression training stage.
+
+`evolvepro evolve` consumes precomputed embedding CSV files when available. Embedding extraction is not yet part of the target `evolve` state machine. This is a known migration gap: target workspaces need an embedding preparation phase that can generate embeddings from the configured candidate sequences, snapshot outputs into CAS, and record model/backend/device metadata.
+
+Target embedding extraction must remain optional for core CSV workflows because PLM backends require torch, GPU resources, model downloads, and backend-specific dependencies. Until that workflow exists, users provide `inputs/embeddings.csv` and `evolve` records derived model/prediction artifacts from that file.
+
 ## Hashing and integrity policy
 
 Hash all inputs and outputs at every step. Final-result-only hashing is insufficient.

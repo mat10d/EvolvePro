@@ -59,6 +59,7 @@ d1ef6c1 docs: define target CLI interface
 4b86990 docs: limit xlsx to compatibility paths
 4aaccfb feat: start workspace evolve state machine
 ed8c0c8 feat: advance workspace evolve rounds
+1428ef9 feat: train workspace evolve from embeddings
 ```
 
 ## Current validation command
@@ -73,7 +74,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-81 passed, 24 warnings
+82 passed, 25 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -208,6 +209,9 @@ Implemented in `035c4ab` and `79559ef`:
 - CSV candidate handoff helpers enforce exact `variant,activity` columns, numeric filled activity values, duplicate rejection, and blank activity as unmeasured
 - CAS helpers write content-addressed read-only snapshots under `.evolvepro/cas/sha256/`
 - workspace validation now checks `evolvepro.lock`, `round.lock`, manifest hashes, previous-manifest links, and CAS snapshots while allowing mutable handoff files to change
+- when `inputs/embeddings.csv` exists, `evolvepro evolve` now trains the configured top-layer model on accumulated measured rows, ranks unmeasured embedded variants, and writes model/training/prediction artifacts
+- core training is CPU-bound scikit-learn/XGBoost style regression; GPU is not used in the train step
+- embedding extraction is still not part of `evolve`; current target workflow consumes precomputed embedding CSV files and PLM extraction remains a deferred optional workflow
 
 Key decisions:
 
@@ -248,10 +252,11 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Replace the placeholder next-round candidate generation with model-backed training/prediction using accumulated measured rows and configured embeddings.
-2. Persist normalized observation/training tables as artifacts with semantic hashes.
-3. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
-4. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.
-5. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
+1. Snapshot/hash embedding inputs in `evolvepro evolve` manifests and add validation coverage for embedding file mutation.
+2. Add an optional embedding preparation workflow design/implementation; it must remain separate from core CPU training and record PLM backend/model/device metadata.
+3. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
+4. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
+5. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.
+6. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.
