@@ -88,7 +88,7 @@ backend = "fake"        # deterministic test backend, never public default
 
 ## Internal API
 
-Introduce an embedding package instead of wiring legacy scripts directly into the state machine:
+Introduce an embedding package instead of wiring legacy scripts directly into the state machine. The package scaffold exists; device, FASTA, normalization, and backend implementations are filled in by later milestones.
 
 ```text
 evolvepro/embeddings/
