@@ -124,7 +124,9 @@ def test_evolve_prepares_fake_embeddings_when_missing(tmp_path):
     round0 = tmp_path / "rounds" / "round_000"
     round0.joinpath("candidates.csv").write_text("variant,activity\nA1C,0.0\nA1D,1.0\n")
 
-    assert main(["evolve"], cwd=tmp_path) == 0
+    assert (
+        main(["evolve", "--device", "cpu", "--allow-cpu-embedding"], cwd=tmp_path) == 0
+    )
 
     round1 = tmp_path / "rounds" / "round_001"
     assert round1.joinpath("embeddings", "candidates.fasta").exists()
@@ -133,9 +135,18 @@ def test_evolve_prepares_fake_embeddings_when_missing(tmp_path):
     assert round1.joinpath("model", "model.pkl").exists()
     assert round1.joinpath("training", "training_set.csv").exists()
     assert round1.joinpath("predictions", "predictions.parquet").exists()
+    lock = json.loads(round1.joinpath("round.lock").read_text())
     manifest = json.loads(round1.joinpath("manifest.json").read_text())
+    assert lock["run_overrides"] == {
+        "embedding": {"allow_cpu_fallback": True, "device": "cpu"}
+    }
+    assert manifest["run_overrides"] == lock["run_overrides"]
     assert "embedding_config" in manifest["inputs"]
     assert "semantic_sha256" in manifest["inputs"]["embedding_config"]
+    assert manifest["inputs"]["embedding_config"]["payload"]["device"] == "cpu"
+    assert (
+        manifest["inputs"]["embedding_config"]["payload"]["allow_cpu_fallback"] is True
+    )
     embedding_outputs = manifest["outputs"]["embedding_preparation"]
     assert {"fasta", "embeddings", "metadata"} <= embedding_outputs.keys()
     assert (tmp_path / embedding_outputs["fasta"]["cas_path"]).exists()

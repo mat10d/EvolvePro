@@ -241,10 +241,10 @@ Validation rejects generated FASTA/CSV/metadata mutation, generated embedding CA
 
 ### M5: CLI polish and compatibility bridge
 
-- Add targeted flags only if needed:
+- Targeted run-local flags exist:
   - `evolvepro evolve --device cuda:0`
   - `evolvepro evolve --allow-cpu-embedding`
-- Keep config as source of truth; flags are run-local overrides recorded in the lock.
+- Config remains the source of truth; flags are run-local overrides recorded in the lock and manifest.
 - Update `scripts/plm/README.md` to point to target CLI workflow once parity exists.
 
 ## Acceptance criteria

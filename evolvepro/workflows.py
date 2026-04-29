@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import stat
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 import joblib
@@ -16,7 +16,7 @@ from evolvepro.io.canonical import semantic_hash_table, write_json_atomic
 from evolvepro.io.config import config_sha256, load_config
 from evolvepro.io.handoff import read_candidate_handoff, write_candidate_handoff
 from evolvepro.io.hashing import sha256_file
-from evolvepro.io.schemas import FileHash
+from evolvepro.io.schemas import EvolveProConfig, FileHash
 from evolvepro.src.model import top_layer
 from evolvepro.workspace import CONFIG_FILE, LOCK_FILE, WORKSPACE_DIR, find_workspace
 
@@ -199,13 +199,46 @@ def _write_table_artifact(
     }
 
 
+def _embedding_run_overrides(
+    *, embedding_device: str | None, allow_cpu_embedding: bool
+) -> dict[str, object]:
+    embedding: dict[str, object] = {}
+    if embedding_device is not None:
+        embedding["device"] = embedding_device
+    if allow_cpu_embedding:
+        embedding["allow_cpu_fallback"] = True
+    if not embedding:
+        return {}
+    return {"embedding": embedding}
+
+
+def _apply_embedding_run_overrides(
+    config: EvolveProConfig, *, embedding_device: str | None, allow_cpu_embedding: bool
+) -> EvolveProConfig:
+    embedding = config.embedding
+    if embedding_device is not None:
+        embedding = replace(embedding, device=embedding_device)
+    if allow_cpu_embedding:
+        embedding = replace(embedding, allow_cpu_fallback=True)
+    if embedding is config.embedding:
+        return config
+    return replace(config, embedding=embedding)
+
+
 def _rank_with_model(
     workspace: Path,
     round_dir: Path,
     workspace_lock: dict[str, object],
     exclude: set[str],
+    *,
+    embedding_device: str | None,
+    allow_cpu_embedding: bool,
 ) -> tuple[list[str], dict[str, object], dict[str, object]] | None:
-    config = load_config(workspace / CONFIG_FILE)
+    config = _apply_embedding_run_overrides(
+        load_config(workspace / CONFIG_FILE),
+        embedding_device=embedding_device,
+        allow_cpu_embedding=allow_cpu_embedding,
+    )
     observations = _measured_observations(workspace, workspace_lock)
     if observations.empty:
         return None
@@ -343,7 +376,13 @@ def _initial_candidate_round(workspace: Path) -> Path:
     return candidates_path
 
 
-def _advance_from_activity(workspace: Path, current_round: str) -> Path:
+def _advance_from_activity(
+    workspace: Path,
+    current_round: str,
+    *,
+    embedding_device: str | None,
+    allow_cpu_embedding: bool,
+) -> Path:
     config = load_config(workspace / CONFIG_FILE)
     workspace_lock = _load_workspace_lock(workspace)
     previous_entry = _workspace_round_entry(workspace, workspace_lock, current_round)
@@ -361,7 +400,14 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
     candidates_path = round_dir / "candidates.csv"
 
     used_variants = _used_variants(workspace, workspace_lock)
-    model_result = _rank_with_model(workspace, round_dir, workspace_lock, used_variants)
+    model_result = _rank_with_model(
+        workspace,
+        round_dir,
+        workspace_lock,
+        used_variants,
+        embedding_device=embedding_device,
+        allow_cpu_embedding=allow_cpu_embedding,
+    )
     model_inputs: dict[str, object] = {}
     model_outputs: dict[str, object] = {}
     if model_result is None:
@@ -397,6 +443,10 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
         "step": "activity_ingest_and_candidate_generation",
         "round": round_name,
         "config_sha256": config_sha256(config),
+        "run_overrides": _embedding_run_overrides(
+            embedding_device=embedding_device,
+            allow_cpu_embedding=allow_cpu_embedding,
+        ),
         "inputs": {
             "activity_handoff": activity_artifact,
             **model_inputs,
@@ -420,6 +470,7 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
         "step": "activity_ingest_and_candidate_generation",
         "round": round_name,
         "lock_sha256": sha256_file(lock_path),
+        "run_overrides": lock_payload["run_overrides"],
         "inputs": lock_payload["inputs"],
         "outputs": lock_payload["outputs"],
         "observations": lock_payload["observations"],
@@ -440,7 +491,12 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
     return candidates_path
 
 
-def evolve_workspace(start: Path) -> Path:
+def evolve_workspace(
+    start: Path,
+    *,
+    embedding_device: str | None = None,
+    allow_cpu_embedding: bool = False,
+) -> Path:
     workspace = find_workspace(start)
     if workspace is None:
         raise ValueError(
@@ -452,4 +508,9 @@ def evolve_workspace(start: Path) -> Path:
     if current_round is None:
         return _initial_candidate_round(workspace)
 
-    return _advance_from_activity(workspace, str(current_round))
+    return _advance_from_activity(
+        workspace,
+        str(current_round),
+        embedding_device=embedding_device,
+        allow_cpu_embedding=allow_cpu_embedding,
+    )

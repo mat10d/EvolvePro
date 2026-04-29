@@ -238,6 +238,7 @@ Implemented in `035c4ab` and `79559ef`:
 - workspace validation now distinguishes mutable handoff CAS snapshots from immutable generated artifacts and rejects generated embedding file mutation
 - workspace validation rejects generated embedding FASTA/CSV/metadata mutation, generated embedding CAS mutation, embedding config payload/hash mismatch, manifest mutation, round lock mutation, and previous-manifest chain breakage
 - `evolvepro evolve` persists normalized per-round measured observations under `rounds/round_NNN/observations/activity_observations.csv` with CAS and semantic hashes; model-backed rounds already persist accumulated `training/training_set.csv` with CAS and semantic hashes
+- `evolvepro evolve --device ...` and `--allow-cpu-embedding` provide run-local embedding overrides and record them in `round.lock`/`manifest.json`
 
 Key decisions:
 
@@ -295,10 +296,10 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
+1. Implement compatibility bridge/docs for legacy `scripts/plm/*`.
 2. Decide whether default `esm` workspaces should fail immediately on missing CUDA during second `evolve` or remain deferred until explicit embedding preparation UX is exposed.
 3. Add embedding reuse/staleness policy for generated round embeddings.
 4. Start target `evolvepro plot` migration.
-5. Add CLI run-local embedding overrides (`--device`, `--allow-cpu-embedding`) if needed by target UX.
+5. Add richer user-facing errors for missing torch/CUDA/model-download permissions.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.

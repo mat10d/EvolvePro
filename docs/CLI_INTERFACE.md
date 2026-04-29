@@ -26,7 +26,7 @@ One workspace manages one protein. Multiple proteins require multiple workspaces
 | `evolvepro init [DIR]` | Create and configure a workspace for one protein. | Yes by default | Initializes workspace state and collects protein/workflow settings. |
 | `evolvepro init [DIR] --set-default` | Create a workspace using default settings. | No | Default values are intentionally not finalized yet. |
 | `evolvepro init [DIR] --reconfigure` | Reconfigure an existing workspace. | Yes unless `--yes` | Replaces the public `configure` command. Must warn before overriding existing config. |
-| `evolvepro evolve` | Advance the workspace to the next useful state. | No | Generates initial candidates, ingests measured activity, trains, predicts, writes artifacts, and updates state. |
+| `evolvepro evolve` | Advance the workspace to the next useful state. | No | Generates initial candidates, ingests measured activity, prepares/reuses embeddings, trains, predicts, writes artifacts, and updates state. |
 | `evolvepro validate` | Verify workspace, lock, manifest, and artifact integrity. | No | Also runs implicitly inside `evolve`. |
 | `evolvepro plot` | Plot final or round-specific results. | No by default | `--interactive` may emit Plotly/HTML output. |
 | `evolvepro dms ...` | Run DMS benchmark/simulation workflows. | TBD | DMS is separate from active-learning protein workspaces. |
@@ -138,7 +138,14 @@ The target workflow is GPU-first for embedding extraction. EvolvePro's useful si
 
 The current top-layer training path uses scikit-learn/XGBoost style regressors and runs on CPU. GPU is not used for the regression training stage today.
 
-`evolvepro evolve` currently consumes precomputed embedding CSV files when available. Embedding extraction is not yet part of the target `evolve` state machine. This is a migration gap: target workspaces need an embedding preparation phase that can generate embeddings from configured candidate sequences, snapshot outputs into CAS, and record model/backend/device metadata.
+`evolvepro evolve` consumes precomputed embedding CSV files when available and can prepare missing embeddings through the configured backend. Generated embedding FASTA, embedding CSV, backend metadata, device metadata, and embedding config are snapshotted into the round lock/manifest/CAS chain.
+
+Run-local embedding overrides are available for operational use and are recorded in the round lock and manifest:
+
+```bash
+evolvepro evolve --device cuda:0
+evolvepro evolve --allow-cpu-embedding
+```
 
 Implementation target:
 

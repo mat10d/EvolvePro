@@ -34,7 +34,15 @@ def _parser() -> argparse.ArgumentParser:
     run_parser = subparsers.add_parser("run", help="run from a TOML config")
     run_parser.add_argument("--config", default=CONFIG_FILE)
 
-    subparsers.add_parser("evolve", help="advance the current workspace")
+    evolve_parser = subparsers.add_parser(
+        "evolve", help="advance the current workspace"
+    )
+    evolve_parser.add_argument("--device", help="run-local embedding device override")
+    evolve_parser.add_argument(
+        "--allow-cpu-embedding",
+        action="store_true",
+        help="allow CPU embedding extraction for this evolve invocation",
+    )
 
     validate_parser = subparsers.add_parser(
         "validate", help="validate a completed round directory"
@@ -159,7 +167,11 @@ def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
 
     if args.command == "evolve":
         try:
-            candidates_path = evolve_workspace(base)
+            candidates_path = evolve_workspace(
+                base,
+                embedding_device=args.device,
+                allow_cpu_embedding=args.allow_cpu_embedding,
+            )
         except UserActionRequired as error:
             print(error)
             return 1
