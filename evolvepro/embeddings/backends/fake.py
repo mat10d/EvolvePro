@@ -98,7 +98,7 @@ class FakeEmbeddingBackend:
         metadata: dict[str, object] = {
             "backend": "fake",
             "device": "fake",
-            "dtype": "float32",
+            "dtype": request.dtype,
             "model_name": request.model_name,
             "model_revision": request.model_revision,
             "repr_layers": request.repr_layers,
@@ -113,5 +113,5 @@ class FakeEmbeddingBackend:
             embeddings_csv=embeddings_csv,
             metadata_json=metadata_json,
             backend_metadata=metadata,
-            device_metadata={"device": "fake", "dtype": "float32"},
+            device_metadata={"device": "fake", "dtype": request.dtype},
         )

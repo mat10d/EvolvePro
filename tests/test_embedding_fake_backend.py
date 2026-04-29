@@ -98,6 +98,16 @@ def test_output_changes_when_seed_changes(tmp_path: Path):
     )
 
 
+def test_records_requested_dtype_in_metadata(tmp_path: Path):
+    request = replace(_request(tmp_path), dtype="float16")
+
+    result = _extract(request)
+
+    metadata = json.loads(result.metadata_json.read_text(encoding="utf-8"))
+    assert metadata["dtype"] == "float16"
+    assert result.device_metadata == {"device": "fake", "dtype": "float16"}
+
+
 def test_csv_has_variant_and_numeric_feature_columns(tmp_path: Path):
     result = _extract(_request(tmp_path))
 
