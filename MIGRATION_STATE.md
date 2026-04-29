@@ -60,6 +60,8 @@ d1ef6c1 docs: define target CLI interface
 4aaccfb feat: start workspace evolve state machine
 ed8c0c8 feat: advance workspace evolve rounds
 1428ef9 feat: train workspace evolve from embeddings
+5beacd9 docs: make embedding workflow gpu first
+79ecfde feat: hash workspace embedding inputs
 ```
 
 ## Current validation command
@@ -74,7 +76,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-82 passed, 25 warnings
+83 passed, 26 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -212,6 +214,7 @@ Implemented in `035c4ab` and `79559ef`:
 - when `inputs/embeddings.csv` exists, `evolvepro evolve` now trains the configured top-layer model on accumulated measured rows, ranks unmeasured embedded variants, and writes model/training/prediction artifacts
 - core top-layer training is CPU-bound scikit-learn/XGBoost style regression; GPU is not used in the train step
 - target workflow is GPU-first for PLM embedding extraction, but embedding extraction is still not part of `evolve`; current implementation consumes precomputed embedding CSV files
+- embedding CSV inputs used by `evolvepro evolve` are recorded in `round.lock`/`manifest.json` with raw file hash and semantic table hash; workspace validation rejects embedding file mutation
 
 Key decisions:
 
@@ -252,17 +255,16 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Snapshot/hash embedding inputs in `evolvepro evolve` manifests and add validation coverage for embedding file mutation.
-2. Design and implement GPU-first embedding preparation as first-class workflow state:
+1. Design and implement GPU-first embedding preparation as first-class workflow state:
    - candidate FASTA generation
    - PLM backend/model selection
    - GPU device detection/selection
    - CPU fallback only as explicit compatibility mode
    - CAS snapshots for FASTA and embedding outputs
    - manifest metadata for backend, model revision, dtype, device, torch/CUDA, and seed
-3. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
-4. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
-5. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.
-6. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
+2. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
+3. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
+4. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.
+5. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.
