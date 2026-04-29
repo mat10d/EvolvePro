@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from evolvepro.io.canonical import write_json_atomic
+
 WORKSPACE_DIR = ".evolvepro"
 CONFIG_FILE = "evolvepro.toml"
+LOCK_FILE = "evolvepro.lock"
 WORKSPACE_FILE = "workspace.toml"
 
 
@@ -41,11 +44,29 @@ def _workspace_metadata() -> str:
     return 'schema_version = 1\nworkspace_version = 1\nconfig = "evolvepro.toml"\n'
 
 
+def _workspace_lock() -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "lock_version": 1,
+        "workspace": {"config": CONFIG_FILE},
+        "current_round": None,
+        "rounds": [],
+    }
+
+
 def _write_if_needed(path: Path, content: str, *, force: bool) -> None:
     if path.exists() and not force:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def _write_json_if_needed(
+    path: Path, content: dict[str, object], *, force: bool
+) -> None:
+    if path.exists() and not force:
+        return
+    write_json_atomic(path, content)
 
 
 def init_workspace(path: Path, *, force: bool = False) -> Path:
@@ -60,6 +81,7 @@ def init_workspace(path: Path, *, force: bool = False) -> Path:
         workspace / "rounds",
         workspace / WORKSPACE_DIR / "cache",
         workspace / WORKSPACE_DIR / "locks",
+        workspace / WORKSPACE_DIR / "cas" / "sha256",
     ]:
         directory.mkdir(parents=True, exist_ok=True)
 
@@ -69,6 +91,7 @@ def init_workspace(path: Path, *, force: bool = False) -> Path:
         _workspace_metadata(),
         force=force,
     )
+    _write_json_if_needed(workspace / LOCK_FILE, _workspace_lock(), force=force)
     return workspace
 
 

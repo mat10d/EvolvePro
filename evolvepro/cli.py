@@ -13,6 +13,7 @@ from evolvepro.src.process import (
     process_dataset,
 )
 from evolvepro.workspace import CONFIG_FILE, init_workspace
+from evolvepro.workflows import UserActionRequired, evolve_workspace
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -25,9 +26,14 @@ def _parser() -> argparse.ArgumentParser:
     init_parser = subparsers.add_parser("init", help="initialize a workspace")
     init_parser.add_argument("directory", nargs="?", default=".")
     init_parser.add_argument("--force", action="store_true")
+    init_parser.add_argument("--set-default", action="store_true")
+    init_parser.add_argument("--reconfigure", action="store_true")
+    init_parser.add_argument("--yes", action="store_true")
 
     run_parser = subparsers.add_parser("run", help="run from a TOML config")
     run_parser.add_argument("--config", default=CONFIG_FILE)
+
+    subparsers.add_parser("evolve", help="advance the current workspace")
 
     validate_parser = subparsers.add_parser(
         "validate", help="validate a completed round directory"
@@ -116,6 +122,11 @@ def _parse_number_list(values: list[str] | None) -> list[int | float] | None:
     return [_parse_number(value) for value in values]
 
 
+def _confirmed(prompt: str) -> bool:
+    response = input(prompt).strip().lower()
+    return response in {"", "y", "yes"}
+
+
 def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
@@ -127,7 +138,14 @@ def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
 
     if args.command == "init":
         workspace = _resolve_path(base, args.directory)
-        init_workspace(workspace, force=args.force)
+        force = args.force or args.reconfigure
+        if args.reconfigure and not args.yes and (workspace / CONFIG_FILE).exists():
+            if not _confirmed(
+                "Existing EvolvePro workspace configuration found. Override it? [Y/n] "
+            ):
+                print("reconfigure aborted")
+                return 1
+        init_workspace(workspace, force=force)
         print(f"initialized workspace: {workspace}")
         return 0
 
@@ -136,6 +154,15 @@ def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
         config = load_config(config_path)
         evolve_experimental_from_config(config)
         print(f"completed run from config: {config_path}")
+        return 0
+
+    if args.command == "evolve":
+        try:
+            candidates_path = evolve_workspace(base)
+        except UserActionRequired as error:
+            print(error)
+            return 1
+        print(f"wrote candidate handoff: {candidates_path}")
         return 0
 
     if args.command == "validate":

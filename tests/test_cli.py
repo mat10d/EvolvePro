@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 from importlib.metadata import entry_points
 
 from evolvepro.cli import main
@@ -15,8 +16,35 @@ def test_cli_init_creates_workspace(tmp_path, capsys):
     assert main(["init", str(tmp_path)]) == 0
 
     assert (tmp_path / "evolvepro.toml").exists()
+    assert (tmp_path / "evolvepro.lock").exists()
     assert (tmp_path / ".evolvepro" / "workspace.toml").exists()
+    assert (tmp_path / ".evolvepro" / "cas" / "sha256").is_dir()
     assert "initialized workspace" in capsys.readouterr().out
+
+
+def test_cli_init_reconfigure_requires_confirmation(tmp_path, monkeypatch):
+    config_path = tmp_path / "evolvepro.toml"
+    config_path.write_text("user config\n")
+    monkeypatch.setattr(builtins, "input", lambda _prompt: "n")
+
+    assert main(["init", str(tmp_path), "--reconfigure"]) == 1
+
+    assert config_path.read_text() == "user config\n"
+
+
+def test_cli_init_reconfigure_yes_overwrites_config(tmp_path):
+    config_path = tmp_path / "evolvepro.toml"
+    config_path.write_text("user config\n")
+
+    assert main(["init", str(tmp_path), "--reconfigure", "--yes"]) == 0
+
+    assert config_path.read_text().startswith("schema_version = 1\n")
+
+
+def test_cli_init_set_default_is_non_interactive(tmp_path):
+    assert main(["init", str(tmp_path), "--set-default", "--yes"]) == 0
+
+    assert (tmp_path / "evolvepro.toml").exists()
 
 
 def test_cli_run_config_writes_round_manifest(tmp_path, repo_root, kelsic_wt_fasta):
