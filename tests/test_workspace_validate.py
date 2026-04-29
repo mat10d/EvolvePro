@@ -98,6 +98,22 @@ def test_validate_workspace_rejects_previous_manifest_chain_break(tmp_path):
         validate_workspace(tmp_path)
 
 
+def test_validate_workspace_rejects_observation_artifact_mutation(tmp_path):
+    _init_small_workspace(tmp_path)
+    assert main(["evolve"], cwd=tmp_path) == 0
+    (tmp_path / "rounds" / "round_000" / "candidates.csv").write_text(
+        "variant,activity\nA1C,0.0\nA1D,1.0\n"
+    )
+    assert main(["evolve"], cwd=tmp_path) == 0
+
+    (
+        tmp_path / "rounds" / "round_001" / "observations" / "activity_observations.csv"
+    ).write_text("variant,activity\nA1C,999\n")
+
+    with pytest.raises(ValueError, match="file hash mismatch"):
+        validate_workspace(tmp_path)
+
+
 def test_validate_workspace_rejects_embedding_input_mutation(tmp_path):
     _init_small_workspace(tmp_path)
     config_path = tmp_path / "evolvepro.toml"
@@ -155,6 +171,16 @@ def test_validate_workspace_rejects_generated_embedding_mutation(
     round1 = _workspace_with_generated_embeddings(tmp_path)
 
     round1.joinpath(relative_path).write_text(replacement)
+
+    with pytest.raises(ValueError, match="file hash mismatch"):
+        validate_workspace(tmp_path)
+
+
+def test_validate_workspace_rejects_training_artifact_mutation(tmp_path):
+    round1 = _workspace_with_generated_embeddings(tmp_path)
+    round1.joinpath("training", "training_set.csv").write_text(
+        "variant,activity,iteration\nA1C,999,0\n"
+    )
 
     with pytest.raises(ValueError, match="file hash mismatch"):
         validate_workspace(tmp_path)

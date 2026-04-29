@@ -92,6 +92,13 @@ def test_evolve_ingests_partial_activity_and_writes_next_round(tmp_path):
     assert "semantic_sha256" in manifest["inputs"]["activity_handoff"]
     activity_snapshot = tmp_path / manifest["inputs"]["activity_handoff"]["cas_path"]
     assert activity_snapshot.read_text() == "variant,activity\nA1C,0.5\nA1D,\n"
+    observations = round1 / "observations" / "activity_observations.csv"
+    assert observations.read_text() == "variant,activity\nA1C,0.5\n"
+    assert "semantic_sha256" in manifest["outputs"]["activity_observations"]
+    observations_snapshot = (
+        tmp_path / manifest["outputs"]["activity_observations"]["cas_path"]
+    )
+    assert observations_snapshot.read_bytes() == observations.read_bytes()
 
     workspace_lock = json.loads((tmp_path / "evolvepro.lock").read_text())
     assert workspace_lock["current_round"] == "round_001"

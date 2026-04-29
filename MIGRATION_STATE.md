@@ -88,7 +88,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-136 passed, 32 warnings
+138 passed, 33 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -237,6 +237,7 @@ Implemented in `035c4ab` and `79559ef`:
 - `evolvepro evolve` can prepare missing embeddings through configured backends, with CI coverage for the deterministic `fake` backend; generated FASTA, embedding CSV, metadata, backend/device metadata, and embedding config hashes are recorded in round lock/manifest payloads
 - workspace validation now distinguishes mutable handoff CAS snapshots from immutable generated artifacts and rejects generated embedding file mutation
 - workspace validation rejects generated embedding FASTA/CSV/metadata mutation, generated embedding CAS mutation, embedding config payload/hash mismatch, manifest mutation, round lock mutation, and previous-manifest chain breakage
+- `evolvepro evolve` persists normalized per-round measured observations under `rounds/round_NNN/observations/activity_observations.csv` with CAS and semantic hashes; model-backed rounds already persist accumulated `training/training_set.csv` with CAS and semantic hashes
 
 Key decisions:
 
@@ -294,10 +295,10 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
-2. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
-3. Decide whether default `esm` workspaces should fail immediately on missing CUDA during second `evolve` or remain deferred until explicit embedding preparation UX is exposed.
-4. Add embedding reuse/staleness policy for generated round embeddings.
-5. Start target `evolvepro plot` migration.
+1. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
+2. Decide whether default `esm` workspaces should fail immediately on missing CUDA during second `evolve` or remain deferred until explicit embedding preparation UX is exposed.
+3. Add embedding reuse/staleness policy for generated round embeddings.
+4. Start target `evolvepro plot` migration.
+5. Add CLI run-local embedding overrides (`--device`, `--allow-cpu-embedding`) if needed by target UX.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.

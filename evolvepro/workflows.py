@@ -377,7 +377,16 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
 
     activity_artifact = _handoff_artifact_entry(activity_path, workspace)
     candidate_artifact = _handoff_artifact_entry(candidates_path, workspace)
-    outputs: dict[str, object] = {"candidate_handoff": candidate_artifact}
+    observation_artifact = _write_table_artifact(
+        round_dir / "observations" / "activity_observations.csv",
+        handoff.measured,
+        workspace,
+        sort_by=["variant"],
+    )
+    outputs: dict[str, object] = {
+        "candidate_handoff": candidate_artifact,
+        "activity_observations": observation_artifact,
+    }
     outputs.update(model_outputs)
     previous_manifest_path = workspace / str(previous_entry["manifest"])
 

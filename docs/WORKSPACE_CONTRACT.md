@@ -288,6 +288,8 @@ rounds/<round-id>/legacy/iteration.csv
 rounds/<round-id>/legacy/this_round_variants.csv
 rounds/<round-id>/legacy/df_test.csv
 rounds/<round-id>/legacy/df_sorted_all.csv
+rounds/<round-id>/observations/activity_observations.csv
+rounds/<round-id>/training/training_set.csv
 rounds/<round-id>/model/model.pkl
 rounds/<round-id>/model/params.json
 rounds/<round-id>/predictions/predictions.parquet
