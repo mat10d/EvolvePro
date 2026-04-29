@@ -165,6 +165,16 @@ def _toml_bool(value: bool) -> str:
     return "true" if value else "false"
 
 
+def _toml_value(value: object) -> str:
+    if isinstance(value, bool):
+        return _toml_bool(value)
+    if isinstance(value, int | float):
+        return str(value)
+    if isinstance(value, str):
+        return _toml_string(value)
+    raise ValueError(f"unsupported TOML value type: {type(value).__name__}")
+
+
 def write_config(config: EvolveProConfig, path: Path) -> None:
     lines = [
         f"schema_version = {config.schema_version}",
@@ -198,6 +208,8 @@ def write_config(config: EvolveProConfig, path: Path) -> None:
             f"seed = {config.model.seed}",
         ]
     )
+    for key in sorted(config.model.params):
+        lines.append(f"{key} = {_toml_value(config.model.params[key])}")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -227,6 +239,9 @@ def evolve_experimental_from_config(
         rename_WT=experiment.rename_WT,
         number_of_variants=experiment.number_of_variants,
         output_dir=str(config.run.output_dir),
+        regression_type=config.model.regression_type,
+        model_seed=config.model.seed,
+        model_params=config.model.params,
     )
     round_dir = config.run.output_dir / experiment.protein_name / experiment.round_name
     lock_path = round_dir / "round.lock.json"

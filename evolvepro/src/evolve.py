@@ -3,7 +3,7 @@ import random
 import time
 from pathlib import Path
 import pandas as pd
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from evolvepro import __version__
 from evolvepro.io.dump import dump_round
@@ -429,6 +429,9 @@ def evolve_experimental(
     rename_WT: bool = False,
     number_of_variants: int = 12,
     output_dir: str = "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/output/exp_results/",
+    regression_type: str = "randomforest",
+    model_seed: int | None = None,
+    model_params: dict[str, Any] | None = None,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Perform one round of directed evolution for a protein.
@@ -482,8 +485,10 @@ def evolve_experimental(
         embeddings_pd=embeddings,
         labels_pd=labels,
         measured_var="activity",
-        regression_type="randomforest",
+        regression_type=regression_type,
         experimental=True,
+        model_seed=model_seed,
+        model_params=model_params,
     )
 
     # Print results
@@ -517,7 +522,9 @@ def evolve_experimental(
                 "round_file_names": round_file_names,
                 "rename_WT": rename_WT,
                 "number_of_variants": number_of_variants,
-                "regression_type": "randomforest",
+                "regression_type": regression_type,
+                **({"model_seed": model_seed} if model_seed is not None else {}),
+                **({"model_params": model_params} if model_params else {}),
             },
             evolvepro_version=__version__,
         )
@@ -538,6 +545,9 @@ def evolve_experimental_multi(
     rename_WT: bool = False,
     number_of_variants: int = 12,
     output_dir: str = "/orcd/archive/abugoot/001/Projects/Matteo/Github/EvolvePro/output/exp_results/",
+    regression_type: str = "randomforest",
+    model_seed: int | None = None,
+    model_params: dict[str, Any] | None = None,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Perform one round of directed evolution for a protein with multi-mutant support.
@@ -591,8 +601,10 @@ def evolve_experimental_multi(
         embeddings_pd=embeddings,
         labels_pd=labels,
         measured_var="activity",
-        regression_type="randomforest",
+        regression_type=regression_type,
         experimental=True,
+        model_seed=model_seed,
+        model_params=model_params,
     )
 
     # Print results
@@ -632,7 +644,9 @@ def evolve_experimental_multi(
                 "round_file_names_multi": round_file_names_multi,
                 "rename_WT": rename_WT,
                 "number_of_variants": number_of_variants,
-                "regression_type": "randomforest",
+                "regression_type": regression_type,
+                **({"model_seed": model_seed} if model_seed is not None else {}),
+                **({"model_params": model_params} if model_params else {}),
             },
             evolvepro_version=__version__,
         )

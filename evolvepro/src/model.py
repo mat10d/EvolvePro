@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
@@ -9,6 +11,14 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from scipy.spatial.distance import cdist
+
+
+def _with_overrides(
+    defaults: dict[str, Any], overrides: dict[str, Any] | None
+) -> dict[str, Any]:
+    if overrides is None:
+        return defaults
+    return {**defaults, **overrides}
 
 
 # Function for selecting mutants in the first round
@@ -108,6 +118,8 @@ def top_layer(
     top_n=None,
     final_round=10,
     experimental=False,
+    model_seed=None,
+    model_params=None,
 ):
     # if experimental, check alignment between embeddings and labels. This is done in the data loading for dms data
     if experimental:
@@ -163,86 +175,113 @@ def top_layer(
 
     # fit
     if regression_type == "ridge":
-        model = linear_model.RidgeCV()
+        model = linear_model.RidgeCV(**_with_overrides({}, model_params))
     elif regression_type == "lasso":
-        model = linear_model.LassoCV(max_iter=100000, tol=1e-3)
+        model = linear_model.LassoCV(
+            **_with_overrides({"max_iter": 100000, "tol": 1e-3}, model_params)
+        )
     elif regression_type == "elasticnet":
-        model = linear_model.ElasticNetCV(max_iter=100000, tol=1e-3)
+        model = linear_model.ElasticNetCV(
+            **_with_overrides({"max_iter": 100000, "tol": 1e-3}, model_params)
+        )
     elif regression_type == "linear":
-        model = linear_model.LinearRegression()
+        model = linear_model.LinearRegression(**_with_overrides({}, model_params))
     elif regression_type == "neuralnet":
         model = MLPRegressor(
-            hidden_layer_sizes=(5),
-            max_iter=1000,
-            activation="relu",
-            solver="adam",
-            alpha=0.001,
-            batch_size="auto",
-            learning_rate="constant",
-            learning_rate_init=0.001,
-            power_t=0.5,
-            momentum=0.9,
-            nesterovs_momentum=True,
-            shuffle=True,
-            random_state=1,
-            tol=0.0001,
-            verbose=False,
-            warm_start=False,
-            early_stopping=False,
-            validation_fraction=0.1,
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-08,
+            **_with_overrides(
+                {
+                    "hidden_layer_sizes": (5),
+                    "max_iter": 1000,
+                    "activation": "relu",
+                    "solver": "adam",
+                    "alpha": 0.001,
+                    "batch_size": "auto",
+                    "learning_rate": "constant",
+                    "learning_rate_init": 0.001,
+                    "power_t": 0.5,
+                    "momentum": 0.9,
+                    "nesterovs_momentum": True,
+                    "shuffle": True,
+                    "random_state": 1 if model_seed is None else model_seed,
+                    "tol": 0.0001,
+                    "verbose": False,
+                    "warm_start": False,
+                    "early_stopping": False,
+                    "validation_fraction": 0.1,
+                    "beta_1": 0.9,
+                    "beta_2": 0.999,
+                    "epsilon": 1e-08,
+                },
+                model_params,
+            )
         )
     elif regression_type == "randomforest":
         model = RandomForestRegressor(
-            n_estimators=100,
-            criterion="friedman_mse",
-            max_depth=None,
-            min_samples_split=2,
-            min_samples_leaf=1,
-            min_weight_fraction_leaf=0.0,
-            max_features=1.0,
-            max_leaf_nodes=None,
-            min_impurity_decrease=0.0,
-            bootstrap=True,
-            oob_score=False,
-            n_jobs=None,
-            random_state=1,
-            verbose=0,
-            warm_start=False,
-            ccp_alpha=0.0,
-            max_samples=None,
+            **_with_overrides(
+                {
+                    "n_estimators": 100,
+                    "criterion": "friedman_mse",
+                    "max_depth": None,
+                    "min_samples_split": 2,
+                    "min_samples_leaf": 1,
+                    "min_weight_fraction_leaf": 0.0,
+                    "max_features": 1.0,
+                    "max_leaf_nodes": None,
+                    "min_impurity_decrease": 0.0,
+                    "bootstrap": True,
+                    "oob_score": False,
+                    "n_jobs": None,
+                    "random_state": 1 if model_seed is None else model_seed,
+                    "verbose": 0,
+                    "warm_start": False,
+                    "ccp_alpha": 0.0,
+                    "max_samples": None,
+                },
+                model_params,
+            )
         )
     elif regression_type == "gradientboosting":
-        model = xgboost.XGBRegressor(
-            objective="reg:squarederror",
-            colsample_bytree=0.3,
-            learning_rate=0.1,
-            max_depth=5,
-            alpha=10,
-            n_estimators=10,
-        )
+        defaults = {
+            "objective": "reg:squarederror",
+            "colsample_bytree": 0.3,
+            "learning_rate": 0.1,
+            "max_depth": 5,
+            "alpha": 10,
+            "n_estimators": 10,
+        }
+        if model_seed is not None:
+            defaults["random_state"] = model_seed
+        model = xgboost.XGBRegressor(**_with_overrides(defaults, model_params))
     elif regression_type == "knn":
         model = KNeighborsRegressor(
-            n_neighbors=5,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
+            **_with_overrides(
+                {
+                    "n_neighbors": 5,
+                    "weights": "uniform",
+                    "algorithm": "auto",
+                    "leaf_size": 30,
+                    "p": 2,
+                    "metric": "minkowski",
+                    "metric_params": None,
+                    "n_jobs": None,
+                },
+                model_params,
+            )
         )
     elif regression_type == "gp":
         model = GaussianProcessRegressor(
-            kernel=None,
-            alpha=1e-10,
-            optimizer="fmin_l_bfgs_b",
-            n_restarts_optimizer=0,
-            normalize_y=False,
-            copy_X_train=True,
-            random_state=None,
+            **_with_overrides(
+                {
+                    "kernel": None,
+                    "alpha": 1e-10,
+                    "optimizer": "fmin_l_bfgs_b",
+                    "n_restarts_optimizer": 0,
+                    "normalize_y": False,
+                    "copy_X_train": True,
+                    "random_state": model_seed,
+                },
+                model_params,
+            )
         )
 
     model.fit(X_train, y_train)
@@ -332,8 +371,10 @@ def top_layer(
         "n_train": len(idx_train),
         "n_test": len(idx_test),
         "regression_type": regression_type,
-        "seed": None,
+        "seed": model_seed,
     }
+    if model_seed is not None or model_params is not None:
+        metrics["model_params"] = model.get_params(deep=False)
 
     if experimental:
         return this_round_variants, df_test, df_sorted_all, metrics, model

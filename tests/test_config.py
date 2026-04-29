@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
@@ -230,6 +231,9 @@ def test_config_driven_experimental_round_matches_direct_call(
         rename_WT=config.experiment.rename_WT,
         number_of_variants=config.experiment.number_of_variants,
         output_dir=str(direct_output),
+        regression_type=config.model.regression_type,
+        model_seed=config.model.seed,
+        model_params=config.model.params,
     )
     config_result = evolve_experimental_from_config(config)
 
@@ -276,3 +280,30 @@ def test_config_driven_run_writes_round_lock_and_manifest(
     assert "df_sorted_all.csv" in {
         Path(entry["path"]).name for entry in manifest["outputs"]["legacy_files"]
     }
+
+
+def test_config_model_seed_and_params_control_training(
+    tmp_path, repo_root, kelsic_wt_fasta
+):
+    config_output = tmp_path / "config-output"
+    config_path = _write_round_config(
+        tmp_path, repo_root, kelsic_wt_fasta, config_output
+    )
+    config_path.write_text(
+        config_path.read_text().replace(
+            '[model]\nregression_type = "randomforest"\nseed = 0\n',
+            '[model]\nregression_type = "randomforest"\nseed = 7\nn_estimators = 11\nn_jobs = 1\n',
+        )
+    )
+    config = load_config(config_path)
+
+    evolve_experimental_from_config(config)
+
+    round_dir = config_output / "kelsic" / "Round1"
+    model = joblib.load(round_dir / "model.pkl")
+    lock = json.loads((round_dir / "round.lock.json").read_text())
+    assert model.random_state == 7
+    assert model.n_estimators == 11
+    assert model.n_jobs == 1
+    assert lock["model"]["seed"] == 7
+    assert lock["model"]["params"] == {"n_estimators": 11, "n_jobs": 1}
