@@ -55,6 +55,9 @@ c835ab9 feat: validate completed round manifests
 0bc484f feat: add DMS grid search CLI
 221cc5c feat: add process dataset CLI
 d4a5f7c docs: map scripts to CLI replacements
+d1ef6c1 docs: define target CLI interface
+4b86990 docs: limit xlsx to compatibility paths
+4aaccfb feat: start workspace evolve state machine
 ```
 
 ## Current validation command
@@ -69,7 +72,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-67 passed, 24 warnings
+78 passed, 24 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -188,16 +191,20 @@ Implemented in `035c4ab` and `79559ef`:
 - config-driven runs pass model seed and model parameters into training; legacy calls without these arguments keep upstream defaults
 - config-driven runs materialize planned layout copies under `legacy/`, `model/`, and `predictions/` while keeping root-level legacy/dump outputs intact
 - `model/params.json` persists resolved model parameters from the trained estimator
-- workspace primitives initialize `evolvepro.toml`, `.evolvepro/workspace.toml`, `inputs/`, `outputs/`, `rounds/`, `.evolvepro/cache/`, and `.evolvepro/locks/`
+- workspace primitives initialize `evolvepro.toml`, `evolvepro.lock`, `.evolvepro/workspace.toml`, `inputs/`, `outputs/`, `rounds/`, `.evolvepro/cache/`, `.evolvepro/locks/`, and `.evolvepro/cas/sha256/`
 - workspace discovery walks parent directories from an arbitrary path
 - completed round validation checks `round.lock.json`, `manifest.json`, input hashes, output hashes, prediction semantic hash, and previous manifest hash chain
-- minimal non-interactive CLI exists with `evolvepro init`, `evolvepro run --config`, and `evolvepro validate`
+- minimal non-interactive CLI exists with `evolvepro init`, `evolvepro evolve`, `evolvepro run --config`, and `evolvepro validate`
 - `uv sync --frozen` installs the project editable and exposes `.venv/bin/evolvepro`; `setup.py` is now a shim over `pyproject.toml`
 - README documents the experimental CLI workspace workflow
 - subprocess-level CLI workflow test verifies `evolvepro run --config` and `evolvepro validate` against config API output
 - process FASTA generation has CLI coverage via `evolvepro process generate-wt` and `evolvepro process generate-single-aa-mutants`
 - DMS grid search has CLI coverage via `evolvepro dms grid-search` and README documentation
 - DMS/process dataset preparation has CLI coverage via `evolvepro process dataset`
+- `evolvepro init` accepts target setup flags `--set-default`, `--reconfigure`, and `--yes`; `--force` remains as compatibility overwrite
+- `evolvepro evolve` starts the target workspace state machine by generating `round_000/candidates.csv` from the configured WT FASTA, snapshotting it into CAS, writing read-only `round.lock` and `manifest.json`, and updating `evolvepro.lock`
+- CSV candidate handoff helpers enforce exact `variant,activity` columns, numeric filled activity values, duplicate rejection, and blank activity as unmeasured
+- CAS helpers write content-addressed read-only snapshots under `.evolvepro/cas/sha256/`
 
 Key decisions:
 
@@ -220,6 +227,11 @@ Implemented files:
 - `tests/test_canonical.py`
 - `tests/test_config.py`
 - `tests/test_manifest.py`
+- `evolvepro/io/cas.py`
+- `evolvepro/io/handoff.py`
+- `evolvepro/workflows.py`
+- `tests/test_handoff_and_cas.py`
+- `tests/test_evolve_workspace.py`
 
 Compatibility output policy is documented in `docs/WORKSPACE_CONTRACT.md`:
 
@@ -231,10 +243,10 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Add target `evolvepro evolve` state-machine tests before implementation.
-2. Introduce target `evolvepro.lock` and per-round `round.lock` compatibility while preserving existing `round.lock.json` tests until migration is complete.
-3. Implement CSV-only candidate handoff with `variant,activity` columns, partial-measurement handling, CAS snapshots, and implicit validation.
+1. Extend `evolvepro evolve` beyond the initial round: ingest filled candidate CSV rows, snapshot the edited handoff file, record measured/unmeasured counts, and produce the next round.
+2. Add workspace-wide `evolvepro validate` over `evolvepro.lock`, `round.lock`, manifest hashes, and CAS snapshots while preserving existing round-dir validation.
+3. Add semantic hashes for candidate handoff CSVs in `round.lock`/`manifest.json`, not just byte hashes.
 4. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.
 5. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
 
-Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
+Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.
