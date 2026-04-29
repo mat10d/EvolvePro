@@ -37,6 +37,9 @@ a40770c docs: record baseline coverage and deletion scope
 15af389 docs: audit reachable code before migration
 14fb720 refactor: lazy import torch for pt embeddings
 214160c feat: write reproducible round dump artifacts
+3b7f3a5 docs: record migration state after dump artifacts
+1dde955 docs: define file-based workspace contract
+035c4ab feat: add file-based config and lock primitives
 ```
 
 ## Current validation command
@@ -51,7 +54,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-29 passed, 12 warnings
+43 passed, 14 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -152,67 +155,39 @@ Defer deletion of:
 - `data/*`
 - `images/*` while README references them
 
-## Next stage: workspace/config/manifest abstraction
+## Current workspace/config/manifest state
 
-Start here after context compaction. Read `docs/WORKSPACE_CONTRACT.md` first.
+Read `docs/WORKSPACE_CONTRACT.md` first after context compaction.
 
-Goal: introduce file-based TOML config, round lock files, and manifests for the current upstream-style experimental workflow without removing existing function/script behavior.
+Implemented in `035c4ab`:
+
+- deterministic canonical JSON bytes and JSON SHA256
+- table semantic hashes with explicit sort columns
+- TOML loading into typed config dataclasses
+- deterministic TOML writing
+- config-driven `evolve_experimental` adapter
+- round lock construction with raw input hashes, model config, config hash, and previous manifest hash
+- round lock validation that stops on input or previous-manifest hash mismatch
 
 Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
 
-Suggested files:
+Implemented files:
 
 - `evolvepro/io/schemas.py`
 - `evolvepro/io/config.py`
 - `evolvepro/io/manifest.py`
 - `evolvepro/io/canonical.py`
 - `tests/fixtures/kelsic_round1.toml`
+- `tests/test_canonical.py`
 - `tests/test_config.py`
 - `tests/test_manifest.py`
 
-Suggested config model fields for the current Kelsic experimental path:
+Next implementation stage:
 
-```python
-@dataclass
-class ExperimentalRoundConfig:
-    protein_name: str
-    round_name: str
-    embeddings_base_path: Path
-    embeddings_file_name: str
-    round_base_path: Path
-    round_file_names: list[str]
-    wt_fasta_path: Path
-    rename_WT: bool = False
-    number_of_variants: int = 12
-    output_dir: Path | None = None
-```
+1. Add explicit manifest output construction for completed experimental rounds.
+2. Write `round.lock.json` and `manifest.json` into the configured round directory.
+3. Move current dump artifacts into the planned round layout or add compatibility links while preserving current legacy CSV output tests.
+4. Add seed/model-parameter plumbing to `top_layer` so config-driven runs can force deterministic model parameters without changing legacy defaults.
+5. Add minimal workspace initialization primitives for a later `evolvepro init` command.
 
-Also plan for multi-round config later:
-
-```python
-@dataclass
-class ExperimentalMultiRoundConfig:
-    protein_name: str
-    round_name: str
-    embeddings_base_path: Path
-    embeddings_file_names: list[str]
-    round_base_path: Path
-    round_file_names_single: list[str]
-    round_file_names_multi: list[str]
-    wt_fasta_path: Path
-    rename_WT: bool = False
-    number_of_variants: int = 12
-    output_dir: Path | None = None
-```
-
-Tests to add first:
-
-1. TOML loader validates required fields and path/string/list types.
-2. Invalid TOML raises a clear exception.
-3. Canonical JSON/TOML writes are deterministic and stable.
-4. Raw file SHA256 and table semantic hashes are reproducible.
-5. Round lock generation captures resolved config, input hashes, previous manifest hash, and model parameters.
-6. Manifest validation stops on input or previous-manifest hash mismatch.
-7. TOML-driven `evolve_experimental` produces the same legacy CSV outputs and dump artifacts as direct function invocation using the existing Kelsic synthetic embedding fixture.
-
-Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter should target current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
+Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
