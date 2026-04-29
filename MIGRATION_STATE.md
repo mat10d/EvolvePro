@@ -123,7 +123,7 @@ The Stage 0 tests lock both function behavior and file outputs.
 - `torch` is intentionally not a required runtime dependency for core CSV workflows.
 - `evolvepro/src/data.py` now lazy-imports `torch` only for `.pt` embedding files.
 - Keep CLI/subprocess implementations from overwriting `LD_LIBRARY_PATH`; Nix devShell sets it for native libraries and host CUDA driver paths.
-- PLM/GPU/model-download paths should remain optional and smoke-tested only in normal CI.
+- Target workflow is GPU-first for PLM embedding extraction, but GPU/model-download paths remain optional or smoke-tested in normal CI.
 
 ## Dump artifact implementation
 
@@ -210,8 +210,8 @@ Implemented in `035c4ab` and `79559ef`:
 - CAS helpers write content-addressed read-only snapshots under `.evolvepro/cas/sha256/`
 - workspace validation now checks `evolvepro.lock`, `round.lock`, manifest hashes, previous-manifest links, and CAS snapshots while allowing mutable handoff files to change
 - when `inputs/embeddings.csv` exists, `evolvepro evolve` now trains the configured top-layer model on accumulated measured rows, ranks unmeasured embedded variants, and writes model/training/prediction artifacts
-- core training is CPU-bound scikit-learn/XGBoost style regression; GPU is not used in the train step
-- embedding extraction is still not part of `evolve`; current target workflow consumes precomputed embedding CSV files and PLM extraction remains a deferred optional workflow
+- core top-layer training is CPU-bound scikit-learn/XGBoost style regression; GPU is not used in the train step
+- target workflow is GPU-first for PLM embedding extraction, but embedding extraction is still not part of `evolve`; current implementation consumes precomputed embedding CSV files
 
 Key decisions:
 
@@ -253,7 +253,13 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 Next implementation stage:
 
 1. Snapshot/hash embedding inputs in `evolvepro evolve` manifests and add validation coverage for embedding file mutation.
-2. Add an optional embedding preparation workflow design/implementation; it must remain separate from core CPU training and record PLM backend/model/device metadata.
+2. Design and implement GPU-first embedding preparation as first-class workflow state:
+   - candidate FASTA generation
+   - PLM backend/model selection
+   - GPU device detection/selection
+   - CPU fallback only as explicit compatibility mode
+   - CAS snapshots for FASTA and embedding outputs
+   - manifest metadata for backend, model revision, dtype, device, torch/CUDA, and seed
 3. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
 4. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
 5. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.

@@ -134,11 +134,19 @@ Validation uses the CAS snapshots and recorded hashes, not trust in the mutable 
 
 ## Training and embedding policy
 
-The current core training path uses scikit-learn/XGBoost style top-layer regressors and runs on CPU. It does not use GPU. GPU use is limited to optional PLM embedding extraction scripts/backends, not the regression training stage.
+The target workflow is GPU-first for embedding extraction. EvolvePro's useful signal comes from PLM embeddings, so target workspaces should be able to generate or refresh embeddings as part of the high-level workflow before model training.
 
-`evolvepro evolve` consumes precomputed embedding CSV files when available. Embedding extraction is not yet part of the target `evolve` state machine. This is a known migration gap: target workspaces need an embedding preparation phase that can generate embeddings from the configured candidate sequences, snapshot outputs into CAS, and record model/backend/device metadata.
+The current top-layer training path uses scikit-learn/XGBoost style regressors and runs on CPU. GPU is not used for the regression training stage today.
 
-Target embedding extraction must remain optional for core CSV workflows because PLM backends require torch, GPU resources, model downloads, and backend-specific dependencies. Until that workflow exists, users provide `inputs/embeddings.csv` and `evolve` records derived model/prediction artifacts from that file.
+`evolvepro evolve` currently consumes precomputed embedding CSV files when available. Embedding extraction is not yet part of the target `evolve` state machine. This is a migration gap: target workspaces need an embedding preparation phase that can generate embeddings from configured candidate sequences, snapshot outputs into CAS, and record model/backend/device metadata.
+
+Implementation target:
+
+- Prefer GPU for PLM embedding extraction when available.
+- Make GPU embedding extraction first-class in the workflow, not a hidden legacy script step.
+- Keep CPU training as the default top-layer regression path unless a future model explicitly supports GPU training.
+- Preserve a CPU/no-PLM compatibility path for tests and minimal CSV workflows, but do not design the main UX around it.
+- Record PLM backend, model name/revision, device, dtype, torch/CUDA metadata, seed, input FASTA hash, and output embedding hash in manifests.
 
 ## Hashing and integrity policy
 
