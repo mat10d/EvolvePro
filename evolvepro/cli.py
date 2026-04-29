@@ -6,6 +6,7 @@ from typing import Sequence
 
 from evolvepro.io.config import evolve_experimental_from_config, load_config
 from evolvepro.io.manifest import validate_round_directory
+from evolvepro.src.evolve import grid_search
 from evolvepro.src.process import generate_single_aa_mutants, generate_wt
 from evolvepro.workspace import CONFIG_FILE, init_workspace
 
@@ -42,6 +43,30 @@ def _parser() -> argparse.ArgumentParser:
     mutants_parser.add_argument("--wt-fasta", required=True)
     mutants_parser.add_argument("--output", required=True)
     mutants_parser.add_argument("--positions")
+
+    dms_parser = subparsers.add_parser("dms", help="run DMS workflows")
+    dms_subparsers = dms_parser.add_subparsers(dest="dms_command")
+    grid_parser = dms_subparsers.add_parser("grid-search", help="run a DMS grid search")
+    grid_parser.add_argument("--dataset-name", required=True)
+    grid_parser.add_argument("--experiment-name", required=True)
+    grid_parser.add_argument("--model-name", required=True)
+    grid_parser.add_argument("--embeddings-path", required=True)
+    grid_parser.add_argument("--labels-path", required=True)
+    grid_parser.add_argument("--num-simulations", required=True, type=int)
+    grid_parser.add_argument("--num-iterations", required=True, type=int, nargs="+")
+    grid_parser.add_argument("--measured-var", required=True, nargs="+")
+    grid_parser.add_argument("--learning-strategies", required=True, nargs="+")
+    grid_parser.add_argument(
+        "--num-mutants-per-round", required=True, type=int, nargs="+"
+    )
+    grid_parser.add_argument("--num-final-round-mutants", required=True, type=int)
+    grid_parser.add_argument("--first-round-strategies", required=True, nargs="+")
+    grid_parser.add_argument("--embedding-types", required=True, nargs="+")
+    grid_parser.add_argument("--pca-components", type=int, nargs="*")
+    grid_parser.add_argument("--regression-types", required=True, nargs="+")
+    grid_parser.add_argument("--embeddings-file-type", required=True)
+    grid_parser.add_argument("--output-dir", required=True)
+    grid_parser.add_argument("--embeddings-type-pt")
 
     return parser
 
@@ -102,6 +127,35 @@ def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
             print(f"wrote single amino acid mutant FASTA: {output}")
             return 0
         parser.error("process requires a subcommand")
+
+    if args.command == "dms":
+        if args.dms_command == "grid-search":
+            embeddings_path = _resolve_path(base, args.embeddings_path)
+            labels_path = _resolve_path(base, args.labels_path)
+            output_dir = _resolve_path(base, args.output_dir)
+            grid_search(
+                dataset_name=args.dataset_name,
+                experiment_name=args.experiment_name,
+                model_name=args.model_name,
+                embeddings_path=str(embeddings_path),
+                labels_path=str(labels_path),
+                num_simulations=args.num_simulations,
+                num_iterations=args.num_iterations,
+                measured_var=args.measured_var,
+                learning_strategies=args.learning_strategies,
+                num_mutants_per_round=args.num_mutants_per_round,
+                num_final_round_mutants=args.num_final_round_mutants,
+                first_round_strategies=args.first_round_strategies,
+                embedding_types=args.embedding_types,
+                pca_components=args.pca_components,
+                regression_types=args.regression_types,
+                embeddings_file_type=args.embeddings_file_type,
+                output_dir=str(output_dir),
+                embeddings_type_pt=args.embeddings_type_pt,
+            )
+            print(f"completed DMS grid search: {output_dir}")
+            return 0
+        parser.error("dms requires a subcommand")
 
     parser.error(f"unknown command: {args.command}")
     return 2

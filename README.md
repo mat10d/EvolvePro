@@ -58,6 +58,28 @@ Apply the EVOLVEpro model to optimize protein activity. There are two main workf
 #### DMS Workflow
 Use this workflow to optimize a few-shot model on a deep mutational scanning (DMS) dataset, where activity values are known for a large number of variants.
 
+CLI example:
+
+```bash
+evolvepro dms grid-search \
+  --dataset-name sarscov2 \
+  --experiment-name smoke \
+  --model-name esm2 \
+  --embeddings-path path/to/embeddings \
+  --labels-path path/to/labels \
+  --num-simulations 3 \
+  --num-iterations 3 5 \
+  --measured-var activity \
+  --learning-strategies topn \
+  --num-mutants-per-round 10 \
+  --num-final-round-mutants 10 \
+  --first-round-strategies random \
+  --embedding-types embeddings \
+  --regression-types randomforest \
+  --embeddings-file-type csv \
+  --output-dir outputs/dms
+```
+
 For detailed instructions, see the [DMS README](scripts/dms/README.md).
 
 #### Experimental Workflow
