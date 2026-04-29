@@ -23,9 +23,10 @@ See:
 
 - `tests/UPSTREAM_EXAMPLES.md` for upstream workflow audit and deletion proposal.
 - `tests/REACHABLE.md` for reachable-code audit and CLI replacement gates.
+- `docs/CLI_INTERFACE.md` for the target user-facing CLI (`init`, `evolve`, `validate`, `plot`, optional `dms`).
 - `docs/WORKSPACE_CONTRACT.md` for the planned file-based workspace, round, lock, and manifest contract.
 - `docs/INTERACTIVE_CLI.md` for the deferred rich-click interactive CLI plan.
-- `docs/SCRIPT_MIGRATION.md` for the script-to-CLI replacement map and current CLI interface table.
+- `docs/SCRIPT_MIGRATION.md` for the script-to-CLI replacement map and compatibility command table.
 
 ## Completed commits on `cli-migration`
 
@@ -53,6 +54,7 @@ c835ab9 feat: validate completed round manifests
 80bcb5a feat: add process FASTA CLI commands
 0bc484f feat: add DMS grid search CLI
 221cc5c feat: add process dataset CLI
+d4a5f7c docs: map scripts to CLI replacements
 ```
 
 ## Current validation command
@@ -113,7 +115,7 @@ The Stage 0 tests lock both function behavior and file outputs.
 
 - Runtime dependencies are declared in `pyproject.toml` and locked in `uv.lock`.
 - `joblib` and `pyarrow` are runtime dependencies because dump artifacts write `model.pkl` and `predictions.parquet`.
-- `torch` is intentionally not a required runtime dependency for core CSV/Excel workflows.
+- `torch` is intentionally not a required runtime dependency for core CSV workflows.
 - `evolvepro/src/data.py` now lazy-imports `torch` only for `.pt` embedding files.
 - Keep CLI/subprocess implementations from overwriting `LD_LIBRARY_PATH`; Nix devShell sets it for native libraries and host CUDA driver paths.
 - PLM/GPU/model-download paths should remain optional and smoke-tested only in normal CI.
@@ -197,7 +199,16 @@ Implemented in `035c4ab` and `79559ef`:
 - DMS grid search has CLI coverage via `evolvepro dms grid-search` and README documentation
 - DMS/process dataset preparation has CLI coverage via `evolvepro process dataset`
 
-Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
+Key decisions:
+
+- Do not use SQLite as source of truth. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
+- Target user-facing commands are `evolvepro init`, `evolvepro evolve`, `evolvepro validate`, `evolvepro plot`, plus optional `evolvepro dms ...`.
+- A separate public `configure` command is not planned; `init` owns setup and `init --reconfigure` owns overrides.
+- One workspace manages one protein.
+- User handoff files are CSV-only with `variant,activity` columns; XLSX may only remain as legacy import normalized to CSV.
+- `evolve` owns initial candidate generation, measured activity ingest, model training, prediction, checkpointing, implicit recursive validation, and state updates.
+- Mutable candidate CSV files are handoff files; immutable provenance comes from CAS snapshots, `round.lock`, `manifest.json`, and `evolvepro.lock`.
+- Use `.lock` filenames (`evolvepro.lock`, `round.lock`) for target lock files, even if internal encoding remains deterministic JSON.
 
 Implemented files:
 
@@ -216,12 +227,13 @@ Compatibility output policy is documented in `docs/WORKSPACE_CONTRACT.md`:
 - planned layout is the forward-looking CLI contract
 - `manifest.json` records both compatibility and planned-layout outputs
 
-Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse` for the current non-interactive contract; defer `rich-click` until config/workflow migration is more stable.
+Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse` for the current compatibility contract; defer `rich-click` until the target workflow state machine is stable.
 
 Next implementation stage:
 
-1. Review CLI naming before adding more nested commands; current `evolvepro process ...` shape is documented as potentially too verbose.
-2. If continuing implementation, add missing process commands (`suggest_initial_mutants`, `generate_n_mutant_combinations`) before plots/PLM.
-3. For `scripts/exp`, prefer TOML template/config-generator work over script-specific commands.
+1. Add target `evolvepro evolve` state-machine tests before implementation.
+2. Introduce target `evolvepro.lock` and per-round `round.lock` compatibility while preserving existing `round.lock.json` tests until migration is complete.
+3. Implement CSV-only candidate handoff with `variant,activity` columns, partial-measurement handling, CAS snapshots, and implicit validation.
+4. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.

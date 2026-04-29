@@ -4,12 +4,25 @@ This document records the intended interactive CLI direction. It is not implemen
 
 ## Decision
 
-Keep the current `argparse` CLI as the non-interactive compatibility contract for now:
+The target user-facing command surface is documented in `docs/CLI_INTERFACE.md`:
+
+```bash
+evolvepro init [DIR]
+evolvepro evolve
+evolvepro validate
+evolvepro plot
+```
+
+`evolvepro init` owns interactive workspace setup. A separate public `configure` command is not part of the target UX; reconfiguration should go through `evolvepro init --reconfigure`.
+
+Keep the current `argparse` CLI as the compatibility contract until the target commands have regression coverage:
 
 ```bash
 evolvepro init [DIR]
 evolvepro run --config evolvepro.toml
 evolvepro validate [ROUND_DIR]
+evolvepro process ...
+evolvepro dms grid-search ...
 ```
 
 Do not switch to `rich-click` until the workspace/config/lock/manifest contract is stable and public workflows have CLI regression coverage.
@@ -18,31 +31,30 @@ The future interactive CLI should use `rich-click` or an equivalent Click/Rich s
 
 ## Target behavior
 
-Running `evolvepro` with no subcommand should eventually enter interactive mode.
+Interactive behavior belongs primarily to `evolvepro init` and `evolvepro init --reconfigure`.
 
 Interactive flow:
 
-1. Detect the current workspace or offer to initialize one.
-2. Show a command menu.
-3. Let the user choose a workflow.
-4. Collect or edit workflow settings.
-5. Write deterministic TOML.
-6. Confirm before execution.
-7. Execute through the same non-interactive run path.
-8. Write lock and manifest files.
+1. Detect whether the target workspace already exists.
+2. Refuse to overwrite existing configuration unless `--reconfigure` is present.
+3. If overriding existing configuration, prompt `Override it? [Y/n]` unless `--yes` is present.
+4. Collect protein/workspace settings.
+5. Write deterministic workspace config.
+6. Initialize lock/index state.
 
-Interactive mode is a config generator/editor. It must never become a separate execution path.
+Execution remains non-interactive. `evolvepro evolve` reads workspace state, validates previous artifacts, and advances the state machine.
 
 ## Source of truth
 
 The source of truth remains file-based:
 
 - `evolvepro.toml`
-- `rounds/<round-id>/round.toml` when round-specific configs are introduced
-- `rounds/<round-id>/round.lock.json`
+- `evolvepro.lock`
+- `rounds/<round-id>/round.lock`
 - `rounds/<round-id>/manifest.json`
+- CAS snapshots under `.evolvepro/cas/`
 
-Interactive prompts must write the same TOML schema used by `evolvepro run --config`.
+Interactive prompts must write the same workspace config consumed by `evolvepro evolve`.
 
 ## Idempotency requirements
 
@@ -76,11 +88,13 @@ Examples:
 
 ```bash
 evolvepro init .
-evolvepro run --config evolvepro.toml
-evolvepro validate outputs/kelsic/Round1
+evolvepro init . --set-default --yes
+evolvepro init . --reconfigure
+evolvepro evolve
+evolvepro validate
 ```
 
-Interactive mode should call the same Python functions as these commands.
+Interactive setup should call the same Python functions as non-interactive setup flags.
 
 ## Dependency policy
 

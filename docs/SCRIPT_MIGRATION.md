@@ -4,7 +4,7 @@ This document maps the checked-in `scripts/` surface to the new CLI. It is a mig
 
 ## Current CLI interface
 
-The current CLI is intentionally non-interactive and still provisional. It is implemented with `argparse`; `rich-click` interactive UX is deferred.
+The current CLI is intentionally non-interactive and provisional. It is implemented with `argparse`; `rich-click` interactive UX is deferred. The target user-facing interface is documented in `docs/CLI_INTERFACE.md` and is centered on `init`, `evolve`, `validate`, and `plot`.
 
 | Command | Purpose | Status | Tests |
 |---|---|---|---|
@@ -16,9 +16,9 @@ The current CLI is intentionally non-interactive and still provisional. It is im
 | `evolvepro process dataset --file-path FILE --wt-fasta FILE --dataset-name NAME --activity-column COL --cutoff-value FLOAT --output-dir DIR [--sheet-name NAME] [--cutoff-rule RULE] [--cutoff-percentiles ...] [--aa-shift INT] [--drop-columns]` | Process a DMS/CSV/Excel activity dataset into labels CSV and FASTA. | Implemented | `tests/test_cli_process_dataset.py` |
 | `evolvepro dms grid-search ...` | Run DMS simulation grid search. | Implemented | `tests/test_cli_dms.py` |
 
-## Interface concern
+## Interface decision
 
-The current nested command shape is already verbose:
+The current nested command shape is too low-level for primary UX:
 
 ```bash
 evolvepro process generate-single-aa-mutants ...
@@ -26,24 +26,25 @@ evolvepro process dataset ...
 evolvepro dms grid-search ...
 ```
 
-This mirrors the upstream script directories, but it may not be the final UX. Before adding much more surface area, decide whether to keep this nested structure or introduce shorter workflow-first aliases.
+These commands mirror upstream script directories. They remain compatibility scaffolding, not the target interface.
 
-Possible future aliases:
+Target primary UX:
 
-| Current command | Possible alias | Notes |
-|---|---|---|
-| `evolvepro process generate-wt` | `evolvepro fasta wt` or `evolvepro wt` | Shorter, but less explicit. |
-| `evolvepro process generate-single-aa-mutants` | `evolvepro fasta mutants` | Groups FASTA operations separately from dataset processing. |
-| `evolvepro process dataset` | `evolvepro prepare dms` | Better workflow wording. |
-| `evolvepro dms grid-search` | `evolvepro simulate dms` | More user-facing than implementation-facing. |
-| `evolvepro run --config` | `evolvepro round run --config` | More explicit once multiple workflows exist. |
+```bash
+evolvepro init [DIR]
+evolvepro evolve
+evolvepro validate
+evolvepro plot
+```
+
+`evolve` absorbs initial candidate generation, measured activity ingest, model training, prediction, checkpointing, artifact writing, lock updates, and implicit validation. CSV handoff files are mutable user inputs; immutable provenance is maintained through CAS snapshots, `round.lock`, `manifest.json`, and `evolvepro.lock`.
 
 Recommendation for now:
 
-- Keep existing commands stable while migration tests are being built.
-- Do not add many more nested commands until naming is reviewed.
-- Add aliases later only if tests verify they produce identical outputs.
-- Treat `evolvepro run --config` as the primary stable entrypoint for experiment rounds.
+- Keep existing commands stable while target commands are built.
+- Do not add more primary `process ...` commands.
+- Treat `process ...` as low-level compatibility utilities.
+- Migrate README and scripts toward `init`/`evolve`/`validate`/`plot` once implemented.
 
 ## Migration/deletion gate
 
@@ -118,7 +119,7 @@ evolvepro plot experimental --round-dir ... --output ...
 |---|---|---|---|---|
 | `scripts/plm/*.sh` | Embedding extraction examples for PLM backends. | None. | Smoke/static only through documentation. | No |
 
-PLM commands are intentionally deferred because they involve optional torch/GPU/model-download dependencies. They should remain outside the core CSV/Excel workflow contract until a separate embedding manifest is designed.
+PLM commands are intentionally deferred because they involve optional torch/GPU/model-download dependencies. They should remain outside the core CSV handoff workflow contract until a separate embedding manifest is designed.
 
 Potential future command group:
 
@@ -129,9 +130,7 @@ evolvepro embeddings validate ...
 
 ## Recommended next work
 
-1. Pause command expansion and review CLI naming because `evolvepro process ...` is getting verbose.
-2. If continuing implementation, add missing process commands before touching plots/PLM:
-   - `suggest_initial_mutants`
-   - `generate_n_mutant_combinations`
-3. For `scripts/exp`, prefer TOML template/config-generator work over script-specific commands.
-4. Keep PLM and plot workflows deferred.
+1. Implement the target `evolvepro evolve` state machine before adding more low-level `process ...` commands.
+2. Keep existing low-level commands as compatibility coverage until their behavior is absorbed by `evolve`.
+3. For `scripts/exp`, migrate to workspace-driven `evolve` rather than script-specific commands.
+4. Keep PLM and plot workflows deferred until the core workspace state machine is stable.

@@ -4,12 +4,13 @@ This contract defines the target CLI/workspace shape for the migration. It is in
 
 ## Decision
 
-Use per-workspace and per-round TOML/JSON files as the authoritative state:
+Use per-workspace config, lock/index files, per-round manifests, and CAS snapshots as the authoritative state:
 
-- `evolvepro.toml` records workspace-level defaults and interactive choices.
-- `rounds/<round-id>/round.toml` records user-editable round intent.
-- `rounds/<round-id>/round.lock.json` records resolved immutable inputs for one run.
+- `evolvepro.toml` records stable workspace policy for one protein.
+- `evolvepro.lock` records mutable workspace index state and the latest round pointer.
+- `rounds/<round-id>/round.lock` records resolved immutable inputs for one round transition.
 - `rounds/<round-id>/manifest.json` records outputs, hashes, and round lineage.
+- `.evolvepro/cas/sha256/...` stores immutable snapshots of every input/output artifact used for validation.
 
 Do not introduce SQLite as primary state. If a future interactive UI needs faster listing/searching, an index database may be added only as a rebuildable cache under `.evolvepro/`.
 
@@ -31,24 +32,16 @@ SQLite primary state is rejected because it makes review, archival, idempotency,
 ```text
 workspace/
   evolvepro.toml
+  evolvepro.lock
 
   inputs/
-    wt.fasta
     embeddings.csv
 
   rounds/
-    round-001/
-      round.toml
-      round.lock.json
-      manifest.json
-
-      inputs/
-        activity.raw.xlsx
-        activity.normalized.parquet
-
-      train/
-        training_set.parquet
-        training_manifest.json
+    round_000/
+      candidates.csv          # mutable user handoff
+      round.lock              # immutable resolved snapshot
+      manifest.json           # immutable artifact ledger
 
       model/
         model.pkl
@@ -64,41 +57,41 @@ workspace/
         df_test.csv
         df_sorted_all.csv
 
-    round-002/
-      round.toml
-      round.lock.json
+    round_001/
+      candidates.csv
+      round.lock
       manifest.json
       ...
 
   .evolvepro/
+    cas/
+      sha256/
     cache/
-    locks/
 ```
 
 ## Command model
 
-Planned CLI flow:
+Target CLI flow:
 
 ```bash
 evolvepro init [DIR]
-evolvepro
+evolvepro evolve
+evolvepro validate
+evolvepro plot
 ```
 
-`evolvepro` without subcommands should default to interactive mode:
+`evolvepro init` owns workspace setup and interactive configuration. A separate public `configure` command is not part of the target UX.
 
-1. Detect or create a workspace.
-2. Let the user choose the command/workflow.
-3. Let the user choose input files and round settings.
-4. Write deterministic TOML.
-5. Run from TOML after confirmation.
+`evolvepro evolve` advances the workspace state machine:
 
-Non-interactive mode must be supported:
+1. Validate previous rounds recursively.
+2. If no round exists, generate the initial candidate CSV.
+3. If a candidate CSV has measured activity values, ingest measured rows and record blank rows as unmeasured.
+4. Train/update the model when enough measured data exists.
+5. Predict the next candidates.
+6. Write CAS snapshots, `round.lock`, `manifest.json`, and update `evolvepro.lock`.
 
-```bash
-evolvepro run --config evolvepro.toml
-```
-
-Interactive mode is only a config generator/editor. Execution must always resolve through TOML and lock/manifest files.
+Current `evolvepro run --config` remains a compatibility scaffold until this target flow is implemented.
 
 ## File roles
 
@@ -114,30 +107,24 @@ It should contain defaults such as:
 - model defaults
 - path defaults
 
-### `round.toml`
+### `evolvepro.lock`
 
-Round-level user intent. It is editable and suitable for version control.
+Workspace-level mutable index. It is generated and updated by EvolvePro.
 
-Example shape:
+It should contain:
 
-```toml
-schema_version = 1
-round = "round-001"
-workflow = "experimental_round"
+- schema version
+- workspace id
+- protein id/name
+- latest round pointer
+- list of round manifest paths and hashes
+- global CAS/index metadata required to validate the workspace
 
-[inputs]
-activity = "inputs/activity.raw.xlsx"
+It should not contain per-round observations or experiment outcomes. Those belong in round artifacts and manifests.
 
-[model]
-regression_type = "randomforest"
-seed = 0
-```
+### `round.lock`
 
-Paths are interpreted relative to the TOML file location unless documented otherwise.
-
-### `round.lock.json`
-
-Resolved immutable run inputs. It is generated immediately before a run and should not be edited by users.
+Resolved immutable round-transition inputs. It is generated immediately before a state transition and should not be edited by users.
 
 It must include:
 
@@ -149,7 +136,7 @@ It must include:
 - resolved model parameters with defaults
 - package/environment metadata required for reproducibility
 
-The lock file answers: "What exact inputs and settings were used for this run?"
+The lock file answers: "What exact inputs and settings were used for this round transition?"
 
 ### `manifest.json`
 
@@ -173,14 +160,51 @@ The manifest answers: "What artifacts were produced, and how do they link to the
 
 EvolvePro is a round-based workflow:
 
-1. A human measures activity for the current candidates.
-2. The activity file is added to the next round directory.
-3. EvolvePro canonicalizes/normalizes the activity input.
-4. The model trains on accumulated measured rounds.
-5. The model predicts candidates for the next round.
-6. A manifest records the output and links to the previous round manifest.
+1. `evolvepro evolve` writes `rounds/round_N/candidates.csv` with `variant,activity` columns.
+2. A human fills measured activity values directly into that CSV.
+3. Blank activity cells are treated as unmeasured candidates.
+4. The next `evolvepro evolve` snapshots the edited CSV into CAS.
+5. EvolvePro canonicalizes/normalizes measured activity rows.
+6. The model trains on accumulated measured rounds.
+7. The model predicts candidates for the next round.
+8. A manifest records every input/output artifact hash and links to the previous round manifest.
 
-The next round must verify the previous round manifest hash before running.
+Every `evolve` invocation must verify previous round manifest hashes before advancing.
+
+## CSV handoff policy
+
+Primary user handoff files are CSV only. The supported schema is exactly:
+
+```csv
+variant,activity
+A12V,
+G18D,0.42
+```
+
+Rules:
+
+- exactly two columns: `variant` and `activity`
+- UTF-8 comma-delimited CSV
+- duplicate variants are invalid
+- blank activity means unmeasured
+- non-blank activity must parse as numeric
+- partial measurement is normal state
+
+XLSX is not part of the primary handoff contract. If legacy XLSX import remains available, it must immediately normalize to canonical CSV and validation must proceed from the CSV artifact.
+
+## Mutable handoff and immutable artifacts
+
+`rounds/<round-id>/candidates.csv` is writable by the user. It is a handoff file, not the immutable provenance record.
+
+Before a file participates in validation, EvolvePro snapshots it into `.evolvepro/cas/sha256/...` and records the CAS hash in `round.lock` and `manifest.json`.
+
+Generated immutable files should be written atomically and then made read-only where the filesystem supports it:
+
+- CAS snapshots
+- `round.lock`
+- `manifest.json`
+
+Read-only permissions are guardrails against accidental edits. Hash validation is the integrity mechanism.
 
 ## Hash policy
 
@@ -190,17 +214,15 @@ Hash validation is required before advancing rounds.
 
 Use byte SHA256 for raw user inputs:
 
-- FASTA
-- CSV
-- XLSX
+- CSV handoff files
 - embedding files
 - explicit config files
 
-A hash mismatch means the input changed. The run must stop unless the user explicitly accepts the change through a future command such as `--accept-input-changes`.
+A hash mismatch means an immutable snapshot or previously recorded input changed. The run must stop. Mutable handoff CSV files are snapshotted as new input artifacts during the next `evolve` transition.
 
 ### Normalized tables and predictions
 
-Use semantic hashes rather than Parquet/CSV byte hashes for tables.
+Use semantic hashes in addition to byte hashes for CSV handoff files and normalized tables.
 
 Canonicalization must define:
 
@@ -211,7 +233,7 @@ Canonicalization must define:
 - null representation
 - UTF-8 encoding
 
-This avoids false differences from Parquet metadata, writer versions, row group layout, or CSV formatting.
+This avoids false differences from Parquet metadata, writer versions, row group layout, or allowed CSV formatting differences.
 
 ### Model checkpoint
 
