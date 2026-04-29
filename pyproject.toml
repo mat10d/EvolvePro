@@ -4,4 +4,26 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "biopython>=1.87",
+    "matplotlib>=3.10.9",
+    "numpy<2",
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.3",
+    "scikit-learn>=1.7.2",
+    "scikit-learn-extra>=0.3.0",
+    "scipy>=1.15.3",
+    "seaborn>=0.13.2",
+    "xgboost==1.7.6",
+]
+
+[tool.uv]
+default-groups = ["test"]
+
+[dependency-groups]
+test = [
+    "joblib>=1.5.3",
+    "pandas-stubs>=2.3.3.260113",
+    "pytest>=9.0.3",
+    "pytest-regressions>=2.10.0",
+]
