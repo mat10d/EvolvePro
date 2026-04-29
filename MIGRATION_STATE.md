@@ -50,6 +50,7 @@ c835ab9 feat: validate completed round manifests
 872b3fc fix: install evolvepro console script in uv env
 3d597bb test: lock experimental CLI workflow
 80bcb5a feat: add process FASTA CLI commands
+0bc484f feat: add DMS grid search CLI
 ```
 
 ## Current validation command
@@ -64,7 +65,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-65 passed, 24 warnings
+66 passed, 24 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -191,6 +192,7 @@ Implemented in `035c4ab` and `79559ef`:
 - README documents the experimental CLI workspace workflow
 - subprocess-level CLI workflow test verifies `evolvepro run --config` and `evolvepro validate` against config API output
 - process FASTA generation has CLI coverage via `evolvepro process generate-wt` and `evolvepro process generate-single-aa-mutants`
+- DMS grid search has CLI coverage via `evolvepro dms grid-search` and README documentation
 
 Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
 
@@ -215,8 +217,8 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Continue migrating DMS public workflows to CLI entrypoints while preserving compatibility outputs.
-2. Add process dataset CLI coverage if public process scripts require it before DMS migration.
+1. Add process dataset CLI coverage if public process scripts require it.
+2. Audit remaining public script workflows (`scripts/exp`, `scripts/plot`, `scripts/plm`) and choose the next CLI replacement.
 3. Add interactive command-selection scaffolding after core public workflows have non-interactive CLI coverage.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
