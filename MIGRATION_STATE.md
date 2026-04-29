@@ -23,6 +23,7 @@ See:
 
 - `tests/UPSTREAM_EXAMPLES.md` for upstream workflow audit and deletion proposal.
 - `tests/REACHABLE.md` for reachable-code audit and CLI replacement gates.
+- `docs/WORKSPACE_CONTRACT.md` for the planned file-based workspace, round, lock, and manifest contract.
 
 ## Completed commits on `cli-migration`
 
@@ -151,18 +152,23 @@ Defer deletion of:
 - `data/*`
 - `images/*` while README references them
 
-## Next stage: config abstraction
+## Next stage: workspace/config/manifest abstraction
 
-Start here after context compaction.
+Start here after context compaction. Read `docs/WORKSPACE_CONTRACT.md` first.
 
-Goal: introduce TOML config support for the current upstream-style experimental workflow without removing existing function/script behavior.
+Goal: introduce file-based TOML config, round lock files, and manifests for the current upstream-style experimental workflow without removing existing function/script behavior.
+
+Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
 
 Suggested files:
 
 - `evolvepro/io/schemas.py`
 - `evolvepro/io/config.py`
+- `evolvepro/io/manifest.py`
+- `evolvepro/io/canonical.py`
 - `tests/fixtures/kelsic_round1.toml`
 - `tests/test_config.py`
+- `tests/test_manifest.py`
 
 Suggested config model fields for the current Kelsic experimental path:
 
@@ -203,6 +209,10 @@ Tests to add first:
 
 1. TOML loader validates required fields and path/string/list types.
 2. Invalid TOML raises a clear exception.
-3. TOML-driven `evolve_experimental` produces the same legacy CSV outputs and dump artifacts as direct function invocation using the existing Kelsic synthetic embedding fixture.
+3. Canonical JSON/TOML writes are deterministic and stable.
+4. Raw file SHA256 and table semantic hashes are reproducible.
+5. Round lock generation captures resolved config, input hashes, previous manifest hash, and model parameters.
+6. Manifest validation stops on input or previous-manifest hash mismatch.
+7. TOML-driven `evolve_experimental` produces the same legacy CSV outputs and dump artifacts as direct function invocation using the existing Kelsic synthetic embedding fixture.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter should target current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
