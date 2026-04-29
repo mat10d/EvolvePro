@@ -6,6 +6,7 @@ from typing import Sequence
 
 from evolvepro.io.config import evolve_experimental_from_config, load_config
 from evolvepro.io.manifest import validate_round_directory
+from evolvepro.src.process import generate_single_aa_mutants, generate_wt
 from evolvepro.workspace import CONFIG_FILE, init_workspace
 
 
@@ -28,7 +29,34 @@ def _parser() -> argparse.ArgumentParser:
     )
     validate_parser.add_argument("round_dir", nargs="?", default=".")
 
+    process_parser = subparsers.add_parser("process", help="process sequence inputs")
+    process_subparsers = process_parser.add_subparsers(dest="process_command")
+
+    wt_parser = process_subparsers.add_parser("generate-wt", help="write WT FASTA")
+    wt_parser.add_argument("--sequence", required=True)
+    wt_parser.add_argument("--output", required=True)
+
+    mutants_parser = process_subparsers.add_parser(
+        "generate-single-aa-mutants", help="write single amino acid mutant FASTA"
+    )
+    mutants_parser.add_argument("--wt-fasta", required=True)
+    mutants_parser.add_argument("--output", required=True)
+    mutants_parser.add_argument("--positions")
+
     return parser
+
+
+def _resolve_path(base: Path, value: str) -> Path:
+    path = Path(value).expanduser()
+    if path.is_absolute():
+        return path
+    return base / path
+
+
+def _parse_positions(value: str | None) -> list[int] | None:
+    if value is None or value == "":
+        return None
+    return [int(item.strip()) for item in value.split(",") if item.strip()]
 
 
 def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
@@ -41,29 +69,39 @@ def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
         return 0
 
     if args.command == "init":
-        workspace = Path(args.directory).expanduser()
-        if not workspace.is_absolute():
-            workspace = base / workspace
+        workspace = _resolve_path(base, args.directory)
         init_workspace(workspace, force=args.force)
         print(f"initialized workspace: {workspace}")
         return 0
 
     if args.command == "run":
-        config_path = Path(args.config).expanduser()
-        if not config_path.is_absolute():
-            config_path = base / config_path
+        config_path = _resolve_path(base, args.config)
         config = load_config(config_path)
         evolve_experimental_from_config(config)
         print(f"completed run from config: {config_path}")
         return 0
 
     if args.command == "validate":
-        round_dir = Path(args.round_dir).expanduser()
-        if not round_dir.is_absolute():
-            round_dir = base / round_dir
+        round_dir = _resolve_path(base, args.round_dir)
         validate_round_directory(round_dir)
         print(f"validated round: {round_dir}")
         return 0
+
+    if args.command == "process":
+        if args.process_command == "generate-wt":
+            output = _resolve_path(base, args.output)
+            generate_wt(args.sequence, str(output))
+            print(f"wrote WT FASTA: {output}")
+            return 0
+        if args.process_command == "generate-single-aa-mutants":
+            wt_fasta = _resolve_path(base, args.wt_fasta)
+            output = _resolve_path(base, args.output)
+            generate_single_aa_mutants(
+                str(wt_fasta), str(output), positions=_parse_positions(args.positions)
+            )
+            print(f"wrote single amino acid mutant FASTA: {output}")
+            return 0
+        parser.error("process requires a subcommand")
 
     parser.error(f"unknown command: {args.command}")
     return 2

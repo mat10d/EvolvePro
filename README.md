@@ -30,6 +30,19 @@ The EVOLVEpro workflow consists of four main steps:
 
 Generate and clean FASTA and CSV files containing protein variant sequences and their corresponding activity data.
 
+CLI examples:
+
+```bash
+evolvepro process generate-wt \
+  --sequence MAKEDNIEMQGTVLETLPNTMFRVELENGHVVTAHISGKMRKNYIRILTGDKVTVELTPYDLSKGRIVFRSR \
+  --output kelsic_WT.fasta
+
+evolvepro process generate-single-aa-mutants \
+  --wt-fasta kelsic_WT.fasta \
+  --output kelsic_mutants.fasta \
+  --positions 1,2,3
+```
+
 For detailed instructions, see the [Process README](scripts/process/README.md).
 
 ### 2. PLM
