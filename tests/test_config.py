@@ -282,6 +282,43 @@ def test_config_driven_run_writes_round_lock_and_manifest(
     }
 
 
+def test_config_driven_run_writes_planned_round_layout(
+    tmp_path, repo_root, kelsic_wt_fasta
+):
+    config_output = tmp_path / "config-output"
+    config_path = _write_round_config(
+        tmp_path, repo_root, kelsic_wt_fasta, config_output
+    )
+    config = load_config(config_path)
+
+    evolve_experimental_from_config(config)
+
+    round_dir = config_output / "kelsic" / "Round1"
+    assert (round_dir / "legacy" / "df_sorted_all.csv").read_bytes() == (
+        round_dir / "df_sorted_all.csv"
+    ).read_bytes()
+    assert (round_dir / "legacy" / "iteration.csv").read_bytes() == (
+        round_dir / "iteration.csv"
+    ).read_bytes()
+    assert sha256_file(round_dir / "model" / "model.pkl") == sha256_file(
+        round_dir / "model.pkl"
+    )
+    assert sha256_file(
+        round_dir / "predictions" / "predictions.parquet"
+    ) == sha256_file(round_dir / "predictions.parquet")
+    assert (round_dir / "predictions" / "candidates.csv").read_bytes() == (
+        round_dir / "df_test.csv"
+    ).read_bytes()
+
+    params = json.loads((round_dir / "model" / "params.json").read_text())
+    manifest = json.loads((round_dir / "manifest.json").read_text())
+    assert params["random_state"] == 0
+    assert params["n_estimators"] == 100
+    assert manifest["outputs"]["planned_layout"]["model_params"]["path"].endswith(
+        "model/params.json"
+    )
+
+
 def test_config_model_seed_and_params_control_training(
     tmp_path, repo_root, kelsic_wt_fasta
 ):

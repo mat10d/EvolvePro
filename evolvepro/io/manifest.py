@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import shutil
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+import joblib
 import pandas as pd
 
 from evolvepro.io.canonical import (
@@ -59,26 +61,67 @@ def write_round_lock(path: Path, lock: RoundLock) -> None:
     write_json_atomic(path, round_lock_payload(lock))
 
 
+LEGACY_NAMES = [
+    "iteration.csv",
+    "this_round_variants.csv",
+    "df_test.csv",
+    "df_sorted_all.csv",
+]
+DUMP_NAMES = ["metrics.json", "inputs.json", "version.txt"]
+
+
+def _jsonable(value: Any) -> Any:
+    if value is None or isinstance(value, str | int | float | bool):
+        return value
+    if hasattr(value, "item"):
+        return _jsonable(value.item())
+    if isinstance(value, Path):
+        return value.as_posix()
+    if isinstance(value, dict):
+        return {str(key): _jsonable(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_jsonable(item) for item in value]
+    return repr(value)
+
+
+def _copy_file(source: Path, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination)
+
+
+def materialize_round_layout(round_dir: Path) -> None:
+    for name in LEGACY_NAMES:
+        source = round_dir / name
+        if source.exists():
+            _copy_file(source, round_dir / "legacy" / name)
+
+    _copy_file(round_dir / "model.pkl", round_dir / "model" / "model.pkl")
+    model = joblib.load(round_dir / "model.pkl")
+    write_json_atomic(
+        round_dir / "model" / "params.json",
+        _jsonable(model.get_params(deep=False)),
+    )
+
+    _copy_file(
+        round_dir / "predictions.parquet",
+        round_dir / "predictions" / "predictions.parquet",
+    )
+    _copy_file(round_dir / "df_test.csv", round_dir / "predictions" / "candidates.csv")
+
+
 def build_round_manifest(
     lock: RoundLock, *, lock_path: Path, round_dir: Path
 ) -> RoundManifest:
-    legacy_names = [
-        "iteration.csv",
-        "this_round_variants.csv",
-        "df_test.csv",
-        "df_sorted_all.csv",
-    ]
-    dump_names = ["metrics.json", "inputs.json", "version.txt"]
     predictions = pd.read_parquet(round_dir / "predictions.parquet")
     outputs: dict[str, object] = {
         "legacy_files": [
             asdict(_file_hash(round_dir / name))
-            for name in legacy_names
+            for name in LEGACY_NAMES
             if (round_dir / name).exists()
         ],
         "dump_files": [
             asdict(_file_hash(round_dir / name))
-            for name in dump_names
+            for name in DUMP_NAMES
             if (round_dir / name).exists()
         ],
         "model_checkpoint": asdict(_file_hash(round_dir / "model.pkl")),
@@ -87,6 +130,22 @@ def build_round_manifest(
             predictions, sort_by=["variant"]
         ),
     }
+    if (round_dir / "model" / "params.json").exists():
+        outputs["planned_layout"] = {
+            "legacy_files": [
+                asdict(_file_hash(round_dir / "legacy" / name))
+                for name in LEGACY_NAMES
+                if (round_dir / "legacy" / name).exists()
+            ],
+            "model_checkpoint": asdict(_file_hash(round_dir / "model" / "model.pkl")),
+            "model_params": asdict(_file_hash(round_dir / "model" / "params.json")),
+            "predictions_file": asdict(
+                _file_hash(round_dir / "predictions" / "predictions.parquet")
+            ),
+            "candidates_file": asdict(
+                _file_hash(round_dir / "predictions" / "candidates.csv")
+            ),
+        }
     return RoundManifest(
         schema_version=1,
         workflow=lock.workflow,

@@ -220,6 +220,7 @@ def evolve_experimental_from_config(
     from evolvepro.io.manifest import (
         build_round_lock,
         build_round_manifest,
+        materialize_round_layout,
         validate_round_lock,
         write_round_lock,
         write_round_manifest,
@@ -246,6 +247,7 @@ def evolve_experimental_from_config(
     round_dir = config.run.output_dir / experiment.protein_name / experiment.round_name
     lock_path = round_dir / "round.lock.json"
     write_round_lock(lock_path, lock)
+    materialize_round_layout(round_dir)
     write_round_manifest(
         round_dir / "manifest.json",
         build_round_manifest(lock, lock_path=lock_path, round_dir=round_dir),
