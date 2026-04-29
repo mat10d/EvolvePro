@@ -77,6 +77,103 @@ Do not remove these paths before regression coverage is in place:
 | `tests/test_dms_simulation.py` | Small deterministic `directed_evolution_simulation` run | Golden metrics dataframe. |
 | `tests/test_dms_data_examples.py` | Lightweight DMS checked-in data processing/load path | Golden schema/summary. Skip expensive full benchmark runs. |
 | `tests/test_scripts_smoke.py` | `scripts/dms/dms_main.py` parser and static script contracts | No script execution with absolute lab paths. |
+| `tests/test_baseline_file_outputs.py` | Existing file outputs from `evolve_experimental`, `generate_wt`, and `generate_single_aa_mutants` | Byte-for-byte file regression for CSV/FASTA artifacts used as CLI migration targets. |
+
+## Locked Stage 0 baseline
+
+The Stage 0 baseline currently consists of 22 tests and checked-in `pytest-regressions` golden files. It intentionally covers both function-level behavior and file-level outputs before any CLI refactor.
+
+- Process workflow:
+  - `tests/test_process_examples.py` locks FASTA metadata, mutant IDs, and seeded suggestion stdout.
+  - `tests/test_baseline_file_outputs.py` locks generated Kelsic WT and mutant FASTA files byte-for-byte.
+- Colab Kelsic experimental workflow:
+  - `tests/test_colab_kelsic_data.py` locks Kelsic Excel loading, iteration/label construction, `read_exp_data`, and an `evolve_experimental` Round1 run with deterministic synthetic embeddings.
+  - `tests/test_baseline_file_outputs.py` locks the existing `evolve_experimental` output files: `iteration.csv`, `this_round_variants.csv`, `df_test.csv`, and `df_sorted_all.csv`.
+- Model workflow:
+  - `tests/test_model_regression.py` locks `first_round` (`random`, `diverse_medoids`) and `top_layer` (`ridge`, `randomforest`, `knn`) on deterministic synthetic data.
+- DMS workflow:
+  - `tests/test_dms_simulation.py` locks a small `directed_evolution_simulation` metrics dataframe.
+  - `tests/test_dms_data_examples.py` locks processing of `data/dms/activity/sarscov2_preprocessed.csv` with `data/dms/wt_fasta/cov2_S_WT.fasta`.
+- Script contracts:
+  - `tests/test_scripts_smoke.py` locks the `scripts/dms/dms_main.py` parser and statically records the experimental script entrypoint calls.
+
+Run before and after every migration commit:
+
+```bash
+nix develop -c uvx ruff check .
+nix develop -c uv run pytest tests/ -v
+```
+
+Current expected result: `22 passed`. The warning count is not part of the behavioral contract; warnings are handled in separate cleanup commits.
+
+## Stage 0b deletion proposal
+
+Deletion must be conservative: remove only paths that are neither documented by the upstream examples nor covered by the locked Stage 0 baseline. Anything used by README, the Colab tutorial, or scripts remains until the CLI has equivalent coverage.
+
+### Safe to remove now
+
+No Python package code is safe to remove immediately. The baseline intentionally keeps the upstream public surface broad until the CLI wrappers exist.
+
+The only candidates for immediate deletion are non-runtime presentation artifacts if repository size cleanup is desired:
+
+- `images/*.gif`, `images/*.png` after README is rewritten and no longer references them.
+
+Do not delete these in Stage 0b if README still references them.
+
+### Safe to remove only after CLI replacement exists
+
+These script entrypoints are legacy wrappers, but they document the current public workflow. Delete them only after Typer commands provide equivalent behavior and tests compare against the locked baseline outputs.
+
+- `scripts/process/exp_process.py`
+- `scripts/process/dms_process.py`
+- `scripts/dms/dms_main.py`
+- `scripts/exp/{t7_pol.py,mlv.py,bxb1.py}`
+- `scripts/plot/{dms.py,exp.py}`
+- `scripts/plm/*.sh`
+
+Suggested deletion stage: after CLI commands for `process`, `fit-round`, `dms-grid`, `plot`, and `embed` exist and `tests/test_scripts_smoke.py` has been replaced by CLI tests.
+
+### Defer deletion
+
+These paths are upstream example data or tutorial references and should remain until the final library-only cleanup stage.
+
+- `colab/EvolvePro.ipynb`
+- `colab/rounds_data/kelsic_Round*.xlsx`
+- `data/dms/activity/*`
+- `data/dms/wt_fasta/*`
+- `data/exp/Evolution_Summary_Data.xlsx`
+
+Reason: Stage 0 uses these as canonical public fixtures. Move/delete only after the CLI package has fixture copies or a documented external experiment-data strategy.
+
+### Code paths to keep through Stage 3
+
+Keep these through dump/config/CLI wrapping because they are either covered by tests or are needed by upstream workflows:
+
+- `evolvepro/src/model.py`
+  - `first_round`: `random`, `diverse_medoids`, `explicit_variants`.
+  - `top_layer`: at least `ridge`, `randomforest`, `knn`.
+  - Other regression branches (`lasso`, `elasticnet`, `linear`, `neuralnet`, `gradientboosting`, `gp`) are not Stage-0-covered; remove only after confirming no documented script uses them, or add tests first.
+- `evolvepro/src/evolve.py`
+  - `directed_evolution_simulation`, `grid_search`, `evolve_experimental`, `evolve_experimental_multi`.
+- `evolvepro/src/data.py`
+  - CSV/Excel loaders, DMS loader, `.pt` loader support. Move `torch` to lazy import before deciding whether `.pt` support is optional.
+- `evolvepro/src/process.py`
+  - FASTA generation, mutant suggestion, DMS processing helpers.
+- `evolvepro/src/plot.py`
+  - `read_exp_data` and dataframe helpers.
+- `evolvepro/plm/*`
+  - Keep as optional PLM/embed backend until `evolvepro embed` exists.
+
+### Recommended Stage 0b action
+
+Do not delete code yet. Instead, make Stage 0b a reachable-code audit commit that records:
+
+1. which CLI commands will replace each legacy script,
+2. which uncovered regression branches are candidates for later removal,
+3. which data/notebook assets are test fixtures vs. documentation-only assets,
+4. where `torch` must become a lazy optional dependency.
+
+After that audit, start Stage 1 dump infrastructure on top of the now-locked 22-test baseline.
 
 ## Exclusions from regression tests
 
