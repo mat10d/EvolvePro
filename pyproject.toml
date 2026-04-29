@@ -20,6 +20,9 @@ dependencies = [
     "xgboost==1.7.6",
 ]
 
+[project.scripts]
+evolvepro = "evolvepro.cli:main"
+
 [tool.uv]
 default-groups = ["test"]
 
