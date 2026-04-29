@@ -227,8 +227,9 @@ Key decisions:
 - Mutable candidate CSV files are handoff files; immutable provenance comes from CAS snapshots, `round.lock`, `manifest.json`, and `evolvepro.lock`.
 - Use `.lock` filenames (`evolvepro.lock`, `round.lock`) for target lock files, even if internal encoding remains deterministic JSON.
 
-Implemented files:
+Implemented/planning files:
 
+- `docs/GPU_FIRST_EMBEDDING_PLAN.md`
 - `evolvepro/io/schemas.py`
 - `evolvepro/io/config.py`
 - `evolvepro/io/manifest.py`
@@ -255,16 +256,12 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Design and implement GPU-first embedding preparation as first-class workflow state:
-   - candidate FASTA generation
-   - PLM backend/model selection
-   - GPU device detection/selection
-   - CPU fallback only as explicit compatibility mode
-   - CAS snapshots for FASTA and embedding outputs
-   - manifest metadata for backend, model revision, dtype, device, torch/CUDA, and seed
-2. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
-3. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
-4. Keep XLSX support only in regression/compatibility paths while migrating target docs and workflows to CSV.
-5. Keep existing `run --config`, `process ...`, and `dms grid-search` commands as compatibility scaffolding until target commands have regression coverage.
+1. Implement `docs/GPU_FIRST_EMBEDDING_PLAN.md` milestone M1: `EmbeddingConfig`, TOML load/write, GPU-first defaults, and optional dependency tests.
+2. Implement M2: canonical embedding FASTA generation, deterministic fake backend, embedding CSV normalization, and CAS snapshots without torch/GPU/network in CI.
+3. Implement M3: integrate embedding preparation into `evolvepro evolve`, reuse valid embeddings, and record embedding artifacts in `round.lock`/`manifest.json`.
+4. Implement M4: wrap ESM extraction behind the backend interface with GPU-first device resolution and explicit CPU fallback only.
+5. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
+6. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
+7. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.

@@ -148,6 +148,8 @@ Implementation target:
 - Preserve a CPU/no-PLM compatibility path for tests and minimal CSV workflows, but do not design the main UX around it.
 - Record PLM backend, model name/revision, device, dtype, torch/CUDA metadata, seed, input FASTA hash, and output embedding hash in manifests.
 
+Detailed milestone plan: [`docs/GPU_FIRST_EMBEDDING_PLAN.md`](GPU_FIRST_EMBEDDING_PLAN.md).
+
 ## Hashing and integrity policy
 
 Hash all inputs and outputs at every step. Final-result-only hashing is insufficient.
