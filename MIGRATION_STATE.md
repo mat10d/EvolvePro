@@ -48,6 +48,7 @@ f95cbce feat: add workspace initialization primitives
 c835ab9 feat: validate completed round manifests
 7658092 feat: add minimal workspace CLI
 872b3fc fix: install evolvepro console script in uv env
+3d597bb test: lock experimental CLI workflow
 ```
 
 ## Current validation command
@@ -62,7 +63,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-62 passed, 23 warnings
+63 passed, 24 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -186,6 +187,8 @@ Implemented in `035c4ab` and `79559ef`:
 - completed round validation checks `round.lock.json`, `manifest.json`, input hashes, output hashes, prediction semantic hash, and previous manifest hash chain
 - minimal non-interactive CLI exists with `evolvepro init`, `evolvepro run --config`, and `evolvepro validate`
 - `uv sync --frozen` installs the project editable and exposes `.venv/bin/evolvepro`; `setup.py` is now a shim over `pyproject.toml`
+- README documents the experimental CLI workspace workflow
+- subprocess-level CLI workflow test verifies `evolvepro run --config` and `evolvepro validate` against config API output
 
 Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
 
@@ -210,8 +213,8 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Start migrating public README/script workflows to CLI entrypoints while preserving compatibility outputs.
-2. Add subprocess-level console script tests if direct invocation behavior needs stricter coverage than metadata registration.
-3. Add rich-click interactive scaffolding after non-interactive workflow migration stabilizes.
+1. Start migrating process/DMS public workflows to CLI entrypoints while preserving compatibility outputs.
+2. Add interactive command-selection scaffolding after core public workflows have non-interactive CLI coverage.
+3. Add subprocess-level console script tests for additional CLI commands as they are introduced.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
