@@ -45,6 +45,7 @@ d514b91 feat: plumb model seed and parameters
 5ba7254 feat: materialize planned round layout
 f95cbce feat: add workspace initialization primitives
 c835ab9 feat: validate completed round manifests
+7658092 feat: add minimal workspace CLI
 ```
 
 ## Current validation command
@@ -59,7 +60,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-55 passed, 19 warnings
+61 passed, 23 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -181,6 +182,7 @@ Implemented in `035c4ab` and `79559ef`:
 - workspace primitives initialize `evolvepro.toml`, `.evolvepro/workspace.toml`, `inputs/`, `outputs/`, `rounds/`, `.evolvepro/cache/`, and `.evolvepro/locks/`
 - workspace discovery walks parent directories from an arbitrary path
 - completed round validation checks `round.lock.json`, `manifest.json`, input hashes, output hashes, prediction semantic hash, and previous manifest hash chain
+- minimal non-interactive CLI exists with `evolvepro init`, `evolvepro run --config`, and `evolvepro validate`
 
 Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
 
@@ -197,8 +199,8 @@ Implemented files:
 
 Next implementation stage:
 
-1. Add minimal CLI wrapper for `evolvepro init`, `evolvepro run --config`, and possibly `evolvepro validate`.
-2. Decide whether root-level dump artifacts should remain compatibility outputs permanently or become transitional after CLI migration.
-3. Add interactive command-selection scaffolding after non-interactive CLI is locked.
+1. Decide whether root-level dump artifacts should remain compatibility outputs permanently or become transitional after CLI migration.
+2. Add interactive command-selection scaffolding now that non-interactive CLI is locked.
+3. Add CLI-level tests for installed console script invocation if packaging behavior becomes part of the contract.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
