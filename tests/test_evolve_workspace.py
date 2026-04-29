@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import stat
 
+import pandas as pd
+
 from evolvepro.cli import main
 from evolvepro.io.hashing import sha256_file
 from evolvepro.workspace import init_workspace
@@ -97,3 +99,37 @@ def test_evolve_ingests_partial_activity_and_writes_next_round(tmp_path):
         "round_000",
         "round_001",
     ]
+
+
+def test_evolve_uses_embeddings_and_model_when_available(tmp_path):
+    init_workspace(tmp_path)
+    config_path = tmp_path / "evolvepro.toml"
+    config_path.write_text(
+        config_path.read_text()
+        .replace("number_of_variants = 12", "number_of_variants = 2")
+        .replace('regression_type = "randomforest"', 'regression_type = "linear"')
+        .replace("n_jobs = 1\n", "")
+    )
+    (tmp_path / "inputs" / "wt.fasta").write_text(">WT\nAC\n")
+    pd.DataFrame(
+        {"feature": [0.0, 1.0, 0.9, 0.2, 0.8]},
+        index=["A1C", "A1D", "A1E", "A1F", "A1G"],
+    ).to_csv(tmp_path / "inputs" / "embeddings.csv", index_label="variant")
+
+    assert main(["evolve"], cwd=tmp_path) == 0
+    round0 = tmp_path / "rounds" / "round_000"
+    round0.joinpath("candidates.csv").write_text("variant,activity\nA1C,0.0\nA1D,1.0\n")
+
+    assert main(["evolve"], cwd=tmp_path) == 0
+
+    round1 = tmp_path / "rounds" / "round_001"
+    assert round1.joinpath("candidates.csv").read_text() == (
+        "variant,activity\nA1E,\nA1G,\n"
+    )
+    assert round1.joinpath("model", "model.pkl").exists()
+    assert round1.joinpath("training", "training_set.csv").exists()
+    assert round1.joinpath("predictions", "predictions.parquet").exists()
+    manifest = json.loads(round1.joinpath("manifest.json").read_text())
+    assert "training_table" in manifest["outputs"]
+    assert "predictions" in manifest["outputs"]
+    assert "model_checkpoint" in manifest["outputs"]

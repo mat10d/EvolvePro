@@ -5,6 +5,9 @@ import stat
 from dataclasses import asdict
 from pathlib import Path
 
+import joblib
+import numpy as np
+import pandas as pd
 from Bio import SeqIO
 
 from evolvepro.io.cas import snapshot_file
@@ -13,6 +16,7 @@ from evolvepro.io.config import config_sha256, load_config
 from evolvepro.io.handoff import read_candidate_handoff, write_candidate_handoff
 from evolvepro.io.hashing import sha256_file
 from evolvepro.io.schemas import FileHash
+from evolvepro.src.model import top_layer
 from evolvepro.workspace import CONFIG_FILE, LOCK_FILE, WORKSPACE_DIR, find_workspace
 
 AA_ALPHABET = "ACDEFGHIKLMNPQRSTVWY"
@@ -120,6 +124,141 @@ def _used_variants(workspace: Path, workspace_lock: dict[str, object]) -> set[st
     return variants
 
 
+def _round_index(round_name: str) -> int:
+    return int(round_name.rsplit("_", maxsplit=1)[1])
+
+
+def _measured_observations(
+    workspace: Path, workspace_lock: dict[str, object]
+) -> pd.DataFrame:
+    frames: list[pd.DataFrame] = []
+    for entry in workspace_lock["rounds"]:
+        round_name = str(entry["round"])
+        candidates_path = workspace / "rounds" / round_name / "candidates.csv"
+        if not candidates_path.exists():
+            continue
+        measured = read_candidate_handoff(candidates_path).measured.copy()
+        if measured.empty:
+            continue
+        measured["iteration"] = _round_index(round_name)
+        frames.append(measured)
+    if not frames:
+        return pd.DataFrame(columns=["variant", "activity", "iteration"])
+    observations = pd.concat(frames, ignore_index=True)
+    duplicated = observations["variant"].duplicated(keep=False)
+    if duplicated.any():
+        duplicates = sorted(set(observations.loc[duplicated, "variant"].tolist()))
+        raise ValueError(f"duplicate measured variants across rounds: {duplicates}")
+    return observations
+
+
+def _labels_for_embeddings(
+    embeddings: pd.DataFrame, observations: pd.DataFrame
+) -> pd.DataFrame:
+    labels = pd.DataFrame({"variant": embeddings.index.astype(str)})
+    labels = labels.merge(observations, on="variant", how="left")
+    measured = labels["activity"].notna()
+    labels["activity_binary"] = np.nan
+    labels.loc[measured, "activity_binary"] = (
+        labels.loc[measured, "activity"].astype(float) >= 1
+    ).astype(int)
+    labels["activity_scaled"] = np.nan
+    if measured.any():
+        activity = labels.loc[measured, "activity"].astype(float)
+        min_activity = activity.min()
+        max_activity = activity.max()
+        if max_activity == min_activity:
+            labels.loc[measured, "activity_scaled"] = 1.0
+        else:
+            labels.loc[measured, "activity_scaled"] = (activity - min_activity) / (
+                max_activity - min_activity
+            )
+    return labels
+
+
+def _write_table_artifact(
+    path: Path, table: pd.DataFrame, workspace: Path, *, sort_by: list[str]
+) -> dict[str, object]:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    table.to_csv(path, index=False)
+    snapshot = snapshot_file(path, workspace / WORKSPACE_DIR / "cas" / "sha256")
+    return {
+        **_artifact_entry(snapshot.path, snapshot.file_hash, workspace),
+        "semantic_sha256": semantic_hash_table(table, sort_by=sort_by),
+    }
+
+
+def _rank_with_model(
+    workspace: Path,
+    round_dir: Path,
+    workspace_lock: dict[str, object],
+    exclude: set[str],
+) -> tuple[list[str], dict[str, object]] | None:
+    config = load_config(workspace / CONFIG_FILE)
+    embeddings_path = (
+        config.experiment.embeddings_base_path / config.experiment.embeddings_file_name
+    )
+    if not embeddings_path.is_file():
+        return None
+
+    embeddings = pd.read_csv(embeddings_path, index_col=0)
+    observations = _measured_observations(workspace, workspace_lock)
+    if observations.empty:
+        return None
+
+    labels = _labels_for_embeddings(embeddings, observations)
+    train_iterations = sorted(
+        labels.loc[labels["iteration"].notna(), "iteration"].unique().tolist()
+    )
+    _, df_test, df_sorted_all, metrics, model = top_layer(
+        iter_train=train_iterations,
+        iter_test=None,
+        embeddings_pd=embeddings,
+        labels_pd=labels,
+        measured_var="activity",
+        regression_type=config.model.regression_type,
+        experimental=True,
+        model_seed=config.model.seed,
+        model_params=config.model.params,
+    )
+    ranked = df_test.sort_values(by=["y_pred"], ascending=False)
+    variants = [
+        variant
+        for variant in ranked["variant"].astype(str).tolist()
+        if variant not in exclude
+    ][: config.experiment.number_of_variants]
+
+    model_dir = round_dir / "model"
+    model_dir.mkdir(parents=True, exist_ok=True)
+    model_path = model_dir / "model.pkl"
+    joblib.dump(model, model_path)
+    params_path = model_dir / "params.json"
+    write_json_atomic(params_path, model.get_params(deep=False))
+
+    predictions_dir = round_dir / "predictions"
+    predictions_dir.mkdir(parents=True, exist_ok=True)
+    predictions_path = predictions_dir / "predictions.parquet"
+    df_sorted_all.to_parquet(predictions_path, index=False)
+
+    training_artifact = _write_table_artifact(
+        round_dir / "training" / "training_set.csv",
+        observations,
+        workspace,
+        sort_by=["variant"],
+    )
+    outputs = {
+        "training_table": training_artifact,
+        "model_checkpoint": asdict(_file_hash(model_path)),
+        "model_params": asdict(_file_hash(params_path)),
+        "predictions": {
+            **asdict(_file_hash(predictions_path)),
+            "semantic_sha256": semantic_hash_table(df_sorted_all, sort_by=["variant"]),
+        },
+        "metrics": metrics,
+    }
+    return variants, outputs
+
+
 def _initial_candidate_round(workspace: Path) -> Path:
     config = load_config(workspace / CONFIG_FILE)
     round_name = "round_000"
@@ -191,16 +330,24 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
     round_dir = workspace / "rounds" / round_name
     candidates_path = round_dir / "candidates.csv"
 
-    wt_record = SeqIO.read(config.experiment.wt_fasta_path, "fasta")
-    variants = _single_mutant_variants(
-        str(wt_record.seq),
-        config.experiment.number_of_variants,
-        exclude=_used_variants(workspace, workspace_lock),
-    )
+    used_variants = _used_variants(workspace, workspace_lock)
+    model_result = _rank_with_model(workspace, round_dir, workspace_lock, used_variants)
+    model_outputs: dict[str, object] = {}
+    if model_result is None:
+        wt_record = SeqIO.read(config.experiment.wt_fasta_path, "fasta")
+        variants = _single_mutant_variants(
+            str(wt_record.seq),
+            config.experiment.number_of_variants,
+            exclude=used_variants,
+        )
+    else:
+        variants, model_outputs = model_result
     write_candidate_handoff(candidates_path, variants)
 
     activity_artifact = _handoff_artifact_entry(activity_path, workspace)
     candidate_artifact = _handoff_artifact_entry(candidates_path, workspace)
+    outputs: dict[str, object] = {"candidate_handoff": candidate_artifact}
+    outputs.update(model_outputs)
     previous_manifest_path = workspace / str(previous_entry["manifest"])
 
     lock_path = round_dir / "round.lock"
@@ -217,7 +364,7 @@ def _advance_from_activity(workspace: Path, current_round: str) -> Path:
                 "sha256": previous_entry["manifest_sha256"],
             },
         },
-        "outputs": {"candidate_handoff": candidate_artifact},
+        "outputs": outputs,
         "observations": {
             "measured_count": int(len(handoff.measured)),
             "unmeasured_count": int(len(handoff.unmeasured)),
