@@ -41,6 +41,7 @@ a40770c docs: record baseline coverage and deletion scope
 1dde955 docs: define file-based workspace contract
 035c4ab feat: add file-based config and lock primitives
 79559ef feat: write round lock and manifest for config runs
+d514b91 feat: plumb model seed and parameters
 ```
 
 ## Current validation command
@@ -55,7 +56,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-44 passed, 15 warnings
+45 passed, 16 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -171,6 +172,7 @@ Implemented in `035c4ab` and `79559ef`:
 - round lock validation that stops on input or previous-manifest hash mismatch
 - config-driven runs write `round.lock.json` and `manifest.json` into the legacy round output directory
 - manifest captures lock hash, raw input hashes, model checkpoint hash, prediction file hash, prediction semantic hash, dump file hashes, and legacy CSV hashes
+- config-driven runs pass model seed and model parameters into training; legacy calls without these arguments keep upstream defaults
 
 Key decision: do not use SQLite as source of truth. Round state is authoritative in `round.toml`, `round.lock.json`, and `manifest.json`. A future SQLite index may only be a rebuildable `.evolvepro/` cache.
 
@@ -188,8 +190,8 @@ Implemented files:
 Next implementation stage:
 
 1. Move current dump artifacts into the planned round layout or add compatibility links while preserving current legacy CSV output tests.
-2. Add seed/model-parameter plumbing to `top_layer` so config-driven runs can force deterministic model parameters without changing legacy defaults.
-3. Add minimal workspace initialization primitives for a later `evolvepro init` command.
-4. Add manifest validation helpers for completed round directories.
+2. Add minimal workspace initialization primitives for a later `evolvepro init` command.
+3. Add manifest validation helpers for completed round directories.
+4. Persist resolved model parameters as a dedicated `params.json` artifact if the round layout work does not cover it.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and later the Typer CLI, not the obsolete BenM/TphR layout.
