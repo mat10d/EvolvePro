@@ -12,6 +12,7 @@ from evolvepro.src.process import (
     generate_wt,
     process_dataset,
 )
+from evolvepro.validation import validate_workspace
 from evolvepro.workspace import CONFIG_FILE, init_workspace
 from evolvepro.workflows import UserActionRequired, evolve_workspace
 
@@ -166,9 +167,13 @@ def main(argv: Sequence[str] | None = None, *, cwd: Path | None = None) -> int:
         return 0
 
     if args.command == "validate":
-        round_dir = _resolve_path(base, args.round_dir)
-        validate_round_directory(round_dir)
-        print(f"validated round: {round_dir}")
+        target = _resolve_path(base, args.round_dir)
+        if (target / "evolvepro.lock").is_file():
+            validate_workspace(target)
+            print(f"validated workspace: {target}")
+            return 0
+        validate_round_directory(target)
+        print(f"validated round: {target}")
         return 0
 
     if args.command == "process":

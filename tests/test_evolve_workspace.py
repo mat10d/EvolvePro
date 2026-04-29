@@ -58,3 +58,42 @@ def test_evolve_stops_when_latest_candidates_have_no_activity(tmp_path, capsys):
     assert main(["evolve"], cwd=tmp_path) == 1
 
     assert "fill the activity column" in capsys.readouterr().out
+
+
+def test_evolve_ingests_partial_activity_and_writes_next_round(tmp_path):
+    init_workspace(tmp_path)
+    config_path = tmp_path / "evolvepro.toml"
+    config_path.write_text(
+        config_path.read_text().replace(
+            "number_of_variants = 12", "number_of_variants = 2"
+        )
+    )
+    (tmp_path / "inputs" / "wt.fasta").write_text(">WT\nAC\n")
+    assert main(["evolve"], cwd=tmp_path) == 0
+    round0 = tmp_path / "rounds" / "round_000"
+    round0.joinpath("candidates.csv").write_text("variant,activity\nA1C,0.5\nA1D,\n")
+
+    assert main(["evolve"], cwd=tmp_path) == 0
+
+    round1 = tmp_path / "rounds" / "round_001"
+    assert round1.joinpath("candidates.csv").read_text() == (
+        "variant,activity\nA1E,\nA1F,\n"
+    )
+    manifest = json.loads(round1.joinpath("manifest.json").read_text())
+    assert manifest["step"] == "activity_ingest_and_candidate_generation"
+    assert manifest["observations"] == {
+        "measured_count": 1,
+        "unmeasured_count": 1,
+    }
+    assert manifest["previous_manifest_path"] == "rounds/round_000/manifest.json"
+    assert manifest["previous_manifest_sha256"] == sha256_file(round0 / "manifest.json")
+    assert "semantic_sha256" in manifest["inputs"]["activity_handoff"]
+    activity_snapshot = tmp_path / manifest["inputs"]["activity_handoff"]["cas_path"]
+    assert activity_snapshot.read_text() == "variant,activity\nA1C,0.5\nA1D,\n"
+
+    workspace_lock = json.loads((tmp_path / "evolvepro.lock").read_text())
+    assert workspace_lock["current_round"] == "round_001"
+    assert [entry["round"] for entry in workspace_lock["rounds"]] == [
+        "round_000",
+        "round_001",
+    ]
