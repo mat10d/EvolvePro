@@ -73,6 +73,7 @@ fbb48ce docs: update migration state after embedding scaffold
 7ea6691 fix: record requested fake embedding dtype
 15e18c3 feat: scaffold esm embedding backend
 50e1b75 fix: enforce gpu-first esm embeddings
+906d45d feat: prepare workspace embeddings during evolve
 ```
 
 ## Current validation command
@@ -87,7 +88,7 @@ nix develop -c uv run pytest tests/ -v
 Current expected result:
 
 ```text
-127 passed, 26 warnings
+129 passed, 28 warnings
 ```
 
 The warnings are known and not part of the behavioral contract:
@@ -233,6 +234,8 @@ Implemented in `035c4ab` and `79559ef`:
 - embedding CSV normalization writes canonical `variant,feature_*` tables, semantic hashes, and CAS payloads
 - deterministic fake embedding backend exists for CI without torch/GPU/network/model downloads
 - ESM backend wraps legacy extraction lazily, uses GPU-first device resolution, normalizes legacy CSV output to canonical embedding CSV, and records metadata
+- `evolvepro evolve` can prepare missing embeddings through configured backends, with CI coverage for the deterministic `fake` backend; generated FASTA, embedding CSV, metadata, backend/device metadata, and embedding config hashes are recorded in round lock/manifest payloads
+- workspace validation now distinguishes mutable handoff CAS snapshots from immutable generated artifacts and rejects generated embedding file mutation
 
 Key decisions:
 
@@ -254,9 +257,11 @@ Implemented/planning files:
 - `evolvepro/embeddings/backends/base.py`
 - `evolvepro/embeddings/backends/fake.py`
 - `evolvepro/embeddings/backends/esm.py`
+- `evolvepro/embeddings/backends/registry.py`
 - `evolvepro/embeddings/device.py`
 - `evolvepro/embeddings/fasta.py`
 - `evolvepro/embeddings/normalize.py`
+- `evolvepro/embeddings/prepare.py`
 - `evolvepro/io/schemas.py`
 - `evolvepro/io/config.py`
 - `evolvepro/io/manifest.py`
@@ -288,10 +293,10 @@ Interactive CLI plan is documented in `docs/INTERACTIVE_CLI.md`. Keep `argparse`
 
 Next implementation stage:
 
-1. Implement M3: integrate embedding preparation into `evolvepro evolve`, reuse valid embeddings, and record generated embedding FASTA/CSV/metadata artifacts in `round.lock`/`manifest.json`.
-2. Add workspace validation for generated embedding FASTA, embedding CSV, metadata, embedding config, and CAS mutation.
-3. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
-4. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
-5. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
+1. Add dedicated validation tests for generated embedding FASTA mutation, metadata mutation, embedding config mutation, and generated embedding CAS mutation.
+2. Implement M5: CLI polish and compatibility bridge for legacy `scripts/plm/*`.
+3. Persist normalized observation/training tables as artifacts with semantic hashes in both lock and manifest payloads.
+4. Add stronger workspace validation coverage for manifest mutation, lock mutation, and previous-manifest chain breakage.
+5. Decide whether default `esm` workspaces should fail immediately on missing CUDA during second `evolve` or remain deferred until explicit embedding preparation UX is exposed.
 
 Important: there is no `data/<enzyme>/config.py` legacy adapter in this repo. The adapter targets current function arguments and the evolving argparse CLI, not the obsolete BenM/TphR layout.

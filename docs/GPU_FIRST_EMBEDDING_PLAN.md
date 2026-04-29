@@ -228,10 +228,16 @@ Manifest example:
 
 ### M3: Workspace state integration
 
-- Extend `evolvepro evolve` to call embedding preparation when embeddings are missing or stale.
-- Reuse valid existing embeddings without re-extraction.
-- Record embedding artifacts in `round.lock` and `manifest.json`.
-- Validation rejects FASTA, embedding CSV, metadata, config, and CAS mutation.
+Status: partially implemented. `evolvepro evolve` prepares missing embeddings through configured backends and has CI coverage for the deterministic `fake` backend. Existing valid `inputs/embeddings.csv` files are reused without extraction. Generated FASTA, embedding CSV, metadata, backend/device metadata, and embedding config hashes are recorded in `round.lock` and `manifest.json`.
+
+Remaining validation coverage:
+
+- FASTA mutation.
+- metadata mutation.
+- embedding config mutation.
+- generated embedding CAS mutation.
+
+The generated embedding CSV mutation path is covered.
 
 ### M4: ESM GPU backend
 
