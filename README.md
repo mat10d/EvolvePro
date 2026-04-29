@@ -76,6 +76,27 @@ conda env create -f environment.yml
 conda activate evolvepro
 ```
 
+### CLI Workspace Workflow (experimental)
+
+The repository also provides a file-based CLI workflow for reproducible experimental rounds. This path consumes precomputed embeddings and writes TOML config, lock files, manifests, legacy CSV outputs, and planned-layout artifacts.
+
+```bash
+nix develop
+
+# Create a workspace scaffold.
+evolvepro init my-exp
+cd my-exp
+
+# Edit evolvepro.toml to point at embeddings, round activity files, and WT FASTA.
+$EDITOR evolvepro.toml
+
+# Run from TOML and validate the completed round.
+evolvepro run --config evolvepro.toml
+evolvepro validate outputs/<protein>/<round>
+```
+
+`evolvepro run` always resolves through TOML and writes `round.lock.json` plus `manifest.json`. During migration it preserves root-level compatibility outputs while also writing the planned layout under `legacy/`, `model/`, and `predictions/`.
+
 ### Protein Language Models Environment
 
 For installing all underlying protein language models, we use a different environment:
