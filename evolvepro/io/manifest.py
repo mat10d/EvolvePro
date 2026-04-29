@@ -4,10 +4,16 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from evolvepro.io.canonical import canonical_json_sha256, write_json_atomic
+import pandas as pd
+
+from evolvepro.io.canonical import (
+    canonical_json_sha256,
+    semantic_hash_table,
+    write_json_atomic,
+)
 from evolvepro.io.config import config_sha256
 from evolvepro.io.hashing import sha256_file
-from evolvepro.io.schemas import EvolveProConfig, FileHash, RoundLock
+from evolvepro.io.schemas import EvolveProConfig, FileHash, RoundLock, RoundManifest
 
 
 def manifest_sha256(path: Path) -> str:
@@ -51,6 +57,53 @@ def round_lock_sha256(lock: RoundLock) -> str:
 
 def write_round_lock(path: Path, lock: RoundLock) -> None:
     write_json_atomic(path, round_lock_payload(lock))
+
+
+def build_round_manifest(
+    lock: RoundLock, *, lock_path: Path, round_dir: Path
+) -> RoundManifest:
+    legacy_names = [
+        "iteration.csv",
+        "this_round_variants.csv",
+        "df_test.csv",
+        "df_sorted_all.csv",
+    ]
+    dump_names = ["metrics.json", "inputs.json", "version.txt"]
+    predictions = pd.read_parquet(round_dir / "predictions.parquet")
+    outputs: dict[str, object] = {
+        "legacy_files": [
+            asdict(_file_hash(round_dir / name))
+            for name in legacy_names
+            if (round_dir / name).exists()
+        ],
+        "dump_files": [
+            asdict(_file_hash(round_dir / name))
+            for name in dump_names
+            if (round_dir / name).exists()
+        ],
+        "model_checkpoint": asdict(_file_hash(round_dir / "model.pkl")),
+        "predictions_file": asdict(_file_hash(round_dir / "predictions.parquet")),
+        "predictions_semantic_sha256": semantic_hash_table(
+            predictions, sort_by=["variant"]
+        ),
+    }
+    return RoundManifest(
+        schema_version=1,
+        workflow=lock.workflow,
+        lock_sha256=sha256_file(lock_path),
+        inputs=lock.inputs,
+        outputs=outputs,
+        previous_manifest_path=lock.previous_manifest_path,
+        previous_manifest_sha256=lock.previous_manifest_sha256,
+    )
+
+
+def round_manifest_payload(manifest: RoundManifest) -> dict[str, Any]:
+    return asdict(manifest)
+
+
+def write_round_manifest(path: Path, manifest: RoundManifest) -> None:
+    write_json_atomic(path, round_manifest_payload(manifest))
 
 
 def validate_previous_manifest(expected_sha256: str, path: Path) -> None:

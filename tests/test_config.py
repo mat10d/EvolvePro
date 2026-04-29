@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -7,10 +8,12 @@ import pandas as pd
 import pytest
 
 from evolvepro.io.config import (
+    config_sha256,
     evolve_experimental_from_config,
     load_config,
     write_config,
 )
+from evolvepro.io.hashing import sha256_file
 from evolvepro.src.data import load_experimental_data
 from evolvepro.src.evolve import evolve_experimental
 
@@ -244,3 +247,32 @@ def test_config_driven_experimental_round_matches_direct_call(
         assert (config_round / name).read_bytes() == (direct_round / name).read_bytes()
     for name in DUMP_OUTPUTS:
         assert (config_round / name).exists()
+
+
+def test_config_driven_run_writes_round_lock_and_manifest(
+    tmp_path, repo_root, kelsic_wt_fasta
+):
+    config_output = tmp_path / "config-output"
+    config_path = _write_round_config(
+        tmp_path, repo_root, kelsic_wt_fasta, config_output
+    )
+    config = load_config(config_path)
+
+    evolve_experimental_from_config(config)
+
+    round_dir = config_output / "kelsic" / "Round1"
+    lock_path = round_dir / "round.lock.json"
+    manifest_path = round_dir / "manifest.json"
+    assert lock_path.exists()
+    assert manifest_path.exists()
+
+    lock = json.loads(lock_path.read_text())
+    manifest = json.loads(manifest_path.read_text())
+    assert lock["config_sha256"] == config_sha256(config)
+    assert manifest["lock_sha256"] == sha256_file(lock_path)
+    assert manifest["previous_manifest_sha256"] is None
+    assert manifest["outputs"]["model_checkpoint"]["path"].endswith("model.pkl")
+    assert len(manifest["outputs"]["predictions_semantic_sha256"]) == 64
+    assert "df_sorted_all.csv" in {
+        Path(entry["path"]).name for entry in manifest["outputs"]["legacy_files"]
+    }

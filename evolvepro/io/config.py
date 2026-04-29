@@ -205,8 +205,18 @@ def write_config(config: EvolveProConfig, path: Path) -> None:
 def evolve_experimental_from_config(
     config: EvolveProConfig,
 ) -> tuple[pd.Series, pd.DataFrame, pd.DataFrame]:
+    from evolvepro.io.manifest import (
+        build_round_lock,
+        build_round_manifest,
+        validate_round_lock,
+        write_round_lock,
+        write_round_manifest,
+    )
+
     experiment = config.experiment
-    return evolve_experimental(
+    lock = build_round_lock(config)
+    validate_round_lock(lock)
+    result = evolve_experimental(
         protein_name=experiment.protein_name,
         round_name=experiment.round_name,
         embeddings_base_path=str(experiment.embeddings_base_path),
@@ -218,3 +228,11 @@ def evolve_experimental_from_config(
         number_of_variants=experiment.number_of_variants,
         output_dir=str(config.run.output_dir),
     )
+    round_dir = config.run.output_dir / experiment.protein_name / experiment.round_name
+    lock_path = round_dir / "round.lock.json"
+    write_round_lock(lock_path, lock)
+    write_round_manifest(
+        round_dir / "manifest.json",
+        build_round_manifest(lock, lock_path=lock_path, round_dir=round_dir),
+    )
+    return result

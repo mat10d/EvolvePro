@@ -59,3 +59,14 @@ class RoundLock:
     model: ModelConfig
     previous_manifest_path: str | None = None
     previous_manifest_sha256: str | None = None
+
+
+@dataclass(frozen=True)
+class RoundManifest:
+    schema_version: int
+    workflow: Literal["experimental_round"]
+    lock_sha256: str
+    inputs: list[FileHash]
+    outputs: dict[str, object]
+    previous_manifest_path: str | None = None
+    previous_manifest_sha256: str | None = None
