@@ -26,8 +26,10 @@ def _validate_cas_entry(workspace: Path, entry: dict[str, Any]) -> None:
         )
 
 
-def _validate_file_entry(entry: dict[str, Any]) -> None:
+def _validate_file_entry(entry: dict[str, Any], workspace: Path) -> None:
     path = Path(entry["path"])
+    if not path.is_absolute():
+        path = workspace / path
     actual = sha256_file(path)
     if actual != entry["sha256"]:
         raise ValueError(
@@ -71,8 +73,10 @@ def _validate_manifest(workspace: Path, manifest_path: Path) -> None:
     for entry in _walk_hash_entries(manifest):
         if "cas_path" in entry:
             _validate_cas_entry(workspace, entry)
+            if not entry.get("mutable", False):
+                _validate_file_entry(entry, workspace)
         else:
-            _validate_file_entry(entry)
+            _validate_file_entry(entry, workspace)
 
     previous_path = manifest.get("previous_manifest_path")
     previous_sha256 = manifest.get("previous_manifest_sha256")

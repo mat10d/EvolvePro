@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from Bio import SeqIO
 
+from evolvepro.embeddings.prepare import prepare_round_embeddings
 from evolvepro.io.cas import snapshot_file
 from evolvepro.io.canonical import semantic_hash_table, write_json_atomic
 from evolvepro.io.config import config_sha256, load_config
@@ -58,6 +59,7 @@ def _handoff_artifact_entry(path: Path, workspace: Path) -> dict[str, object]:
     return {
         **_artifact_entry(snapshot.path, snapshot.file_hash, workspace),
         "semantic_sha256": semantic_hash_table(handoff.table, sort_by=["variant"]),
+        "mutable": True,
     }
 
 
@@ -204,19 +206,34 @@ def _rank_with_model(
     exclude: set[str],
 ) -> tuple[list[str], dict[str, object], dict[str, object]] | None:
     config = load_config(workspace / CONFIG_FILE)
-    embeddings_path = (
-        config.experiment.embeddings_base_path / config.experiment.embeddings_file_name
-    )
-    if not embeddings_path.is_file():
-        return None
-
-    embeddings = pd.read_csv(embeddings_path, index_col=0)
-    embedding_inputs = {
-        "embeddings": _input_table_artifact(embeddings_path, embeddings),
-    }
     observations = _measured_observations(workspace, workspace_lock)
     if observations.empty:
         return None
+
+    embeddings_path = (
+        config.experiment.embeddings_base_path / config.experiment.embeddings_file_name
+    )
+    embedding_inputs: dict[str, object]
+    embedding_outputs: dict[str, object] = {}
+    if embeddings_path.is_file():
+        embeddings = pd.read_csv(embeddings_path, index_col=0)
+        embedding_inputs = {
+            "embeddings": _input_table_artifact(embeddings_path, embeddings),
+        }
+    elif config.embedding.backend == "none":
+        return None
+    else:
+        wt_record = SeqIO.read(config.experiment.wt_fasta_path, "fasta")
+        embedding_variants = _single_mutant_variants(
+            str(wt_record.seq), len(str(wt_record.seq)) * (len(AA_ALPHABET) - 1)
+        )
+        prepared = prepare_round_embeddings(
+            workspace, round_dir, config, embedding_variants
+        )
+        embeddings_path = prepared.embeddings_csv
+        embedding_inputs = prepared.inputs
+        embedding_outputs = prepared.outputs
+        embeddings = pd.read_csv(embeddings_path, index_col=0)
 
     labels = _labels_for_embeddings(embeddings, observations)
     train_iterations = sorted(
@@ -259,6 +276,7 @@ def _rank_with_model(
         sort_by=["variant"],
     )
     outputs = {
+        **embedding_outputs,
         "training_table": training_artifact,
         "model_checkpoint": asdict(_file_hash(model_path)),
         "model_params": asdict(_file_hash(params_path)),
