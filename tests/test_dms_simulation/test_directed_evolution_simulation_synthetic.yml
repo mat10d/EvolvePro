@@ -1,0 +1,89 @@
+columns:
+- simulation_num
+- round_num
+- num_mutants_per_round
+- first_round_strategy
+- measured_var
+- learning_strategy
+- regression_type
+- embedding_type
+- test_error
+- train_error
+- train_r_squared
+- test_r_squared
+- alpha
+- spearman_corr
+- median_activity_scaled
+- top_activity_scaled
+- activity_binary_percentage
+- top_variant
+- top_final_round_variants
+- this_round_variants
+- next_round_variants
+records:
+- activity_binary_percentage: None
+  alpha: None
+  embedding_type: null
+  first_round_strategy: random
+  learning_strategy: topn
+  measured_var: activity
+  median_activity_scaled: None
+  next_round_variants: variant_63,variant_27,variant_31,variant_69,variant_46,variant_47,variant_53,variant_74,WT
+  num_mutants_per_round: 8
+  regression_type: ridge
+  round_num: 0
+  simulation_num: 1
+  spearman_corr: None
+  test_error: None
+  test_r_squared: None
+  this_round_variants: None
+  top_activity_scaled: None
+  top_final_round_variants: None
+  top_variant: None
+  train_error: None
+  train_r_squared: None
+- activity_binary_percentage: 1.0
+  alpha: 10.0
+  embedding_type: null
+  first_round_strategy: random
+  learning_strategy: topn
+  measured_var: activity
+  median_activity_scaled: 0.5679571118055818
+  next_round_variants: variant_22,variant_65,variant_43,variant_14,variant_30,variant_58,variant_72,variant_68
+  num_mutants_per_round: 8
+  regression_type: ridge
+  round_num: 1
+  simulation_num: 1
+  spearman_corr: 0.0735546522131888
+  test_error: 0.22405337839605308
+  test_r_squared: -0.668384013809858
+  this_round_variants: variant_63,variant_27,variant_31,variant_69,variant_46,variant_47,variant_53,variant_74,WT
+  top_activity_scaled: 0.7929263862376965
+  top_final_round_variants: variant_22,variant_65,variant_43,variant_14,variant_30,variant_58,variant_72,variant_53,variant_68
+  top_variant: variant_58
+  train_error: 0.05048777787502728
+  train_r_squared: 0.3312175203873208
+- activity_binary_percentage: 1.0
+  alpha: 10.0
+  embedding_type: null
+  first_round_strategy: random
+  learning_strategy: topn
+  measured_var: activity
+  median_activity_scaled: 0.46740958310011305
+  next_round_variants: variant_75,variant_17,variant_51,variant_5,variant_41,variant_32,variant_57,variant_4
+  num_mutants_per_round: 8
+  regression_type: ridge
+  round_num: 2
+  simulation_num: 1
+  spearman_corr: 0.021770551038843722
+  test_error: 0.19302097745140773
+  test_r_squared: -0.4102955457655728
+  this_round_variants: variant_22,variant_65,variant_43,variant_14,variant_30,variant_58,variant_72,variant_68,variant_63,variant_27,variant_31,variant_69,variant_46,variant_47,variant_53,variant_74,WT
+  top_activity_scaled: 0.8114281247973301
+  top_final_round_variants: variant_75,variant_17,variant_51,variant_5,variant_41,variant_32,variant_58,variant_46,variant_57
+  top_variant: variant_75
+  train_error: 0.07256628657037047
+  train_r_squared: 0.28169382882087624
+shape:
+- 3
+- 21

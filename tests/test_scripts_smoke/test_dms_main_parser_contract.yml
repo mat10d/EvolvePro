@@ -1,0 +1,45 @@
+option_dests:
+- dataset_name
+- embedding_types
+- embeddings_file_type
+- embeddings_path
+- embeddings_type_pt
+- experiment_name
+- first_round_strategies
+- labels_path
+- learning_strategies
+- measured_var
+- model_name
+- num_final_round_mutants
+- num_iterations
+- num_mutants_per_round
+- num_simulations
+- output_dir
+- pca_components
+- regression_types
+parsed:
+  dataset_name: kelsic
+  embedding_types:
+  - embeddings
+  embeddings_file_type: csv
+  embeddings_path: embeddings
+  embeddings_type_pt: null
+  experiment_name: smoke
+  first_round_strategies:
+  - random
+  labels_path: labels
+  learning_strategies:
+  - topn
+  measured_var:
+  - activity
+  model_name: esm_smoke
+  num_final_round_mutants: 8
+  num_iterations:
+  - 2
+  num_mutants_per_round:
+  - 8
+  num_simulations: 1
+  output_dir: out
+  pca_components: null
+  regression_types:
+  - ridge

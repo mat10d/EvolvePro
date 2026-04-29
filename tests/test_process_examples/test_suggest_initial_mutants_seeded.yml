@@ -1,0 +1,14 @@
+stdout:
+- 'Suggested 12 mutants for testing:'
+- 1. WT
+- 2. M1F
+- 3. A2S
+- 4. M1Q
+- 5. K3G
+- 6. K3R
+- 7. A2W
+- 8. A2H
+- 9. K3I
+- 10. M1P
+- 11. K3M
+- 12. M1D

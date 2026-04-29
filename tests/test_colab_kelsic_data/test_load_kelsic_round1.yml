@@ -1,0 +1,39 @@
+columns:
+- Variant
+- activity
+- updated_variant
+head:
+- Variant: 3F
+  activity: 0.905
+  updated_variant: K3F
+- Variant: 4M
+  activity: 1.008
+  updated_variant: E4M
+- Variant: 4Y
+  activity: 1.017
+  updated_variant: E4Y
+- Variant: 7A
+  activity: 0.82275
+  updated_variant: I7A
+- Variant: 10P
+  activity: 0.9205
+  updated_variant: Q10P
+shape:
+- 12
+- 3
+tail:
+- Variant: 31C
+  activity: 1.02
+  updated_variant: V31C
+- Variant: 36D
+  activity: 0.2915
+  updated_variant: I36D
+- Variant: 38E
+  activity: 0.507
+  updated_variant: G38E
+- Variant: 58E
+  activity: 0.909
+  updated_variant: T58E
+- Variant: 61W
+  activity: 0.908
+  updated_variant: D61W

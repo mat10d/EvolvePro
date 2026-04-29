@@ -1,0 +1,75 @@
+activity_binary_counts:
+  '0': 1891
+  '1': 68
+activity_max: 0.30606387
+activity_min: 0.00166406
+columns:
+- variant
+- mut_escape
+- activity
+- activity_scaled
+- activity_binary
+fasta_count: 1959
+fasta_head_ids:
+- N331V
+- N331T
+- N331S
+- N331R
+- N331Q
+fractions:
+- 0.03471159
+head:
+- activity: 0.00363141
+  activity_binary: 0
+  activity_scaled: 0.00646304
+  mut_escape: 0.00363141
+  variant: N331V
+- activity: 0.00386036
+  activity_binary: 0
+  activity_scaled: 0.0072152
+  mut_escape: 0.00386036
+  variant: N331T
+- activity: 0.00387897
+  activity_binary: 0
+  activity_scaled: 0.00727633
+  mut_escape: 0.00387897
+  variant: N331S
+- activity: 0.00395484
+  activity_binary: 0
+  activity_scaled: 0.00752558
+  mut_escape: 0.00395484
+  variant: N331R
+- activity: 0.00393574
+  activity_binary: 0
+  activity_scaled: 0.00746283
+  mut_escape: 0.00393574
+  variant: N331Q
+shape:
+- 1959
+- 5
+tail:
+- activity: 0.00480222
+  activity_binary: 0
+  activity_scaled: 0.01030936
+  mut_escape: 0.00480222
+  variant: T531W
+- activity: 0.00524771
+  activity_binary: 0
+  activity_scaled: 0.01177285
+  mut_escape: 0.00524771
+  variant: T531V
+- activity: 0.00521508
+  activity_binary: 0
+  activity_scaled: 0.01166567
+  mut_escape: 0.00521508
+  variant: T531M
+- activity: 0.00914265
+  activity_binary: 0
+  activity_scaled: 0.02456831
+  mut_escape: 0.00914265
+  variant: T531D
+- activity: 0.00571195
+  activity_binary: 0
+  activity_scaled: 0.01329795
+  mut_escape: 0.00571195
+  variant: T531P

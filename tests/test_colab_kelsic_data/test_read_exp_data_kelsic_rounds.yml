@@ -1,0 +1,62 @@
+activity_by_iteration:
+  '1.0': 0.850062
+  '2.0': 0.968521
+  '3.0': 0.911722
+  '4.0': 0.948785
+  '5.0': 0.92209
+columns:
+- Variant
+- activity
+- variant
+- iteration
+head:
+- Variant: 3F
+  activity: 0.905
+  iteration: 1.0
+  variant: K3F
+- Variant: 4M
+  activity: 1.008
+  iteration: 1.0
+  variant: E4M
+- Variant: 4Y
+  activity: 1.017
+  iteration: 1.0
+  variant: E4Y
+- Variant: 7A
+  activity: 0.82275
+  iteration: 1.0
+  variant: I7A
+- Variant: 10P
+  activity: 0.9205
+  iteration: 1.0
+  variant: Q10P
+iteration_counts:
+  '1.0': 12
+  '2.0': 12
+  '3.0': 12
+  '4.0': 12
+  '5.0': 12
+shape:
+- 60
+- 4
+tail:
+- Variant: 8K
+  activity: 0.9385
+  iteration: 5.0
+  variant: E8K
+- Variant: 10H
+  activity: 0.9025
+  iteration: 5.0
+  variant: Q10H
+- Variant: 20H
+  activity: 0.9695
+  iteration: 5.0
+  variant: T20H
+- Variant: 55I
+  activity: 0.916
+  iteration: 5.0
+  variant: V55I
+- Variant: 71K
+  activity: 0.9895
+  iteration: 5.0
+  variant: S71K

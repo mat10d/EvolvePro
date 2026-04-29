@@ -1,0 +1,49 @@
+iteration_zero:
+- iteration: 0
+  variant: variant_83
+- iteration: 0
+  variant: variant_53
+- iteration: 0
+  variant: variant_70
+- iteration: 0
+  variant: variant_45
+- iteration: 0
+  variant: variant_44
+- iteration: 0
+  variant: variant_39
+- iteration: 0
+  variant: variant_22
+- iteration: 0
+  variant: variant_80
+- iteration: 0
+  variant: variant_10
+- iteration: 0
+  variant: variant_0
+- iteration: 0
+  variant: WT
+labels_shape:
+- 101
+- 5
+selected_sorted:
+- variant_0
+- variant_10
+- variant_22
+- variant_39
+- variant_44
+- variant_45
+- variant_53
+- variant_70
+- variant_80
+- variant_83
+this_round_variants:
+- variant_83
+- variant_53
+- variant_70
+- variant_45
+- variant_44
+- variant_39
+- variant_22
+- variant_80
+- variant_10
+- variant_0
+- WT

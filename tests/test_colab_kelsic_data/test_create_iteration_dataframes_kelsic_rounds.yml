@@ -1,0 +1,21 @@
+activity_max: 1.0605
+activity_min: 0.024
+iteration_counts:
+  '1.0': 12
+  '2.0': 12
+  '3.0': 12
+  '4.0': 12
+  '5.0': 12
+iteration_shape:
+- 60
+- 2
+labels_iteration_counts:
+  '1.0': 12
+  '2.0': 12
+  '3.0': 12
+  '4.0': 12
+  '5.0': 12
+  nan: 2
+labels_shape:
+- 62
+- 5

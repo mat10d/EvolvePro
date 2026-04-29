@@ -1,0 +1,174 @@
+df_test:
+- dist_metric: 2.294104
+  std_predictions: 0.0
+  variant: variant_20
+  y_actual: 1.104359
+  y_actual_binary: 1
+  y_actual_scaled: 0.145363
+  y_pred: 1.174408
+- dist_metric: 2.537233
+  std_predictions: 0.0
+  variant: variant_21
+  y_actual: 1.184207
+  y_actual_binary: 1
+  y_actual_scaled: 0.260754
+  y_pred: 1.166311
+- dist_metric: 2.429481
+  std_predictions: 0.0
+  variant: variant_22
+  y_actual: 1.168936
+  y_actual_binary: 1
+  y_actual_scaled: 0.238685
+  y_pred: 1.211265
+- dist_metric: 3.102857
+  std_predictions: 0.0
+  variant: variant_23
+  y_actual: 1.253889
+  y_actual_binary: 1
+  y_actual_scaled: 0.361455
+  y_pred: 1.155456
+- dist_metric: 2.215458
+  std_predictions: 0.0
+  variant: variant_24
+  y_actual: 1.331221
+  y_actual_binary: 1
+  y_actual_scaled: 0.47321
+  y_pred: 1.154093
+- dist_metric: 2.772618
+  std_predictions: 0.0
+  variant: variant_25
+  y_actual: 1.371185
+  y_actual_binary: 1
+  y_actual_scaled: 0.530963
+  y_pred: 1.148851
+- dist_metric: 1.780281
+  std_predictions: 0.0
+  variant: variant_26
+  y_actual: 1.410719
+  y_actual_binary: 1
+  y_actual_scaled: 0.588096
+  y_pred: 1.175862
+- dist_metric: 3.207919
+  std_predictions: 0.0
+  variant: variant_27
+  y_actual: 1.467357
+  y_actual_binary: 1
+  y_actual_scaled: 0.669946
+  y_pred: 1.189431
+- dist_metric: 2.845622
+  std_predictions: 0.0
+  variant: variant_28
+  y_actual: 1.537666
+  y_actual_binary: 1
+  y_actual_scaled: 0.771551
+  y_pred: 1.192479
+- dist_metric: 3.172897
+  std_predictions: 0.0
+  variant: variant_29
+  y_actual: 1.606222
+  y_actual_binary: 1
+  y_actual_scaled: 0.870625
+  y_pred: 1.15575
+- dist_metric: 2.470463
+  std_predictions: 0.0
+  variant: variant_30
+  y_actual: 1.607311
+  y_actual_binary: 1
+  y_actual_scaled: 0.872199
+  y_pred: 1.179947
+- dist_metric: 2.405734
+  std_predictions: 0.0
+  variant: variant_31
+  y_actual: 1.657644
+  y_actual_binary: 1
+  y_actual_scaled: 0.944938
+  y_pred: 1.134304
+- dist_metric: 2.647278
+  std_predictions: 0.0
+  variant: variant_32
+  y_actual: 1.673095
+  y_actual_binary: 1
+  y_actual_scaled: 0.967266
+  y_pred: 1.140366
+- dist_metric: 2.285676
+  std_predictions: 0.0
+  variant: variant_33
+  y_actual: 1.695746
+  y_actual_binary: 1
+  y_actual_scaled: 1.0
+  y_pred: 1.207955
+- dist_metric: 2.523844
+  std_predictions: 0.0
+  variant: variant_34
+  y_actual: 1.676137
+  y_actual_binary: 1
+  y_actual_scaled: 0.971662
+  y_pred: 1.147945
+- dist_metric: 1.790438
+  std_predictions: 0.0
+  variant: variant_35
+  y_actual: 1.660606
+  y_actual_binary: 1
+  y_actual_scaled: 0.949217
+  y_pred: 1.149926
+- dist_metric: 2.307273
+  std_predictions: 0.0
+  variant: variant_36
+  y_actual: 1.602809
+  y_actual_binary: 1
+  y_actual_scaled: 0.865692
+  y_pred: 1.114164
+- dist_metric: 3.768637
+  std_predictions: 0.0
+  variant: variant_37
+  y_actual: 1.585889
+  y_actual_binary: 1
+  y_actual_scaled: 0.841242
+  y_pred: 1.171283
+- dist_metric: 1.337531
+  std_predictions: 0.0
+  variant: variant_38
+  y_actual: 1.578489
+  y_actual_binary: 1
+  y_actual_scaled: 0.830547
+  y_pred: 1.128722
+- dist_metric: 2.525175
+  std_predictions: 0.0
+  variant: variant_39
+  y_actual: 1.565899
+  y_actual_binary: 1
+  y_actual_scaled: 0.812353
+  y_pred: 1.150559
+metrics:
+  activity_binary_percentage: 1.0
+  alpha: 0.0
+  median_activity_scaled: 0.46945
+  spearman_corr: 0.123293
+  test_error: 0.142776
+  test_r_squared: -3.200721
+  top_activity_scaled: 1.0
+  top_final_round_variants: variant_15,variant_22,variant_33,variant_8,variant_4,variant_7,variant_28,variant_6,variant_27,variant_17,variant_30
+  top_variant: variant_33
+  train_error: 0.007288
+  train_r_squared: 0.178137
+this_round_variants:
+- variant_0
+- variant_1
+- variant_2
+- variant_3
+- variant_4
+- variant_5
+- variant_6
+- variant_7
+- variant_8
+- variant_9
+- variant_10
+- variant_11
+- variant_12
+- variant_13
+- variant_14
+- variant_15
+- variant_16
+- variant_17
+- variant_18
+- variant_19

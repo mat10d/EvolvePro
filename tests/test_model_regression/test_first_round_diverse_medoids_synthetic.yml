@@ -1,0 +1,41 @@
+iteration_zero:
+- iteration: 0
+  variant: variant_30
+- iteration: 0
+  variant: variant_35
+- iteration: 0
+  variant: variant_2
+- iteration: 0
+  variant: variant_16
+- iteration: 0
+  variant: variant_9
+- iteration: 0
+  variant: variant_13
+- iteration: 0
+  variant: variant_5
+- iteration: 0
+  variant: variant_24
+- iteration: 0
+  variant: WT
+labels_shape:
+- 51
+- 5
+selected_sorted:
+- variant_13
+- variant_16
+- variant_2
+- variant_24
+- variant_30
+- variant_35
+- variant_5
+- variant_9
+this_round_variants:
+- variant_30
+- variant_35
+- variant_2
+- variant_16
+- variant_9
+- variant_13
+- variant_5
+- variant_24
+- WT
