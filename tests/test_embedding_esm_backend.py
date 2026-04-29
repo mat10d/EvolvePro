@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+from evolvepro.embeddings.device import EmbeddingDeviceError
 from evolvepro.embeddings.schemas import EmbeddingRequest
 
 
@@ -49,6 +50,7 @@ def test_extract_passes_expected_args_to_legacy_runner(
 ):
     esm_backend = importlib.import_module(MODULE_NAME)
     calls = _install_fake_legacy(monkeypatch, esm_backend)
+    _install_fake_device(monkeypatch, esm_backend, requested_device="cuda:0")
     request = _request(tmp_path, device="cuda:0")
 
     result = esm_backend.EsmEmbeddingBackend().extract(request)
@@ -68,29 +70,46 @@ def test_extract_passes_expected_args_to_legacy_runner(
     assert result.metadata_json == tmp_path / "embeddings" / "metadata.json"
     assert result.backend_metadata["backend"] == "esm"
     assert result.device_metadata["requested_device"] == "cuda:0"
+    assert result.device_metadata["resolved_device"] == "cuda:0"
     assert result.device_metadata["nogpu"] is False
+    assert result.embeddings_csv.read_text(encoding="utf-8") == (
+        "variant,feature_0\nseq1,1.0\n"
+    )
     assert result.artifacts == {"pt_dir": tmp_path / "embeddings" / "pt"}
 
 
 @pytest.mark.parametrize(
-    ("device", "expected_nogpu"),
+    ("device", "resolved_device", "expected_nogpu"),
     [
-        ("cuda", False),
-        ("cuda:0", False),
-        ("auto", False),
-        ("cpu", True),
+        ("cuda", "cuda:0", False),
+        ("cuda:0", "cuda:0", False),
+        ("auto", "cuda:0", False),
+        ("cpu", "cpu", True),
     ],
 )
 def test_extract_maps_request_device_to_legacy_nogpu(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     device: str,
+    resolved_device: str,
     expected_nogpu: bool,
 ):
     esm_backend = importlib.import_module(MODULE_NAME)
     calls = _install_fake_legacy(monkeypatch, esm_backend)
+    _install_fake_device(
+        monkeypatch,
+        esm_backend,
+        requested_device=device,
+        resolved_device=resolved_device,
+    )
 
-    esm_backend.EsmEmbeddingBackend().extract(_request(tmp_path, device=device))
+    esm_backend.EsmEmbeddingBackend().extract(
+        _request(
+            tmp_path,
+            device=device,
+            allow_cpu_fallback=(resolved_device == "cpu"),
+        )
+    )
 
     assert calls[0].nogpu is expected_nogpu
 
@@ -100,7 +119,10 @@ def test_metadata_json_is_written_and_deterministic(
 ):
     esm_backend = importlib.import_module(MODULE_NAME)
     _install_fake_legacy(monkeypatch, esm_backend)
-    request = _request(tmp_path, device="cpu")
+    _install_fake_device(
+        monkeypatch, esm_backend, requested_device="cpu", resolved_device="cpu"
+    )
+    request = _request(tmp_path, device="cpu", allow_cpu_fallback=True)
     backend = esm_backend.EsmEmbeddingBackend()
 
     result = backend.extract(request)
@@ -124,10 +146,16 @@ def test_metadata_json_is_written_and_deterministic(
             "representation": "mean",
         },
         "device": {
+            "cuda_available": False,
+            "cuda_device_count": 0,
+            "cuda_device_name": None,
+            "cuda_version": None,
             "dtype": "float32",
             "nogpu": True,
             "requested_device": "cpu",
+            "resolved_device": "cpu",
             "seed": 7,
+            "torch_version": "fake-torch",
         },
         "dtype": "float32",
         "model": {
@@ -140,6 +168,53 @@ def test_metadata_json_is_written_and_deterministic(
         },
         "seed": 7,
     }
+
+
+def test_extract_stops_when_gpu_first_device_resolution_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    esm_backend = importlib.import_module(MODULE_NAME)
+    calls = _install_fake_legacy(monkeypatch, esm_backend)
+
+    def fail_device_resolution(
+        device: str, *, allow_cpu_fallback: bool
+    ) -> dict[str, object]:
+        assert device == "auto"
+        assert allow_cpu_fallback is False
+        raise EmbeddingDeviceError("CUDA is not available")
+
+    monkeypatch.setattr(esm_backend, "resolve_device", fail_device_resolution)
+
+    with pytest.raises(EmbeddingDeviceError, match="CUDA is not available"):
+        esm_backend.EsmEmbeddingBackend().extract(_request(tmp_path, device="auto"))
+
+    assert calls == []
+
+
+def _install_fake_device(
+    monkeypatch: pytest.MonkeyPatch,
+    esm_backend: Any,
+    *,
+    requested_device: str,
+    resolved_device: str | None = None,
+) -> None:
+    def fake_resolve_device(
+        device: str, *, allow_cpu_fallback: bool
+    ) -> dict[str, object]:
+        assert device == requested_device
+        if resolved_device == "cpu":
+            assert allow_cpu_fallback is True
+        return {
+            "requested_device": device,
+            "resolved_device": resolved_device or "cuda:0",
+            "cuda_available": (resolved_device or "cuda:0") != "cpu",
+            "cuda_device_count": 0 if resolved_device == "cpu" else 1,
+            "cuda_device_name": None if resolved_device == "cpu" else "Fake GPU",
+            "torch_version": "fake-torch",
+            "cuda_version": None if resolved_device == "cpu" else "12.4",
+        }
+
+    monkeypatch.setattr(esm_backend, "resolve_device", fake_resolve_device)
 
 
 def _install_fake_legacy(
@@ -161,7 +236,9 @@ def _install_fake_legacy(
     return calls
 
 
-def _request(tmp_path: Path, *, device: str) -> EmbeddingRequest:
+def _request(
+    tmp_path: Path, *, device: str, allow_cpu_fallback: bool = False
+) -> EmbeddingRequest:
     fasta_path = tmp_path / "input.fasta"
     fasta_path.write_text(">seq1\nM\n", encoding="utf-8")
     return EmbeddingRequest(
@@ -177,6 +254,6 @@ def _request(tmp_path: Path, *, device: str) -> EmbeddingRequest:
         dtype="float32",
         seed=7,
         allow_download=False,
-        allow_cpu_fallback=False,
+        allow_cpu_fallback=allow_cpu_fallback,
         cache_dir=tmp_path / "cache",
     )

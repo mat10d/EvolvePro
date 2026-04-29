@@ -5,6 +5,10 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
+from evolvepro.embeddings.device import resolve_device
+from evolvepro.embeddings.normalize import write_embedding_csv
 from evolvepro.embeddings.schemas import EmbeddingRequest, EmbeddingResult
 
 
@@ -22,7 +26,11 @@ class EsmEmbeddingBackend:
         embeddings_csv = output_dir / _CANONICAL_EMBEDDINGS_CSV
         metadata_json = output_dir / _METADATA_JSON
 
-        args = _build_legacy_args(request, pt_output_dir)
+        device_metadata = resolve_device(
+            request.device, allow_cpu_fallback=request.allow_cpu_fallback
+        )
+        nogpu = device_metadata["resolved_device"] == "cpu"
+        args = _build_legacy_args(request, pt_output_dir, nogpu=bool(nogpu))
         _run_legacy_esm(args)
         if not embeddings_csv.exists():
             _concatenate_legacy_outputs(pt_output_dir, embeddings_csv)
@@ -30,9 +38,10 @@ class EsmEmbeddingBackend:
             raise FileNotFoundError(
                 f"ESM extraction did not produce canonical CSV: {embeddings_csv}"
             )
+        _canonicalize_embeddings_csv(embeddings_csv)
 
         backend_metadata = _backend_metadata(request)
-        device_metadata = _device_metadata(request, args.nogpu)
+        device_metadata = _device_metadata(request, device_metadata, args.nogpu)
         _write_metadata(
             metadata_json=metadata_json,
             request=request,
@@ -53,7 +62,9 @@ class EsmEmbeddingBackend:
         )
 
 
-def _build_legacy_args(request: EmbeddingRequest, pt_output_dir: Path) -> Namespace:
+def _build_legacy_args(
+    request: EmbeddingRequest, pt_output_dir: Path, *, nogpu: bool
+) -> Namespace:
     return Namespace(
         model_location=request.model_name,
         fasta_file=request.fasta_path,
@@ -62,18 +73,28 @@ def _build_legacy_args(request: EmbeddingRequest, pt_output_dir: Path) -> Namesp
         repr_layers=request.repr_layers,
         include=[request.representation],
         truncation_seq_length=_LEGACY_TRUNCATION_SEQ_LENGTH,
-        nogpu=_nogpu_for_device(request.device),
+        nogpu=nogpu,
         concatenate_dir=request.output_dir,
     )
 
 
-def _nogpu_for_device(device: str) -> bool:
-    normalized = device.lower()
-    if normalized == "cpu":
-        return True
-    if normalized == "auto" or normalized.startswith("cuda"):
-        return False
-    return False
+def _canonicalize_embeddings_csv(path: Path) -> None:
+    table = pd.read_csv(path)
+    if "variant" not in table.columns:
+        first_column = str(table.columns[0])
+        if not first_column.startswith("Unnamed:"):
+            raise ValueError(
+                "ESM embedding CSV must contain a variant column or an unnamed "
+                f"legacy index column, got first column {first_column!r}"
+            )
+        table = table.rename(columns={table.columns[0]: "variant"})
+    feature_columns = [column for column in table.columns if column != "variant"]
+    table = table.rename(
+        columns={
+            column: f"feature_{index}" for index, column in enumerate(feature_columns)
+        }
+    )
+    write_embedding_csv(path, table)
 
 
 def _run_legacy_esm(args: object) -> None:
@@ -99,9 +120,11 @@ def _backend_metadata(request: EmbeddingRequest) -> dict[str, Any]:
     }
 
 
-def _device_metadata(request: EmbeddingRequest, nogpu: bool) -> dict[str, Any]:
+def _device_metadata(
+    request: EmbeddingRequest, resolved: dict[str, object], nogpu: bool
+) -> dict[str, Any]:
     return {
-        "requested_device": request.device,
+        **resolved,
         "nogpu": nogpu,
         "dtype": request.dtype,
         "seed": request.seed,
